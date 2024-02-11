@@ -1,0 +1,8 @@
+target/
+.bloop
+.tool-versions
+.metals
+.settings/
+.vscode
+project/project
+project/metals.sbt
