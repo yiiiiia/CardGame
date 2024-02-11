@@ -10,7 +10,6 @@ package structures.basic;
  *
  */
 public class Position {
-
 	int xpos;
 	int ypos;
 	int tilex;

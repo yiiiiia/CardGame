@@ -4,6 +4,7 @@ package events;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import akka.actor.ActorRef;
+import structures.Action;
 import structures.GameState;
 
 /**
@@ -19,12 +20,15 @@ import structures.GameState;
  *
  */
 public class UnitStopped implements EventProcessor{
-
 	@Override
-	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
-		
-		int unitid = message.get("id").asInt();
-		
+	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {	
+		// int unitid = message.get("id").asInt();
+		if (gameState.getPendingAction() != null) {
+			Action action = gameState.getPendingAction();
+			action.doAction(out, gameState);
+			// clear this pending action
+			gameState.setPendingAction(null);
+		}
+		gameState.setHasMovingUnit(false);
 	}
-
 }
