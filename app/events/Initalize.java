@@ -41,7 +41,7 @@ public class Initalize implements EventProcessor{
         //mana and health visualization
         BasicCommands.setPlayer1Mana(out,gameState.player);
         BasicCommands.setPlayer1Health(out,gameState.player);
-        BasicCommands.setPlayer1Health(out,gameState.ai);
+        BasicCommands.setPlayer2Health(out,gameState.ai);
 
 
 
@@ -91,7 +91,6 @@ public class Initalize implements EventProcessor{
         }
         //draw three cards for ai
         for (int i = 0; i < 3; i++) {
-
             int randomIndex = r.nextInt(gameState.ai.playerCardsRemain.size());
             Card drawnCard=gameState.ai.playerCardsRemain.get(randomIndex);
             gameState.ai.playerCardsAtHand.add(drawnCard);
