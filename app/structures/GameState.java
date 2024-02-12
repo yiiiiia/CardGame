@@ -55,7 +55,7 @@ public class GameState {
 
 	// Method to retrieve a Tile by its position
 	public Tile getTileByPos(int tilex, int tiley){
-		for (Tilr tile : game Tiles) {
+		for (Tilr tile : gameTiles) {
 			if (tile.getTilex() == tilex && tile.getTileY() == tiley) {
 				return tile;
 			}
