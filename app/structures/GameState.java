@@ -33,7 +33,7 @@ public class GameState {
 	public List<Tile> gameTiles;
 	public List<Unit> playerUnits;
 	public List<Unit> aiUnits;
-	/* 不知道这些attribute最后放哪个类，先注释了
+	/* 不知道这些变量最后放哪个类，先注释了
 	public List<Card> playerCardDeck;
 	public List<Card> playerCardsAtHand;
 	public List<Card> aiCardDeck;
