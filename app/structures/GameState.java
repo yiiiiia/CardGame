@@ -27,7 +27,6 @@ public class GameState {
 	public Action pendingAction; // Action to perform after a unit stops
 	public Unit activeUnit; // Currently selected unit
 
-	// public Card activeCard; // Currently selected card
 
 	// Collections to track game elements
 	public List<Tile> gameTiles;
