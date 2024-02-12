@@ -20,16 +20,17 @@ public class Unit {
 	@JsonIgnore
 	protected static ObjectMapper mapper = new ObjectMapper(); // Jackson Java Object Serializer, is used to read java objects from a file
 	
-	int id;
-	UnitAnimationType animation;
-	Position position;
-	UnitAnimationSet animations;
-	ImageCorrection correction;
+	private int id;
+	private UnitAnimationType animation;
+	private Position position;
+	private UnitAnimationSet animations;
+	private ImageCorrection correction;
 	// New attributes
-	boolean stunned; // A stunned unit cannot move or attack in one turn (only AI)
-	boolean canMove; // A unit can move only once per turn and cannot move after attacking
-	int health;
-	int attack;
+	private boolean stunned; // A stunned unit cannot move or attack in one turn (only AI)
+	private boolean canMove; // A unit can move only once per turn and cannot move after attacking
+	private int health;
+	private int attack;
+
 	public Unit() {}
 	
 	public Unit(int id, UnitAnimationSet animations, ImageCorrection correction, int health, int attack) {
@@ -141,6 +142,53 @@ public class Unit {
 	public void setAttack(int attack){
 		this.attack = attack;
 	}
+
+	// Method to play specific animation
+	private void playAnimation(UnitAnimationType animationType){
+		UnitAnimation animation = this.animations.getAnimationByType(animationType);
+		if(animation != null){
+			// A method in the game engine to play animations
+		}
+		System.out.println("Playing animation: " + animationType);
+	} else {
+		System.out.println("Animation for type " + animationType + " not found.");
+	}
+}
+
+	public void animate(UnitAnimationType type){
+		this.animation = type;
+		if (type == UnitAnimationType.move) {
+			playAnimation(this.animations.getMove());
+		}
+	}
+	 public UnitAnimation getAnimationByType(UnitAnimationType animationType){
+
+	 }
+	// New method for unit movement
+	public void unitMoving(GameState gamestate, Tile positionTile){
+		// Check if movement is allowed based on the game rules
+		if(this.canMove && !this.stunned){
+			this.setPositionByTile(positionTile);
+			// Set canMove to false to prevente further movement this turn, if applicable
+			this.canMove = false;
+			animate(UnitAnimationType.move); // Set animation to move
+		}
+	}
+	public void unitAttack(GameState gameState, Unit targetUnit){
+		if (!this.stunned){
+			// Apply attack damage to target unit
+			int newHealth = targetUnit.getHealth() - this.attack;
+			targetUnit.setHealth(newHealth > 0 ? newHealth : 0); // Ensure health dose not go below 0
+			// Check if the target unit is defeated
+			if (targetUnit.getHealth() <= 0){
+				gameState.removeUnit(targetUnit);
+			}
+			// After attacking, this unit may not be able to move
+			this.canMove = false;
+			animate(UnitAnimationType.attack); // Set animation to attack
+		}
+	}
+
 	/**
 	 * This command sets the position of the Unit to a specified
 	 * tile.
