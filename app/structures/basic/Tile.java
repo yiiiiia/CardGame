@@ -31,7 +31,7 @@ public class Tile {
 	
 	public Tile() {}
 	
-	public Tile(String tileTexture, int xpos, int ypos, int width, int height, int tilex, int tiley) {
+	public Tile(String tileTexture, int xpos, int ypos, int width, int height, int tilex, int tiley, Unit unit) {
 		super();
 		tileTextures = new ArrayList<String>(1);
 		tileTextures.add(tileTexture);
@@ -43,7 +43,7 @@ public class Tile {
 		this.tiley = tiley;
 	}
 	
-	public Tile(List<String> tileTextures, int xpos, int ypos, int width, int height, int tilex, int tiley) {
+	public Tile(List<String> tileTextures, int xpos, int ypos, int width, int height, int tilex, int tiley, Unit unit) {
 		super();
 		this.tileTextures = tileTextures;
 		this.xpos = xpos;
