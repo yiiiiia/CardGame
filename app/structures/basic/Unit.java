@@ -25,10 +25,14 @@ public class Unit {
 	Position position;
 	UnitAnimationSet animations;
 	ImageCorrection correction;
-	
+	// New attributes
+	boolean stunned; // A stunned unit cannot move or attack in one turn (only AI)
+	boolean canMove; // A unit can move only once per turn and cannot move after attacking
+	int health;
+	int attack;
 	public Unit() {}
 	
-	public Unit(int id, UnitAnimationSet animations, ImageCorrection correction) {
+	public Unit(int id, UnitAnimationSet animations, ImageCorrection correction, int health, int attack) {
 		super();
 		this.id = id;
 		this.animation = UnitAnimationType.idle;
@@ -36,9 +40,13 @@ public class Unit {
 		position = new Position(0,0,0,0);
 		this.correction = correction;
 		this.animations = animations;
+		this.health = health;
+		this.attack = attack;
+		this.stunned = false;
+		this.canMove = true;
 	}
 	
-	public Unit(int id, UnitAnimationSet animations, ImageCorrection correction, Tile currentTile) {
+	public Unit(int id, UnitAnimationSet animations, ImageCorrection correction, Tile currentTile, int health, int attack) {
 		super();
 		this.id = id;
 		this.animation = UnitAnimationType.idle;
@@ -46,18 +54,26 @@ public class Unit {
 		position = new Position(currentTile.getXpos(),currentTile.getYpos(),currentTile.getTilex(),currentTile.getTiley());
 		this.correction = correction;
 		this.animations = animations;
+		this.health = health;
+		this.attack = attack;
+		this.stunned = false;
+		this.canMove = true;
 	}
 	
 	
 	
 	public Unit(int id, UnitAnimationType animation, Position position, UnitAnimationSet animations,
-			ImageCorrection correction) {
+			ImageCorrection correction, int health, int attack) {
 		super();
 		this.id = id;
 		this.animation = animation;
 		this.position = position;
 		this.animations = animations;
 		this.correction = correction;
+		this.health = health;
+		this.attack = attack;
+		this.stunned = false;
+		this.canMove = true;
 	}
 
 	public int getId() {
@@ -96,7 +112,35 @@ public class Unit {
 	public void setAnimations(UnitAnimationSet animations) {
 		this.animations = animations;
 	}
-	
+
+	// New getters and setters for the added attributes
+	public boolean isStunned(){
+		return stunned;
+	}
+	public void setStunned(boolean stunned){
+		this.stunned = stunned;
+	}
+
+	public boolean canMove(){
+		return canMove;
+	}
+	public void setCanMove(boolean canMove){
+		this.canMove = canMove;
+	}
+
+	public int getHealth(){
+		return health;
+	}
+	public void setHealth(int health){
+		this.health = health;
+	}
+
+	public int getAttack(){
+		return attack;
+	}
+	public void setAttack(int attack){
+		this.attack = attack;
+	}
 	/**
 	 * This command sets the position of the Unit to a specified
 	 * tile.
