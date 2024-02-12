@@ -15,24 +15,25 @@ import structures.basic.Unit;
 public class GameState {
 
 	// Game status flags
-	public boolean gameInitialised = false;
-	public boolean end = false;
-	public boolean ignoreEvent = false;
+	private boolean gameInitialised = false;
+	private boolean something = false;
+	private boolean end = false;
+	private boolean ignoreEvent = false;
 
 	// Game entities
-	public int playerMode; // 0 - human player; 1 - ai
-	public Player player;
-	public Player ai;
-	public int turn; // Number of turns
-	public Action pendingAction; // Action to perform after a unit stops
-	public Unit activeUnit; // Currently selected unit
+	private int playerMode; // 0 - human player; 1 - ai
+	private Player player;
+	private Player ai;
+	private int turn; // Number of turns
+	private Action pendingAction; // Action to perform after a unit stops
+	private Unit activeUnit; // Currently selected unit
 
 	// 这个变量也是 public Card activeCard; // Currently selected card
 
 	// Collections to track game elements
-	public List<Tile> gameTiles;
-	public List<Unit> playerUnits;
-	public List<Unit> aiUnits;
+	private List<Tile> gameTiles;
+	private List<Unit> playerUnits;
+	private List<Unit> aiUnits;
 	/* 不知道这些变量最后放哪个类，先注释了
 	public List<Card> playerCardDeck;
 	public List<Card> playerCardsAtHand;
@@ -91,12 +92,17 @@ public class GameState {
 	// Method to calculate tiles a unit can move to
 	public List<Tile> tilesUnitCanMoveTo(Unit unit) {
 		List<Tile> accessibleTiles = new ArrayList<>();
-		// A method to calculate the range or reachable tiles
-		int movementRange = 2; // Example range
+		int unitTileX = unit.getPosition().getTilex();
+		int unitTileY = unit.getPosition().getTiley();
+		// Check tiles within 2 steps in any 4 cardinal directions and 1 step diagonally
 		for (Tile tile : gameTiles) {
-			if (Math.abs(tile.getTilex() - unit.getPosition().getTilex()) <= movementRange &&
-					Math.abs(tile.getTiley() - unit.getPosition().getTiley()) <= movementRange) {
-				accessibleTiles.add(tile);
+			int tileX = tile.getTilex();
+			int tileY = tile.getTiley();
+			int diffX = Math.abs(tileX- unitTileX);
+			int diffY = Math.abs(tileY - unitTileY);
+			if ((diffX <= 2 && tileY == unitTileY) || (diffY <= 2 && tileX == unitTileX) ||
+					(diffX == 1 && diffY == 1)){
+				accessibleTile.add(tile);
 			}
 		}
 		return accessibleTiles;
