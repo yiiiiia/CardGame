@@ -41,6 +41,12 @@ public class GameState {
 	public List<Card> aiCardsAtHand;
 	 */
 
+	 public GameState() {
+		gameTiles = new ArrayList<>();
+		playerUnits = new ArrayList<>();
+		aiUnits = new ArrayList<>();
+	}
+
 	// Example method to initialize game state
 	public void initializeGame() {
 		// Initialize tiles, units, players, etc.
@@ -107,6 +113,37 @@ public class GameState {
 		}
 		return accessibleTiles;
 	}
+
+	private boolean isUnitInRange(Unit attacker, Unit target) {
+		int attackerTileX = attacker.getPosition().getTilex();
+		int attackerTileY = attacker.getPosition().getTiley();
+		int targetTileX = target.getPosition().getTilex();
+		int targetTileY = target.getPosition().getTiley();
+
+		return Math.abs(attackerTileX - targetTileX) <= 1
+				&& Math.abs(attackerTileY - targetTileY) <= 1;
+	}
+
+	// Method to combine player and AI units for range checking
+	private List<Unit> getAllUnits() {
+		List<Unit> allUnits = new ArrayList<>();
+		allUnits.addAll(playerUnits);
+		allUnits.addAll(aiUnits);
+		return allUnits;
+	}
+
+	// Method to get units within attack range of a given unit
+	public List<Unit> unitsWithinAttackRange(Unit attacker) {
+		List<Unit> attackableUnits = new ArrayList<>();
+		// Assuming attack range is 1 tile around the attacker for simplicity
+		for (Unit unit : getAllUnits()) {
+			if (isUnitInRange(attacker, unit)) {
+				attackableUnits.add(unit);
+			}
+		}
+		return attackableUnits;
+	}
+
 
 	// Method to check if the game has ended
 	public boolean checkEndCondition() {
