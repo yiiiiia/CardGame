@@ -2,6 +2,9 @@ package structures.basic;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import commands.BasicCommands;
+import structures.GameState;
+import akka.actor.ActorRef;
 
 /**
  * This is a representation of a Unit on the game board.
@@ -165,13 +168,17 @@ public class Unit {
 
 	 }
 	// New method for unit movement
-	public void unitMoving(GameState gamestate, Tile positionTile){
-		// Check if movement is allowed based on the game rules
-		if(this.canMove && !this.stunned){
-			this.setPositionByTile(positionTile);
-			// Set canMove to false to prevente further movement this turn, if applicable
-			this.canMove = false;
-			animate(UnitAnimationType.move); // Set animation to move
+	public void unitMoving(GameState gameState, Tile positionTile) {
+		if (this.canMove && !this.stunned) {
+			// Check if the move is valid based on game rules
+			List<Tile> accessibleTiles = gameState.tilesUnitCanMoveTo(this);
+			if (accessibleTiles.contains(positionTile)) {
+				this.setPositionByTile(positionTile);
+				this.canMove = false; // Prevent further movement this turn
+				this.animation = UnitAnimationType.move;
+				BasicCommands.moveUnitToTile(gameState.getOut(), this, positionTile);
+				BasicCommands.playUnitAnimation(gameState.getOut(), this, UnitAnimationType.move);
+			}
 		}
 	}
 	public void unitAttack(GameState gameState, Unit targetUnit){
