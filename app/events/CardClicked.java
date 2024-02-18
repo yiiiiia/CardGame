@@ -24,7 +24,7 @@ import structures.basic.Unit;
  *
  */
 public class CardClicked implements EventProcessor{
-	public  void PlaceableArea(ActorRef out,GameState gameState,Tile tile,java.util.Map<Tile, Unit> map,int is)//参数需要调整
+	public  void PlaceableArea(ActorRef out,GameState gameState,Tile tile,int is)//参数需要调整
 	{int x=tile.getTilex()-1;
 		int y=tile.getTiley()-1;
 		for(int i=0;i<3;i++)
@@ -44,31 +44,47 @@ public class CardClicked implements EventProcessor{
 	}
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
-		if(gameState.game_status.equals(Status.AI))
-		{
-			
-		}
-		else
-		{
+		
+		
 			int handPosition = message.get("position").asInt();
 			int pos=handPosition-1;
-			BasicCommands.drawCard(out, gameState.players[0].getCard()[pos], handPosition, 1);
-		if(gameState.players[0].getCard()[pos].isCreature())
+			BasicCommands.drawCard(out, gameState.players[0].getCard().get(pos), handPosition, 1);
+		if(gameState.players[0].getCard().get(pos).isCreature())
 			{for(Tile cur:gameState.players[0].getUnit().keySet())
 		{
-			PlaceableArea(out,gameState,cur,gameState.players[0].getUnit(),1);
+			PlaceableArea(out,gameState,cur,1);
 			
 		}
 			}
 		
 		else
-		{for(Tile cur:gameState.players[1].getUnit().keySet())
+		{String name=gameState.players[0].getCard().get(pos).getCardname();
+		
+		switch(name)
+		{
+		case "DarkTerminus":for(Tile cur:gameState.players[1].getUnit().keySet())
 		{
 			BasicCommands.drawTile(out, cur, 2);
 		}
+		break;
+		
+		case "WraithlingSwarm":
+			for(Tile cur:gameState.players[0].getUnit().keySet())
+			{
+				PlaceableArea(out,gameState,cur,1);
+				
+			}
+			//To do，召唤生物
+			break;
+			
+		case "HornoftheForsaken":
+			//显示Avatar位置
+			break;
+		
+		}
 			
 		}
-		}
+		
 		
 		
 		
