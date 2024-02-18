@@ -181,18 +181,26 @@ public class Unit {
 			}
 		}
 	}
-	public void unitAttack(GameState gameState, Unit targetUnit){
-		if (!this.stunned){
-			// Apply attack damage to target unit
-			int newHealth = targetUnit.getHealth() - this.attack;
-			targetUnit.setHealth(newHealth > 0 ? newHealth : 0); // Ensure health dose not go below 0
-			// Check if the target unit is defeated
-			if (targetUnit.getHealth() <= 0){
-				gameState.removeUnit(targetUnit);
+	// New method for unit attack, considering attack range and movement restrictions
+	public void unitAttack(GameState gameState, Unit targetUnit) {
+		if (!this.stunned && this.canMove) {
+			List<Unit> attackableUnits = gameState.unitsWithinAttackRange(this);
+			if (attackableUnits.contains(targetUnit)) {
+				int newHealth = targetUnit.getHealth() - this.attack;
+				targetUnit.setHealth(Math.max(newHealth, 0)); // Ensure health does not go below 0
+
+				if (targetUnit.getHealth() <= 0) {
+					gameState.removeUnit(targetUnit);
+					// You may need to implement or call removeUnit method in GameState
+					BasicCommands.playUnitAnimation(gameState.getOut(), targetUnit, UnitAnimationType.death);
+				} else {
+					// If the target unit survives, it should not move in this turn
+					targetUnit.setCanMove(false);
+				}
+
+				this.canMove = false; // This unit cannot move after attacking
+				BasicCommands.playUnitAnimation(gameState.getOut(), this, UnitAnimationType.attack);
 			}
-			// After attacking, this unit may not be able to move
-			this.canMove = false;
-			animate(UnitAnimationType.attack); // Set animation to attack
 		}
 	}
 
