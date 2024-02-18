@@ -1,102 +1,152 @@
 package events;
 
+import akka.stream.impl.FanOut;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import akka.actor.ActorRef;
+import commands.BasicCommands;
 import demo.CommandDemo;
 import demo.Loaders_2024_Check;
 import structures.GameState;
+import structures.basic.*;
+import structures.basic.card.*;
+import utils.BasicObjectBuilders;
+import utils.OrderedCardLoader;
+import utils.StaticConfFiles;
+
+import java.util.*;
 
 /**
  * Indicates that both the core game loop in the browser is starting, meaning
  * that it is ready to recieve commands from the back-end.
- * 
- * { 
- *   messageType = “initalize”
+ * <p>
+ * {
+ * messageType = “initalize”
  * }
- * 
- * @author Dr. Richard McCreadie
  *
+ * @author Dr. Richard McCreadie
  */
-public class Initalize implements EventProcessor{
+public class Initalize implements EventProcessor {
 
-	@Override
-	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
-		// hello this is a change
-		
-		gameState.gameInitalised = true;
-		
-		gameState.something = true;
-		
-		// User 1 makes a change
-		//CommandDemo.executeDemo(out); // this executes the command demo, comment out this when implementing your solution
-		//Loaders_2024_Check.test(out);
+    @Override
+    public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
+        // hello this is a change
 
-		 //new
+        gameState.gameInitalised = true;
 
-        //player
-        gameState.playerMode = 0;
-        gameState.player = new Player(20,2);
-        gameState.ai = new AI(20,2);
+        gameState.something = true;
+
+        // User 1 makes a change
+        //CommandDemo.executeDemo(out); // this executes the command demo, comment out this when implementing your solution
+        //Loaders_2024_Check.test(out);
+
+        //new
+        //Turn Initialization
+        gameState.setTurn(1);
+
+        //PlayerMode Initialization
+        gameState.setPlayerMode(0);
+
+        //Players Initialization
+        playersInitialization(out, gameState);
+
+        //Board Initialization
+        boardInitialization(out, gameState);
+
+        //Avatars Initialization
+        avatarsInitialization(out, gameState);
+
+        //Deck Initialization
+        deckInitialization(gameState);
+
+        //Cards Initialization
+        cardsInitialization(out, gameState);
+
+
+    }
+
+
+    private void playersInitialization(ActorRef out, GameState gameState) {
+        Player player = new Player(20, 2);
+        gameState.setPlayer(player);
+        AI ai = new AI(20, 2);
+        gameState.setAi(ai);
+
         //mana and health visualization
-        BasicCommands.setPlayer1Mana(out,gameState.player);
-        BasicCommands.setPlayer1Health(out,gameState.player);
-        BasicCommands.setPlayer2Health(out,gameState.ai);
+        BasicCommands.setPlayer1Mana(out, gameState.getUserPlayer());
+        BasicCommands.setPlayer1Health(out, gameState.getAiPlayer());
+        BasicCommands.setPlayer2Health(out, gameState.getAiPlayer());
+    }
 
+    private void boardInitialization(ActorRef out, GameState gameState) {
+        Tile[][] gameTiles = new Tile[9][5];
+        gameState.setGameTiles(gameTiles);
+        for (int i = 0; i < gameTiles.length; i++) {
+            for (int j = 0; j < gameTiles[0].length; j++) {
+                gameState.getGameTiles()[i][j] = BasicObjectBuilders.loadTile(i, j);
+                BasicCommands.drawTile(out, gameState.getGameTiles()[i][j], 0);
+            }
+        }
+    }
 
-
-        //tile
-        gameState.gameTiles = new Tile[9][5];
-        for (int i = 0; i < gameState.gameTiles.length; i++) {
-            for (int j = 0; j < gameState.gameTiles[0].length; j++) {
-                gameState.gameTiles[i][j] = BasicObjectBuilders.loadTile(i, j);
-                BasicCommands.drawTile(out, gameState.gameTiles[i][j], 0);
+    private void avatarsInitialization(ActorRef out, GameState gameState) {
+        //generate two values of id for each player
+        Random random = new Random();
+        List<Integer> ids = new ArrayList<>();
+        while (ids.size() < 2) {
+            int generatedId = random.nextInt(100 - 40 + 1) + 40;
+            if (!ids.contains(generatedId)) {
+                ids.add(generatedId);
             }
         }
 
-        //unit
-        //create human avatars
-        Unit humanAvatar = BasicObjectBuilders.loadUnit(StaticConfFiles.humanAvatar, 50, Unit.class);
-        humanAvatar.setPositionByTile(gameState.gameTiles[1][2]);
-        BasicCommands.drawUnit(out, humanAvatar, gameState.gameTiles[1][2]);
-        gameState.player.m_unit.put(gameState.gameTiles[1][2],humanAvatar);
+        //create human avatar
+        Unit humanAvatar = BasicObjectBuilders.loadUnit(StaticConfFiles.humanAvatar, ids.get(0), Unit.class);
+        humanAvatar.setPositionByTile(gameState.getGameTiles()[1][2]);
+        BasicCommands.drawUnit(out, humanAvatar, gameState.getGameTiles()[1][2]);
+        gameState.getUserPlayer().getAllUnits().put(gameState.getGameTiles()[1][2], humanAvatar);
         //create ai avatar
-        Unit aiAvatar = BasicObjectBuilders.loadUnit(StaticConfFiles.aiAvatar, 51, Unit.class);
-        aiAvatar.setPositionByTile(gameState.gameTiles[7][2]);
-        BasicCommands.drawUnit(out, aiAvatar, gameState.gameTiles[7][2]);
-        gameState.ai.m_unit.put(gameState.gameTiles[7][2],aiAvatar);
-        try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}
+        Unit aiAvatar = BasicObjectBuilders.loadUnit(StaticConfFiles.aiAvatar, ids.get(1), Unit.class);
+        aiAvatar.setPositionByTile(gameState.getGameTiles()[7][2]);
+        BasicCommands.drawUnit(out, aiAvatar, gameState.getGameTiles()[7][2]);
+        gameState.getAiPlayer().getAllUnits().put(gameState.getGameTiles()[7][2], aiAvatar);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         //setUnitAttack
         BasicCommands.setUnitAttack(out, humanAvatar, 2);
         BasicCommands.setUnitAttack(out, aiAvatar, 2);
         //setUnitHealth
         BasicCommands.setUnitHealth(out, humanAvatar, 20);
         BasicCommands.setUnitHealth(out, aiAvatar, 20);
-        System.out.println("test");
+    }
 
-        //deck
-        System.out.println("deck");
-        gameState.player.playerCardsRemain = OrderedCardLoader.getPlayer1Cards(2);
-        gameState.ai.playerCardsRemain = OrderedCardLoader.getPlayer2Cards(2);
-        //TODO: should be convert to the sub classes of card
+    private void deckInitialization(GameState gameState) {
+        gameState.getUserPlayer().setCardsRemain(OrderedCardLoader.getPlayer1Cards(2));
+        gameState.getAiPlayer().setCardsRemain(OrderedCardLoader.getPlayer2Cards(2));
+    }
 
-        //draw three cards for human, and show them
+
+    private void cardsInitialization(ActorRef out, GameState gameState) {
         Random r = new Random();
+        //draw three cards for human, and show them
         for (int i = 0; i < 3; i++) {
-            int randomIndex = r.nextInt(gameState.player.playerCardsRemain.size());
-            Card drawnCard=gameState.player.playerCardsRemain.get(randomIndex);
-            gameState.player.playerCardsAtHand.add(drawnCard);
+            int randomIndex = r.nextInt(gameState.getUserPlayer().getCardsRemain().size());
+            Card drawnCard = gameState.getUserPlayer().getCardsRemain().get(randomIndex);
+            gameState.getUserPlayer().getHandCard().add(drawnCard);
             BasicCommands.drawCard(out, drawnCard, i + 1, 0);
-            gameState.player.playerCardsRemain.remove(randomIndex);
+            gameState.getUserPlayer().getCardsRemain().remove(randomIndex);
         }
         //draw three cards for ai
         for (int i = 0; i < 3; i++) {
-            int randomIndex = r.nextInt(gameState.ai.playerCardsRemain.size());
-            Card drawnCard=gameState.ai.playerCardsRemain.get(randomIndex);
-            gameState.ai.playerCardsAtHand.add(drawnCard);
-            gameState.ai.playerCardsRemain.remove(randomIndex);
+            int randomIndex = r.nextInt(gameState.getAiPlayer().getCardsRemain().size());
+            Card drawnCard = gameState.getAiPlayer().getCardsRemain().get(randomIndex);
+            gameState.getAiPlayer().getHandCard().add(drawnCard);
+            gameState.getAiPlayer().getCardsRemain().remove(randomIndex);
         }
-	}
+    }
 
 }
 
