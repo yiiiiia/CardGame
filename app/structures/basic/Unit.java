@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import commands.BasicCommands;
 import structures.GameState;
 import akka.actor.ActorRef;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This is a representation of a Unit on the game board.
@@ -203,6 +206,37 @@ public class Unit {
 			}
 		}
 	}
+
+	public void highlightAttackOptions(GameState gameState) {
+		Set<Unit> enemiesInRange = new HashSet<>();
+		Set<Tile> highlightedTiles = new HashSet<>();
+
+		// Directly attackable enemies
+		List<Unit> directlyAttackable = gameState.unitsWithinAttackRange(this);
+		enemiesInRange.addAll(directlyAttackable);
+
+		// Potential enemies attackable after moving
+		List<Tile> accessibleTiles = gameState.tilesUnitCanMoveTo(this);
+		for (Tile tile : accessibleTiles) {
+			// Simulate attack range from each accessible tile without actually moving the unit
+			List<Unit> attackableAfterMove = gameState.simulatedUnitsWithinAttackRange(this, tile);
+			enemiesInRange.addAll(attackableAfterMove);
+		}
+
+		// Highlight tiles for directly attackable enemies and those attackable after simulated move
+		for (Unit enemy : enemiesInRange) {
+			Tile enemyTile = gameState.getTileByPos(enemy.getPosition().getTilex(), enemy.getPosition().getTiley());
+			highlightedTiles.add(enemyTile);
+		}
+
+		// Use game engine's method to highlight tiles (assuming BasicCommands.drawTile for demonstration)
+		for (Tile tile : highlightedTiles) {
+			BasicCommands.drawTile(gameState.getOut(), tile, 2); // Assuming mode 2 is for highlighting
+		}
+	}
+
+
+
 
 	/**
 	 * This command sets the position of the Unit to a specified
