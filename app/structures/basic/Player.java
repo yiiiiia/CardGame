@@ -17,10 +17,10 @@ public class Player {
 	private int m_health;
 	private int m_mana;
 	private int m_maxHandCard;
-	private int m_numHandCard;
+
 	private ArrayList<Unit> m_allUnit;//可召唤的所有生物
 	private  Map<Tile,Unit> m_unit;//现在场上的单位
-	private Card[] m_handCard;//现在的手牌
+	private List<Card> m_handCard;//现在的手牌
 	private List<Card> m_cardsRemain;//牌库剩余的牌
 	
 	
@@ -30,10 +30,10 @@ public class Player {
 		this.m_health = health;
 		this.m_mana = mana;
 		this.m_maxHandCard=6;
-		this.m_numHandCard=0;
+		
 		m_allUnit=new ArrayList<Unit>();
 		m_unit=new HashMap<Tile,Unit>();
-		m_handCard=new Card[this.m_maxHandCard];
+		m_handCard=new ArrayList<Card>();
 		m_cardsRemain=new ArrayList<Card>();
 	}
 	public Player(int health, int mana,int maxhandcard) {
@@ -41,15 +41,15 @@ public class Player {
 		this.m_health = health;
 		this.m_mana = mana;
 		this.m_maxHandCard=maxhandcard;
-		this.m_numHandCard=0;
+		
 		m_allUnit=new ArrayList<Unit>();
 		m_unit=new HashMap<Tile,Unit>();
-		m_handCard=new Card[maxhandcard];
+		m_handCard=new ArrayList<Card>();
 		m_cardsRemain=new ArrayList<Card>();
 	}
 	
 	public int getNumCard()
-	{return this.m_numHandCard;}
+	{return this.m_handCard.size();}
 	
 	public Map<Tile,Unit> getUnit()
 	{return this.m_unit;}
@@ -77,7 +77,7 @@ public class Player {
 		this.m_mana-=mana;
 	}
 	
-	public  Card[] getCard()
+	public  List<Card> getCard()
 	{
 		return this.m_handCard;
 	}
@@ -89,9 +89,10 @@ public class Player {
 	{this.m_unit.remove(tile);}
 	
 	public void addHandCard(Card card)
-	{if(this.m_numHandCard>=this.m_maxHandCard)
+	{if(this.m_handCard.size()>=this.m_maxHandCard)
 	{return;}
-		m_handCard[this.m_numHandCard++]=card;//手牌+1，牌库-1；
+		//手牌+1，牌库-1；
+	m_handCard.add(card);
 		m_cardsRemain.remove(card);
 	}
 	
