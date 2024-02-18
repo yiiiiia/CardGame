@@ -144,6 +144,11 @@ public class GameState {
 		return attackableUnits;
 	}
 
+	public List<Unit> simulatedUnitsWithinAttackRange(Unit unit, Tile tile) {
+		// This should simulate the unit being on the specified tile and calculate the attack range accordingly
+		// without actually changing the unit's position.
+	}
+
 
 	// Method to check if the game has ended
 	public boolean checkEndCondition() {
