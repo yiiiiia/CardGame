@@ -144,9 +144,30 @@ public class GameState {
 		return attackableUnits;
 	}
 
-	public List<Unit> simulatedUnitsWithinAttackRange(Unit unit, Tile tile) {
-		// This should simulate the unit being on the specified tile and calculate the attack range accordingly
-		// without actually changing the unit's position.
+	public List<Unit> simulatedUnitsWithinAttackRange(Unit unit, Tile simulatedTile) {
+		List<Unit> unitsWithinRange = new ArrayList<>();
+
+		// Get a list of all units, both player and AI units
+		List<Unit> allUnits = new ArrayList<>();
+		allUnits.addAll(playerUnits);
+		allUnits.addAll(aiUnits);
+
+		for (Unit potentialTarget : allUnits) {
+			if (potentialTarget == unit) continue; // skip over itself
+
+			// Calculation of cardinal and diagonal distances between potential target units and simulated tiles
+			int deltaX = Math.abs(potentialTarget.getPosition().getTilex() - simulatedTile.getTilex());
+			int deltaY = Math.abs(potentialTarget.getPosition().getTiley() - simulatedTile.getTiley());
+			int distance = Math.max(deltaX, deltaY);
+
+			// Determine whether a potential target is within range of an attack
+			if ((distance == 1 && deltaX + deltaY == 1) || 
+					(distance <= 2 && deltaX + deltaY != 2)) { 
+				unitsWithinRange.add(potentialTarget);
+			}
+		}
+
+		return unitsWithinRange;
 	}
 
 
