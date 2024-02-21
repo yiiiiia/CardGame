@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
+import structures.basic.Card;
+
 import java.util.*;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -25,17 +27,21 @@ public class EndTurnClicked implements EventProcessor{
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
 		//ignorePlayerAction
-		gameState.setIgnoreEvent(true);
+		gameState.setIgnoreEvent(true); //from GameState class
+
 		//clearMana
-		gameState.getAllPlayer[0].setMana(0);
+		gameState.getUserPlayer().setMana(0); //from Player class
+
 		//drawCard
-		Random random = new Random(gameState.getAllPlayer[0].getcardsRemain().size());
-		List<Card> cardRemain = gameState.getAllPlayer[0].getCardsRemain();
-		if(cardRemain < 6) {
-			BasicCommands.drawCard(out, cardRemain.get(random.nextInt(cardRemain.size())), cardRemain.size() + 1, 0);
-		}
+		Random random = new Random();
+		int r = random.nextInt(gameState.getUserPlayer().getCardRemain().size());
+		//or int r = random.nextInt(gameState.getplayerCardDeck().size());
+		
+		gameState.getUserPlayer().addHandCard(); //from Player class
+		
 		//setAIAsActivePlayer
-		gameState.setAIAsActivePlayer();
+		gameState.setPlayerMode(1);
+		//gameState.setAIAsActivePlayer(); 
 
 	}
 
