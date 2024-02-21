@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import commands.BasicCommands;
 import structures.GameState;
-import akka.actor.ActorRef;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 
 /**
  * This is a representation of a Unit on the game board.
@@ -149,27 +149,6 @@ public class Unit {
 		this.attack = attack;
 	}
 
-	// Method to play specific animation
-	private void playAnimation(UnitAnimationType animationType){
-		UnitAnimation animation = this.animations.getAnimationByType(animationType);
-		if(animation != null){
-			// A method in the game engine to play animations
-		}
-		System.out.println("Playing animation: " + animationType);
-	} else {
-		System.out.println("Animation for type " + animationType + " not found.");
-	}
-}
-
-	public void animate(UnitAnimationType type){
-		this.animation = type;
-		if (type == UnitAnimationType.move) {
-			playAnimation(this.animations.getMove());
-		}
-	}
-	 public UnitAnimation getAnimationByType(UnitAnimationType animationType){
-
-	 }
 	// New method for unit movement
 	public void unitMoving(GameState gameState, Tile positionTile) {
 		if (this.canMove && !this.stunned) {
@@ -184,6 +163,7 @@ public class Unit {
 			}
 		}
 	}
+
 	// New method for unit attack, considering attack range and movement restrictions
 	public void unitAttack(GameState gameState, Unit targetUnit) {
 		if (!this.stunned && this.canMove) {
@@ -204,6 +184,19 @@ public class Unit {
 				this.canMove = false; // This unit cannot move after attacking
 				BasicCommands.playUnitAnimation(gameState.getOut(), this, UnitAnimationType.attack);
 			}
+		}
+	}
+
+	public void moveAndAttack(Tile targetTile, Unit targetUnit, GameState gameState) {
+		if (!this.canMove || this.stunned) return; // Check if the unit is able to move or is stunned
+		// Move the unit
+		gameState.moveUnitToTile(this, targetTile);
+		this.setPosition(targetTile.getPosition()); // Update unit's position
+		this.canMove = false; // Prevent further movement
+
+		// Attack if the target unit is within range after moving
+		if (gameState.isUnitWithinAttackRange(this, targetUnit)) {
+			this.attackUnit(targetUnit, gameState);
 		}
 	}
 
@@ -235,8 +228,10 @@ public class Unit {
 		}
 	}
 
-
-
+	// Method to play specific animation
+	public void updateAnimation(GameState gameState, UnitAnimationType animationType) {
+		gameState.triggerUnitAnimation(this, animationType);
+	}
 
 	/**
 	 * This command sets the position of the Unit to a specified
