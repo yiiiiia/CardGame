@@ -34,18 +34,15 @@ public class Initalize implements EventProcessor {
 
         gameState.gameInitalised = true;
 
-        gameState.something = true;
-
         // User 1 makes a change
         //CommandDemo.executeDemo(out); // this executes the command demo, comment out this when implementing your solution
         //Loaders_2024_Check.test(out);
 
-        //new
         //Turn Initialization
         gameState.setTurn(1);
 
         //PlayerMode Initialization
-        gameState.setPlayerMode(0);
+        gameState.setPlayerMode(gameState.HUMAN_MODE);
 
         //Players Initialization
         playersInitialization(out, gameState);
@@ -61,8 +58,6 @@ public class Initalize implements EventProcessor {
 
         //Cards Initialization
         cardsInitialization(out, gameState);
-
-
     }
 
 
@@ -102,19 +97,30 @@ public class Initalize implements EventProcessor {
 
         //create human avatar
         Unit humanAvatar = BasicObjectBuilders.loadUnit(StaticConfFiles.humanAvatar, ids.get(0), Unit.class);
+        humanAvatar.setHealth(20);
+        humanAvatar.setAttack(2);
+        //place human avatar
         humanAvatar.setPositionByTile(gameState.getGameTiles()[1][2]);
         BasicCommands.drawUnit(out, humanAvatar, gameState.getGameTiles()[1][2]);
+        //add human avatar to player's allUnits map
         gameState.getUserPlayer().getAllUnits().put(gameState.getGameTiles()[1][2], humanAvatar);
+        //set human avatar to the tile
+        gameState.getGameTiles()[1][2].setUnit(humanAvatar);
+
         //create ai avatar
         Unit aiAvatar = BasicObjectBuilders.loadUnit(StaticConfFiles.aiAvatar, ids.get(1), Unit.class);
+        aiAvatar.setHealth(20);
+        aiAvatar.setAttack(2);
+        //place ai avatar
         aiAvatar.setPositionByTile(gameState.getGameTiles()[7][2]);
         BasicCommands.drawUnit(out, aiAvatar, gameState.getGameTiles()[7][2]);
+        //add ai avatar to ai's allUnits map
         gameState.getAiPlayer().getAllUnits().put(gameState.getGameTiles()[7][2], aiAvatar);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        //set ai avatar to the tile
+        gameState.getGameTiles()[1][2].setUnit(aiAvatar);
+
+        gameState.sleepMilliseconds(2000);
+        
         //setUnitAttack
         BasicCommands.setUnitAttack(out, humanAvatar, 2);
         BasicCommands.setUnitAttack(out, aiAvatar, 2);
