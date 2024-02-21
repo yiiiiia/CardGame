@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import structures.basic.Player;
 import structures.basic.Tile;
 import structures.basic.Unit;
+import akka.actor.ActorRef;
+import commands.BasicCommands;
 
 /**
  * This class can be used to hold information about the on-going game.
@@ -19,6 +21,7 @@ public class GameState {
 	private boolean something = false;
 	private boolean end = false;
 	private boolean ignoreEvent = false;
+	private ActorRef out;
 
 	// Game entities
 	private int playerMode; // 0 - human player; 1 - ai
@@ -28,20 +31,20 @@ public class GameState {
 	private Action pendingAction; // Action to perform after a unit stops
 	private Unit activeUnit; // Currently selected unit
 
-	// 这个变量也是 public Card activeCard; // Currently selected card
+	// 这个变量也是 private Card activeCard; // Currently selected card
 
 	// Collections to track game elements
 	private List<Tile> gameTiles;
 	private List<Unit> playerUnits;
 	private List<Unit> aiUnits;
 	/* 不知道这些变量最后放哪个类，先注释了
-	public List<Card> playerCardDeck;
-	public List<Card> playerCardsAtHand;
-	public List<Card> aiCardDeck;
-	public List<Card> aiCardsAtHand;
+	private List<Card> playerCardDeck;
+	private List<Card> playerCardsAtHand;
+	private List<Card> aiCardDeck;
+	private List<Card> aiCardsAtHand;
 	 */
 
-	 public GameState() {
+	public GameState() {
 		gameTiles = new ArrayList<>();
 		playerUnits = new ArrayList<>();
 		aiUnits = new ArrayList<>();
@@ -61,8 +64,8 @@ public class GameState {
 	}
 
 	// Method to retrieve a Tile by its position
-	public Tile getTileByPos(int tilex, int tiley){
-		for (Tilr tile : gameTiles) {
+	public Tile getTileByPos(int tilex, int tiley) {
+		for (Tile tile : gameTiles) {
 			if (tile.getTilex() == tilex && tile.getTileY() == tiley) {
 				return tile;
 			}
@@ -71,7 +74,7 @@ public class GameState {
 	}
 
 	// Method to get the user player
-	public Player getUserPlayer(){
+	public Player getUserPlayer() {
 		return player;
 	}
 
@@ -104,11 +107,11 @@ public class GameState {
 		for (Tile tile : gameTiles) {
 			int tileX = tile.getTilex();
 			int tileY = tile.getTiley();
-			int diffX = Math.abs(tileX- unitTileX);
+			int diffX = Math.abs(tileX - unitTileX);
 			int diffY = Math.abs(tileY - unitTileY);
 			if ((diffX <= 2 && tileY == unitTileY) || (diffY <= 2 && tileX == unitTileX) ||
-					(diffX == 1 && diffY == 1)){
-				accessibleTile.add(tile);
+					(diffX == 1 && diffY == 1)) {
+				accessibleTiles.add(tile);
 			}
 		}
 		return accessibleTiles;
@@ -161,14 +164,66 @@ public class GameState {
 			int distance = Math.max(deltaX, deltaY);
 
 			// Determine whether a potential target is within range of an attack
-			if ((distance == 1 && deltaX + deltaY == 1) || 
-					(distance <= 2 && deltaX + deltaY != 2)) { 
+			if ((distance == 1 && deltaX + deltaY == 1) ||
+					(distance <= 2 && deltaX + deltaY != 2)) {
 				unitsWithinRange.add(potentialTarget);
 			}
 		}
 
 		return unitsWithinRange;
 	}
+
+	public void moveUnitToTile(Unit unit, Tile tile) {
+		BasicCommands.moveUnitToTile(out, unit, tile);
+	}
+
+	public boolean isUnitWithinAttackRange(Unit attacker, Unit target) {
+		// Implement attack range logic
+		return unitsWithinAttackRange(attacker).contains(target);
+	}
+
+	public void applyStun(Unit unit) {
+		unit.setStunned(true);
+	}
+
+	public void attackUnit(Unit attacker, Unit target) {
+		int newHealth = target.getHealth() - attacker.getAttack();
+		target.setHealth(newHealth);
+		updateUnitHealth(target);
+		if (newHealth <= 0) {
+			removeUnit(target); // Remove from the board
+		} else {
+			counterAttack(target, attacker); // Counterattack if alive
+		}
+	}
+
+	private void counterAttack(Unit defender, Unit attacker) {
+		if (defender.getHealth() > 0) {
+			int newHealth = attacker.getHealth() - defender.getAttack();
+			attacker.setHealth(newHealth);
+			updateUnitHealth(attacker);
+			if (newHealth <= 0) {
+				removeUnit(attacker); // Remove attacker if health drops to 0
+			}
+		}
+	}
+
+	// Add method to trigger update of unit animation
+	public void triggerUnitAnimation(Unit unit, UnitAnimationType animationType) {
+		BasicCommands.playUnitAnimation(out, unit, animationType);
+	}
+
+	public void updateUnitHealth(Unit unit) {
+		BasicCommands.setUnitHealth(out, unit, unit.getHealth());
+	}
+
+	public void removeUnit(Unit unit) {
+		playerUnits.remove(unit);
+		aiUnits.remove(unit);
+		BasicCommands.deleteUnit(out, unit);
+	}
+
+
 
 
 	// Method to check if the game has ended
