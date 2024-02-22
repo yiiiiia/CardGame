@@ -18,7 +18,6 @@ public class GameState {
 
 	// Game status flags
 	private boolean gameInitialised = false;
-	private boolean something = false;
 	private boolean end = false;
 	private boolean ignoreEvent = false;
 	private ActorRef out;
