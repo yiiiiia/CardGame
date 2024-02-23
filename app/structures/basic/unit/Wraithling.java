@@ -13,22 +13,13 @@ import structures.basic.UnitAnimationType;
 
 public class Wraithling extends Unit {
 
+    private int health;
+    private int attack;
+
     public Wraithling() {
-        //assume the id for wraithling is 8
-        super(8, UnitAnimationType.idle, ImageCorrection.getDefaultCorrection(), 1, 1);
+        super();
+        health = 1;
+        attack = 1;
     }
 
-    public Wraithling(int id, UnitAnimationSet animations, ImageCorrection correction, Tile currentTile) {
-        super(id, animations, correction, currentTile, 1, 1);
-    }
-
-    public Wraithling(int id, UnitAnimationType animation, Position position, UnitAnimationSet animations,
-                      ImageCorrection correction) {
-        super(id, animation, position, animations, correction, 1, 1);
-    }
-
-    public Wraithling(int id, UnitAnimationSet animations, ImageCorrection correction, int health, int attack) {
-        super(id, animations, correction, health, attack);
-    }
-    
 }
