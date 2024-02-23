@@ -308,7 +308,7 @@ private boolean checkDiagonalPathBlocked(Tile startTile, Tile endTile, int stepX
 
 	// Method to handle player actions
 	public void setPendingAction(Action action) {
-    this.pendingAction = action;
+		this.pendingAction = action;
 }
 
 	// Additional methods and logic as needed...
