@@ -28,12 +28,12 @@ public class Heartbeat implements EventProcessor{
 		//GameEnd
 		String gameEndText;
 
-		if(gameState.end) {
+		if(gameState.checkEndCondition()) {
 
-			if(gameState.getAllPlayer[0].getHealth() <= 0) {
-				gameEndText = "You win!";
+			if(gameState.getUserPlayer().getHealth() <= 0) {
+				gameEndText = "You win";
 			}else {
-				gameEndText = "You lose!";
+				gameEndText = "You lose";
 			}
 			BasicCommands.addPlayer1Notification(out, gameEndText, 2);
 			gameState.gameInitalised = false;
