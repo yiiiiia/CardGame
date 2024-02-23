@@ -8,37 +8,40 @@ import structures.basic.Tile;
 import structures.basic.Unit;
 import structures.basic.UnitAnimationType;
 import structures.basic.unit.Wraithling;
+import utils.BasicObjectBuilders;
+import utils.StaticConfFiles;
 
 import java.util.List;
 import java.util.Random;
 
 public class HornOfTheForsakenCard extends Card {
 
-    public void artifact3 (ActorRef out, GameState gameState) {
-        int robustness = 3;
-        Unit avatar = gameState.getPlayerUnit().get(0);
-        final int currentHp = avatar.getHealth();
-        for(int i=0;i>robustness;) {
-            //if the avatar attack (should be in avatar unit?
-            if(avatar.equals(gameState.getActiveUnit())) {
-                List<Tile> emptyTile = checkEmptyTiles(out, gameState);
-                if (emptyTile.size()>0) {
-                    spawnWraithlings(out, gameState, emptyTile);
-                }
-            }
-            //not solving if the attack > avatar health
-            if(avatar.getHealth()<currentHp) {
-                avatar.setHealth(currentHp);
-                i++;
-            }
-        }
-    }
+    //maybe putting it to GameState
+    // public void artifact3 (ActorRef out, GameState gameState) {
+    //     int robustness = 3;
+    //     Unit avatar = gameState.getPlayerUnit().get(0);
+    //     final int currentHp = avatar.getHealth();
+    //     for(int i=0;i>robustness;) {
+    //         //if the avatar attack (should be in avatar unit?
+    //         if(avatar.equals(gameState.getActiveUnit())) {
+    //             List<Tile> emptyTile = checkEmptyTiles(out, gameState);
+    //             if (emptyTile.size()>0) {
+    //                 spawnWraithlings(out, gameState, emptyTile);
+    //             }
+    //         }
+    //         if(avatar.getHealth()<currentHp) {
+    //             avatar.setHealth(currentHp);
+    //             i++;
+    //         }
+    //     }
+    // }
 
     //summon a wraithling on a random tile if available
-    public void spawnWraithlings (ActorRef out, GameState gameState, List<Tile> emptyTiles) {
+    public void spawnWraithling (ActorRef out, GameState gameState, List<Tile> emptyTiles) {
         Random r = new Random();
         int randomTile = r.nextInt(emptyTiles.size());
         Wraithling wraithling = new Wraithling();
+        //Wraithling wraithling = BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Unit.class);
         wraithling.setPositionByTile(emptyTiles.get(randomTile));
         BasicCommands.drawUnit(out, wraithling, emptyTiles.get(randomTile));
         gameState.getPlayerUnits().put(emptyTiles.get(randomTile), wraithling);
@@ -49,7 +52,7 @@ public class HornOfTheForsakenCard extends Card {
         List<Tile> emptyTiles = gameState.getAllTiles();
         for(Tile tile: emptyTiles) {
             if(tile.getUnit()!=null) {
-            emptyTiles.remove(tile);
+                emptyTiles.remove(tile);
             }
         }
         return emptyTiles;
