@@ -17,6 +17,8 @@ import commands.BasicCommands;
 public class GameState {
 
 	// Game status flags
+	public static final int rows = 5; // 5 rows
+	public static final int cols = 9; // 9 columns
 	private boolean gameInitialised = false;
 	private boolean end = false;
 	private boolean ignoreEvent = false;
@@ -29,25 +31,26 @@ public class GameState {
 	private int turn; // Number of turns
 	private Action pendingAction; // Action to perform after a unit stops
 	private Unit activeUnit; // Currently selected unit
-
-	// 这个变量也是 private Card activeCard; // Currently selected card
+	private Card activateCard;
 
 	// Collections to track game elements
 	private List<Tile> gameTiles;
-	private List<Unit> playerUnits;
-	private List<Unit> aiUnits;
-	/* 不知道这些变量最后放哪个类，先注释了
-	private List<Card> playerCardDeck;
-	private List<Card> playerCardsAtHand;
-	private List<Card> aiCardDeck;
-	private List<Card> aiCardsAtHand;
-	 */
+	private Tile[][] gameTiles;
+
 
 	public GameState() {
 		gameTiles = new ArrayList<>();
 		playerUnits = new ArrayList<>();
 		aiUnits = new ArrayList<>();
-	}
+		 // Dimensions of the game board
+		 gameTiles = new Tile[rows][cols];
+		 // Initialize each Tile object
+		 for (int i = 0; i < rows; i++) {
+			 for (int j = 0; j < cols; j++) {
+				 gameTiles[i][j] = new Tile(j, i);
+				 }
+				 }
+				 }
 
 	// Example method to initialize game state
 	public void initializeGame() {
@@ -64,13 +67,12 @@ public class GameState {
 
 	// Method to retrieve a Tile by its position
 	public Tile getTileByPos(int tilex, int tiley) {
-		for (Tile tile : gameTiles) {
-			if (tile.getTilex() == tilex && tile.getTileY() == tiley) {
-				return tile;
-			}
-		}
-		return null; //Tile not found
-	}
+    if (tiley >= 0 && tiley < gameTiles.length && 
+	tilex >= 0 && tilex < gameTiles[tiley].length) {
+        return gameTiles[tiley][tilex];
+    }
+    return null; // Tile not found or out of bounds
+}
 
 	// Method to get the user player
 	public Player getUserPlayer() {
@@ -92,6 +94,14 @@ public class GameState {
 		this.activeUnit = unit;
 	}
 
+	public Card getActiveCard() {
+        return activeCard;
+    }
+	
+	public void setActiveCard(Card activeCard) {
+        this.activeCard = activeCard;
+    }
+
 	// Method to get all tiles
 	public List<Tile> getAllTiles() {
 		return gameTiles;
@@ -99,22 +109,87 @@ public class GameState {
 
 	// Method to calculate tiles a unit can move to
 	public List<Tile> tilesUnitCanMoveTo(Unit unit) {
-		List<Tile> accessibleTiles = new ArrayList<>();
-		int unitTileX = unit.getPosition().getTilex();
-		int unitTileY = unit.getPosition().getTiley();
-		// Check tiles within 2 steps in any 4 cardinal directions and 1 step diagonally
-		for (Tile tile : gameTiles) {
-			int tileX = tile.getTilex();
-			int tileY = tile.getTiley();
-			int diffX = Math.abs(tileX - unitTileX);
-			int diffY = Math.abs(tileY - unitTileY);
-			if ((diffX <= 2 && tileY == unitTileY) || (diffY <= 2 && tileX == unitTileX) ||
-					(diffX == 1 && diffY == 1)) {
-				accessibleTiles.add(tile);
-			}
-		}
-		return accessibleTiles;
-	}
+    List<Tile> accessibleTiles = new ArrayList<>();
+    int unitTileX = unit.getPosition().getTilex();
+    int unitTileY = unit.getPosition().getTiley();
+
+    for (int i = 0; i < gameTiles.length; i++) {
+        for (int j = 0; j < gameTiles[i].length; j++) {
+            Tile tile = gameTiles[i][j];
+            int tileX = tile.getTilex();
+            int tileY = tile.getTiley();
+            int diffX = Math.abs(tileX - unitTileX);
+            int diffY = Math.abs(tileY - unitTileY);
+
+            // Determine if the target Tile is within moving range
+            boolean inRange = (diffX <= 2 && tileY == unitTileY) || (diffY <= 2 && tileX == unitTileX) || (diffX == 1 && diffY == 1);
+
+            // Check that the Tile is not occupied and that the path is not blocked
+            if (inRange && !isTileOccupied(tile) && !isPathBlocked(gameTiles[unitTileY][unitTileX], tile)) {
+                accessibleTiles.add(tile);
+            }
+        }
+    }
+
+    return accessibleTiles;
+}
+
+// Checks if the specified Tile is occupied by any units
+public boolean isTileOccupied(Tile tile) {
+    for (Unit unit : getAllUnits()) {
+        if (unit.getPosition().getTilex() == tile.getTilex() && unit.getPosition().getTiley() == tile.getTiley()) {
+            return true; // Find a unit occupying this Tile
+        }
+    }
+    return false; // No units occupy this Tile
+}
+
+// Check that the path from start to end is not blocked
+public boolean isPathBlocked(Tile startTile, Tile endTile) {
+    // Calculate the difference between the starting point and the end point
+    int deltaX = endTile.getTilex() - startTile.getTilex();
+    int deltaY = endTile.getTiley() - startTile.getTiley();
+
+    // Determining the direction of movement
+    int stepX = Integer.signum(deltaX);
+    int stepY = Integer.signum(deltaY);
+
+    // Handling of cardinal paths
+    if (deltaX == 0 || deltaY == 0) {
+        return checkCardinalPathBlocked(startTile, endTile, stepX, stepY);
+    } else { // For diagonal paths
+        return checkDiagonalPathBlocked(startTile, endTile, stepX, stepY);
+    }
+}
+
+private boolean checkCardinalPathBlocked(Tile startTile, Tile endTile, int stepX, int stepY) {
+    int currentX = startTile.getTilex();
+    int currentY = startTile.getTiley();
+    while (currentX != endTile.getTilex() || currentY != endTile.getTiley()) {
+        currentX += stepX;
+        currentY += stepY;
+        // Check if the current Tile is blocked
+        if (isTileOccupied(findTileByPosition(currentX, currentY))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+private boolean checkDiagonalPathBlocked(Tile startTile, Tile endTile, int stepX, int stepY) {
+    int currentX = startTile.getTilex();
+    int currentY = startTile.getTiley();
+    while ((currentX != endTile.getTilex()) && (currentY != endTile.getTiley())) {
+        if (isTileOccupied(findTileByPosition(currentX + stepX, currentY)) || 
+		isTileOccupied(findTileByPosition(currentX, currentY + stepY))) {
+            return true;
+        }
+        currentX += stepX;
+        currentY += stepY;
+    }
+    return false;
+}
+
 
 	private boolean isUnitInRange(Unit attacker, Unit target) {
 		int attackerTileX = attacker.getPosition().getTilex();
@@ -232,11 +307,9 @@ public class GameState {
 	}
 
 	// Method to handle player actions
-	public void processPlayerAction(Action action) {
-		// Process the action and update game state
-		pendingAction = action;
-		// Further action processing logic here
-	}
+	public void setPendingAction(Action action) {
+    this.pendingAction = action;
+}
 
 	// Additional methods and logic as needed...
 }
