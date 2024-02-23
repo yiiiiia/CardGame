@@ -25,25 +25,31 @@ public class DarkTerminusCard extends Card {
         }
     }
 
-    public boolean performSpell(ActorRef out, GameState gamestate, Unit unit) {
+    public boolean performSpell(ActorRef out, GameState gameState, JsonNode message, Unit unit) {
         //getter for aiUnits in gamestate may be needed
-        List<Unit> units = gamestate.getAiUnits();
+        List<Unit> units = gameState.getAiUnits();
         if(units.contains(unit)) {
             //remove unit from board
             //currently not in GameState
-            gamestate.removeUnit(unit);
+            gameState.removeUnit(unit);
             //spawning a wraithling
-            summonWraithling(out, gamestate, unit.getPosition().getTilex(), unit.getPosition().getTiley());
+            summonWraithling(out, gameState, message);
             return true;
         }else {
             return false;
         }
     }
 
-    public void summonWraithling (ActorRef out, GameState gamestate, int tilex, int tiley) {
-        Wraithling wraithling = new Wraithling();
-        wraithling.setPositionByTile(gamestate.getTileByPos(tilex, tiley));
-        BasicCommands.drawUnit(out, wraithling, gamestate.getTileByPos(tilex, tiley));
-        gamestate.getPlayerUnits().put(gamestate.getTileByPos(tilex, tiley), wraithling);
+    public void summonWraithling (ActorRef out, GameState gameState, JsonNode message) {
+        int tilex = message.get("tilex").asInt();
+		int tiley = message.get("tiley").asInt();
+		Tile tile = gameState.getTileByPos(tilex, tiley);
+        if(tile.getUnit()==null) {
+            Wraithling wraithling = new Wraithling();
+            //Wraithling wraithling = BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Unit.class);
+            wraithling.setPositionByTile(tile);
+            BasicCommands.drawUnit(out, wraithling, tile);
+            gameState.getPlayerUnits().put(tile, wraithling);
+        }
     }   
 }
