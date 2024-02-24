@@ -1,12 +1,15 @@
 package structures.basic.unit;
 
+import commands.BasicCommands;
 import structures.GameState;
 import structures.basic.Unit;
+import structures.basic.UnitAnimationType;
+import utils.BasicObjectBuilders;
 
 public class Shadowdancer extends Unit {
     
-    private int health;
-    private int attack;
+    protected int health;
+    protected int attack;
 
     public Shadowdancer() {
         super();
@@ -16,15 +19,21 @@ public class Shadowdancer extends Unit {
 
     public void performDeathWatch(ActorRef out, GameState gameState) {
         //whenever a unit, friendly or enemy dies
-        int numUnit = gameState.getAllUnits().size();
-        int prevNumUnit = numUnit;
-        if (prevNumUnit > gameState.getAllUnits().size()) {
-            int playerHealth = gameState.getUserPlayer().getHealth();
-            if (playerHealth<20) {
-                gameState.getUserPlayer().setHealth(playerHealth + 1);
-            }
-            int aiHealth = gameState.getAiPlayer().getHealth();
-            gameState.getAiPlayer().setHealth(aiHealth - 1);
+        int playerHealth = gameState.getUserPlayer().getHealth();
+        if (playerHealth<20) {
+            gameState.getUserPlayer().setHealth(playerHealth + 1);
+            BasicCommands.setPlayer1Health(out, gameState.getUserPlayer());
         }
+        int aiHealth = gameState.getAiPlayer().getHealth();
+        gameState.getAiPlayer().setHealth(aiHealth - 1);
+        BasicCommands.setPlayer2Health(out, gameState.getAiPlayer());
+        if (aiHealth <= 0) {
+            BasicCommands.playUnitAnimation(out, gameState.getAIAvatar(), UnitAnimationType.death);
+            BasicCommands.deleteUnit(out, gameState.getAIAvatar());
+        }
+    }
+
+    public static Shadowdancer getInstance(String configpaths) {
+        return (Shadowdancer)BasicObjectBuilders.loadUnit(configpaths, 0, Shadowdancer.class);
     }
 }
