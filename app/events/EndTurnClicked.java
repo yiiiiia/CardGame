@@ -31,18 +31,16 @@ public class EndTurnClicked implements EventProcessor{
 
 		//clearMana
 		gameState.getUserPlayer().setMana(0); //from Player class
-
+		BasicCommands.setPlayer1Mana(out, gameState.getUserPlayer());
+		
 		//drawCard
 		Random random = new Random();
 		int r = random.nextInt(gameState.getUserPlayer().getCardRemain().size());
-		//or int r = random.nextInt(gameState.getplayerCardDeck().size());
 		
-		gameState.getUserPlayer().addHandCard(); //from Player class
+		gameState.getUserPlayer().addHandCard(gameState.getUserPlayer().getCardRemain().get(r)); //from Player class
 		
 		//setAIAsActivePlayer
 		gameState.setPlayerMode(1);
 		//gameState.setAIAsActivePlayer(); 
-
 	}
-
 }
