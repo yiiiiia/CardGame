@@ -38,14 +38,16 @@ public class HornOfTheForsakenCard extends Card {
 
     //summon a wraithling on a random tile if available
     public void spawnWraithling (ActorRef out, GameState gameState, List<Tile> emptyTiles) {
-        Random r = new Random();
-        int randomTile = r.nextInt(emptyTiles.size());
-        Wraithling wraithling = new Wraithling();
-        //Wraithling wraithling = BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Unit.class);
-        wraithling.setPositionByTile(emptyTiles.get(randomTile));
-        BasicCommands.drawUnit(out, wraithling, emptyTiles.get(randomTile));
-        gameState.getPlayerUnits().put(emptyTiles.get(randomTile), wraithling);
-
+        if (emptyTiles.size() > 0) {
+            Random r = new Random();
+            int randomTile = r.nextInt(emptyTiles.size());
+            Tile tile = emptyTiles.get(randomTile);
+            BasicCommands.playEffectAnimation(out, "f1_wraithsummon", tile);
+            Wraithling wraithling = (Wraithling)BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Wraithling.class);
+            wraithling.setPositionByTile(emptyTiles.get(randomTile));
+            BasicCommands.drawUnit(out, wraithling, emptyTiles.get(randomTile));
+            gameState.getPlayerUnits().put(emptyTiles.get(randomTile), wraithling);
+        }
     }
 
     public List<Tile> checkEmptyTiles (ActorRef out, GameState gameState) {
