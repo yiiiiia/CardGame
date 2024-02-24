@@ -25,6 +25,6 @@ public class ShadowWatcher extends Unit {
     }
 
     public static ShadowWatcher getInstance(String configpaths) {
-        return (ShadowWatcher)BasicObjectBuilders.loadUnit(configpaths, 0, ShadowWatcher.class);
+        return (ShadowWatcher)BasicObjectBuilders.loadUnit(configpaths, 6, ShadowWatcher.class);
     }
 }
