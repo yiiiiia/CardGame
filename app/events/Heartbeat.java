@@ -1,7 +1,5 @@
 package events;
 
-import static org.junit.Assert.fail;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import akka.actor.ActorRef;
@@ -25,20 +23,14 @@ public class Heartbeat implements EventProcessor{
 
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
-		//GameEnd
-		String gameEndText;
 
 		if(gameState.checkEndCondition()) {
 
-			if(gameState.getUserPlayer().getHealth() <= 0) {
-				gameEndText = "You win";
+			if(gameState.getAiPlayer().getHealth() <= 0) {
+				BasicCommands.addPlayer1Notification(out, "You win", 2);
 			}else {
-				gameEndText = "You lose";
+				BasicCommands.addPlayer1Notification(out, "You lose", 2);
 			}
-			BasicCommands.addPlayer1Notification(out, gameEndText, 2);
-			gameState.gameInitalised = false;
 		}
-
 	}
-
 }
