@@ -41,6 +41,6 @@ public class BloodmoonPriestess extends Unit {
     }
 
     public static BloodmoonPriestess getInstance(String configpaths) {
-        return (BloodmoonPriestess)BasicObjectBuilders.loadUnit(configpaths, 0, BloodmoonPriestess.class);
+        return (BloodmoonPriestess)BasicObjectBuilders.loadUnit(configpaths, 8, BloodmoonPriestess.class);
     }
 }
