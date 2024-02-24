@@ -7,6 +7,8 @@ import structures.basic.Card;
 import structures.basic.Tile;
 import structures.basic.Unit;
 import structures.basic.unit.Wraithling;
+import utils.BasicObjectBuilders;
+import utils.StaticConfFiles;
 import structures.basic.UnitAnimationType;
 
 import java.util.List;
@@ -15,7 +17,6 @@ public class DarkTerminusCard extends Card {
     
     public void highlightTiles(ActorRef out, GameState gamestate) {
         //highlight viable targets
-        //need to access unitId of avatar and remove it from the list
         List<Unit> units = gamestate.getAiUnits();
         for(Unit enemyUnit: units) {
             int tilex = enemyUnit.getPosition().getTilex();
@@ -25,28 +26,28 @@ public class DarkTerminusCard extends Card {
         }
     }
 
-    public boolean performSpell(ActorRef out, GameState gameState, JsonNode message, Unit unit) {
+    public boolean performSpell(ActorRef out, GameState gameState, Unit unit) {
         //getter for aiUnits in gamestate may be needed
         List<Unit> units = gameState.getAiUnits();
         if(units.contains(unit)) {
             //remove unit from board
             //currently not in GameState
+            Tile tile = gameState.getTileByPos(unit.getPosition().getTilex(), unit.getPosition().getTiley());
+            BasicCommands.playUnitAnimation(out, unit, UnitAnimationType.death)
             gameState.removeUnit(unit);
+            BasicCommands.deleteUnit(out, unit);
             //spawning a wraithling
-            summonWraithling(out, gameState, message);
+            summonWraithling(out, gameState, tile);
             return true;
         }else {
             return false;
         }
     }
 
-    public void summonWraithling (ActorRef out, GameState gameState, JsonNode message) {
-        int tilex = message.get("tilex").asInt();
-		int tiley = message.get("tiley").asInt();
-		Tile tile = gameState.getTileByPos(tilex, tiley);
+    public void summonWraithling (ActorRef out, GameState gameState, Tile tile) {
         if(tile.getUnit()==null) {
-            Wraithling wraithling = new Wraithling();
-            //Wraithling wraithling = BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Unit.class);
+            BasicCommands.playEffectAnimation(out, "f1_wraithsummon", tile);
+            Wraithling wraithling = (Wraithling)BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Wraithling.class);
             wraithling.setPositionByTile(tile);
             BasicCommands.drawUnit(out, wraithling, tile);
             gameState.getPlayerUnits().put(tile, wraithling);
