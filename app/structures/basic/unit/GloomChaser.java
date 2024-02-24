@@ -20,7 +20,7 @@ public class GloomChaser extends Unit{
 
     public void performGambit(ActorRef out, GameState gameState) {
         Tile tile = gameState.getTileByPos(this.getPosition().getTilex()-1, this.getPosition().getTiley());
-        if(tile.getUnit()!=null) {
+        if(tile.getUnit()==null) {
             BasicCommands.playEffectAnimation(out, "f1_wraithsummon", tile);
             Wraithling wraithling = (Wraithling)BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Wraithling.class);
             wraithling.setPositionByTile(tile);
