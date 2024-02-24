@@ -84,6 +84,22 @@ public class GameState {
 		this.aiAvatar = aiAvatar;
 	}
 
+	public Unit getUserAvatar() {
+		return userAvatar;
+	}
+
+	public void setUserAvatar(Unit userAvatar) {
+		this.userAvatar = userAvatar;
+	}
+
+	public Unit getAiAvatar() {
+		return aiAvatar;
+	}
+
+	public void setAiAvatar(Unit aiAvatar) {
+		this.aiAvatar = aiAvatar;
+	}
+
 	public void setGameInitialised(boolean initialised) {
 		gameInitialised = initialised;
 	}
