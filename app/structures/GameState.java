@@ -34,12 +34,10 @@ public class GameState {
 	private Card activateCard;
 
 	// Collections to track game elements
-	private List<Tile> gameTiles;
 	private Tile[][] gameTiles;
 
 
 	public GameState() {
-		gameTiles = new ArrayList<>();
 		playerUnits = new ArrayList<>();
 		aiUnits = new ArrayList<>();
 		 // Dimensions of the game board
@@ -47,10 +45,11 @@ public class GameState {
 		 // Initialize each Tile object
 		 for (int i = 0; i < rows; i++) {
 			 for (int j = 0; j < cols; j++) {
-				 gameTiles[i][j] = new Tile(j, i);
+				 Tile tile = BasicObjectBuilders.loadTile(i, j);
+				 gameTiles[i][j]=tile;
 				 }
-				 }
-				 }
+				}
+			}
 
 	// Example method to initialize game state
 	public void initializeGame() {
@@ -67,8 +66,8 @@ public class GameState {
 
 	// Method to retrieve a Tile by its position
 	public Tile getTileByPos(int tilex, int tiley) {
-    if (tiley >= 0 && tiley < gameTiles.length && 
-	tilex >= 0 && tilex < gameTiles[tiley].length) {
+    if (tiley >= 0 && tiley < rows && 
+	tilex >= 0 && tilex < cols) {
         return gameTiles[tiley][tilex];
     }
     return null; // Tile not found or out of bounds
@@ -260,6 +259,7 @@ private boolean checkDiagonalPathBlocked(Tile startTile, Tile endTile, int stepX
 		unit.setStunned(true);
 	}
 
+/*
 	public void attackUnit(Unit attacker, Unit target) {
 		int newHealth = target.getHealth() - attacker.getAttack();
 		target.setHealth(newHealth);
@@ -281,6 +281,7 @@ private boolean checkDiagonalPathBlocked(Tile startTile, Tile endTile, int stepX
 			}
 		}
 	}
+	*/
 
 	// Add method to trigger update of unit animation
 	public void triggerUnitAnimation(Unit unit, UnitAnimationType animationType) {
