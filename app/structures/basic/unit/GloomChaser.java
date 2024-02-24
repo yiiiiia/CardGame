@@ -28,4 +28,8 @@ public class GloomChaser extends Unit{
             gameState.getPlayerUnits().put(tile, wraithling);
         }
     }
+
+    public static GloomChaser getInstance(String configpaths) {
+        return (GloomChaser) BasicObjectBuilders.loadUnit(configpaths, 4, GloomChaser.class);
+    }
 }
