@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import commands.BasicCommands;
 import structures.GameState;
@@ -160,16 +162,147 @@ return null;
 //攻击或者移动，如果没有攻击目标，则朝着最近目标移动，后续再优化
 public void moveOrAttack()
 {for(Tile cur:this.getUnit().keySet())
-{if(haveAttack(cur))
+{Unit aiUnit = gameState.getAiPlayer().getUnitByTile(cur);
+Unit userUnit=gameState.players[0].getUnit().get(getClosestTile(cur));
+List<Tile> tilesAccessible = gameState.getTilesAccessible(aiUnit);
+	if(haveAttack(cur))
 {//攻击
+	
+	if (gameState.unitsAdjacent(aiUnit, userUnit)) {
+		
+		// user unit and ai unit are adjacent
+		aiUnit.unitAttack(out, gameState, userUnit);
+		if (userUnit.getHealth() > 0) {
+			// perform counter attack
+			userUnit.unitAttack(out, gameState, aiUnit);
+		}
+		gameState.clearActiveUnit();
+		break;
 	}
+	else
+	{Tile targetTile = null;
+	for (Tile tile : tilesAccessible) {
+		if (gameState.tilesAdjacent(tile, getClosestTile(cur))) {
+			targetTile = tile;
+			break;
+		}
+	}
+	if (targetTile == null) {
+		// cannot perform move + attack
+		break;
+		String reason = gameState.unitCanMove(aiUnit);
+		if (reason != null) {
+			
+			break;
+		}
+		Action action = new Action() {
+			@Override
+			public void doAction(ActorRef out, GameState gameState) {
+				aiUnit.unitAttack(out, gameState, userUnit);
+				if (aiUnit.getHealth() > 0) {
+					// perform counter attack
+					userUnit.unitAttack(out, gameState, aiUnit);
+					gameState.clearActiveUnit();
+				}
+			}
+		};
+		gameState.setPendingAction(action);
+		// clear current tile effects
+		
+		// tell unit to move
+		aiUnit.unitMove(out, gameState, targetTile);
+
+	}
+
+
+	}
+
+	
+	
+
+	}
+//无攻击目标，向目标靠近
 else {
 	//靠近目标
+	int distancex=getClosestTile(cur).getTilex()-cur.getTilex();
+	int distancey=getClosestTile(cur).getTiley()-cur.getTiley();
+	if(Math.abs(distancex)>Math.abs(distancey))
+	{
+		aiUnit.unitMove(out, gameState, gameState.boardTile[cur.getTilex()+Integer.signum(distancex)*2][cur.getTiley()]);
+	}
+	else if(Math.abs(distancex)==Math.abs(distancey))
+	{
+		aiUnit.unitMove(out, gameState, gameState.boardTile[cur.getTilex()+Integer.signum(distancex)][cur.getTiley()+Integer.signum(distancey)]);
+	}
+	else
+	{
+		aiUnit.unitMove(out, gameState, gameState.boardTile[cur.getTilex()][cur.getTiley()+Integer.signum(distancey)*2]);
+	}
+	
 }
 	}
 	}
 
-public boolean haveAttack(Tile tile)//判断是否有攻击目标
+public boolean haveAttack(Tile tile)//判断是否有攻击目标,后面要改；
 {return true;
 	}
+//相邻单位
+public List<Unit> getAdjacenUnit(Tile tile)
+{List<Unit> adjacenUnit=new ArrayList<Unit>();
+int x=tile.getTilex();
+int y=tile.getTiley();)
+for(int i=0;i<3;i++)
+{
+	for(int j=0;j<3;j++)
+		{
+		if(gameState.players[0].getUnit().containsKey(gameState.boardTile[x-1+i][y-1+i]))
+		{
+			adjacenUnit.add(gameState.players[0].getUnit().get(gameState.boardTile[x-1+i][y-1+i]));
+		}
+		}
+	}
+return adjacenUnit;
+	}
+
+//找最近的攻击单位
+public Tile getClosestTile(Tile aitile)
+{  int rows = 9;//行数
+int cols = 5;//列数
+boolean[][] visited = new boolean[rows][cols];
+
+Queue<int[]> queue = new LinkedList<>();
+queue.offer(new int[]{aitile.getTilex(), aitile.getTiley()});
+visited[aitile.getTilex()][aitile.getTiley()] = true;
+
+int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};//后续改下这个矩阵，从左开始比较好
+
+
+while (!queue.isEmpty()) {
+    int[] currentCell = queue.poll();
+    int currentRow = currentCell[0];
+     int currentCol = currentCell[1];
+
+    if (gameState.players[0].getUnit().containsKey(gameState.boardTile[currentRow][currentCol])) {
+        return gameState.boardTile[currentRow][currentCol]; // 找到最近的tile
+    }
+
+    for (int[] direction : directions) {
+        int newRow = currentRow + direction[0];
+        int newCol = currentCol + direction[1];
+
+        if (isValid(newRow, newCol, rows, cols) && !visited[newRow][newCol]) {
+            queue.offer(new int[]{newRow, newCol});
+            visited[newRow][newCol] = true;
+        }
+    }
 }
+
+return null; // 没有找到包含用户unit的tile
+}
+
+
+private static boolean isValid(int row, int col, int rows, int cols) {
+return row >= 0 && row < rows && col >= 0 && col < cols;
+}
+	}
+
