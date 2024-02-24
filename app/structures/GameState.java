@@ -42,6 +42,8 @@ public class GameState {
 	private Action pendingAction; // Action to perform after a unit stops
 	private Unit activeUnit; // Currently selected unit
 	private Card activateCard;
+	private Unit userAvatar;
+	private Unit aiAvatar;
 	private List<Tile> provokeAreas; // A list of tiles where units on which will be provoked
 
 	public void initGameTiles() {
@@ -64,6 +66,22 @@ public class GameState {
 			}
 		}
 		return tiles;
+	}
+
+	public Unit getUserAvatar() {
+		return userAvatar;
+	}
+
+	public void setUserAvatar(Unit userAvatar) {
+		this.userAvatar = userAvatar;
+	}
+
+	public Unit getAiAvatar() {
+		return aiAvatar;
+	}
+
+	public void setAiAvatar(Unit aiAvatar) {
+		this.aiAvatar = aiAvatar;
 	}
 
 	public void setGameInitialised(boolean initialised) {
