@@ -13,8 +13,8 @@ import structures.basic.UnitAnimationType;
 
 public class Wraithling extends Unit {
 
-    private int health;
-    private int attack;
+    protected int health;
+    protected int attack;
 
     public Wraithling() {
         super();
