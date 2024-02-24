@@ -34,6 +34,6 @@ public class Shadowdancer extends Unit {
     }
 
     public static Shadowdancer getInstance(String configpaths) {
-        return (Shadowdancer)BasicObjectBuilders.loadUnit(configpaths, 0, Shadowdancer.class);
+        return (Shadowdancer)BasicObjectBuilders.loadUnit(configpaths, 9, Shadowdancer.class);
     }
 }
