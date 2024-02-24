@@ -23,6 +23,6 @@ public class BadOmen extends Unit {
     }
 
     public static BadOmen getInstance(String configpaths) {
-        return (BadOmen)BasicObjectBuilders.loadUnit(configpaths, 0, BadOmen.class);
+        return (BadOmen)BasicObjectBuilders.loadUnit(configpaths, 3, BadOmen.class);
     }
 }
