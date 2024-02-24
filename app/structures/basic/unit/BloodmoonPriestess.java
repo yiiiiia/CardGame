@@ -7,11 +7,13 @@ import commands.BasicCommands;
 import structures.GameState;
 import structures.basic.Tile;
 import structures.basic.Unit;
+import utils.BasicObjectBuilders;
+import utils.StaticConfFiles;
 
 public class BloodmoonPriestess extends Unit {
         
-    private int health;
-    private int attack;
+    protected int health;
+    protected int attack;
 
     public BloodmoonPriestess() {
         super();
@@ -21,23 +23,24 @@ public class BloodmoonPriestess extends Unit {
 
     public void performDeathWatch(ActorRef out, GameState gameState) {
         //whenever a unit, friendly or enemy dies
-        int numUnit = gameState.getAllUnits().size();
-        int prevNumUnit = numUnit;
-        if (prevNumUnit > gameState.getAllUnits().size()) {
-            Random r = new Random();
-            List<Tile> emptyTiles = gameState.getAllTiles();
-            for(Tile tile: emptyTiles) {
-                if(tile.getUnit()!=null) {
-                    emptyTiles.remove(tile);
-                }
+        Random r = new Random();
+        List<Tile> emptyTiles = gameState.getAllTiles();
+        for(Tile tile: emptyTiles) {
+            if(tile.getUnit()!=null) {
+                emptyTiles.remove(tile);
             }
+        }
+        if (emptyTiles.size() > 0) {
             int randomTile = r.nextInt(emptyTiles.size());
-            Wraithling wraithling = new Wraithling();
-            //Wraithling wraithling = BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Unit.class);
+            BasicCommands.playEffectAnimation(out, "f1_wraithsummon", emptyTiles.get(randomTile);
+            Wraithling wraithling = (Wraithling)BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Wraithling.class);
             wraithling.setPositionByTile(emptyTiles.get(randomTile));
             BasicCommands.drawUnit(out, wraithling, emptyTiles.get(randomTile));
             gameState.getPlayerUnits().put(emptyTiles.get(randomTile), wraithling);
         }
     }
 
+    public static BloodmoonPriestess getInstance(String configpaths) {
+        return (BloodmoonPriestess)BasicObjectBuilders.loadUnit(configpaths, 0, BloodmoonPriestess.class);
+    }
 }
