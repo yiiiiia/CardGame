@@ -36,6 +36,7 @@ for(Card cur:this.getCard())
 	}
 
 
+//使用spell卡
 public void useSpellCard()
 {List<Card> spellCard=this.haveSpell();
 if(spellCard==null)
@@ -110,7 +111,7 @@ this.decreaseMana(1);
 }
 
 
-//蓝耗从小到大
+//蓝耗从小到大，比较器
 class PersonComparator implements Comparator<Card> {
     @Override
     public int compare(Card c1, Card c2) {
@@ -243,9 +244,11 @@ else {
 	}
 	}
 
-public boolean haveAttack(Tile tile)//判断是否有攻击目标,后面要改；
+//判断是否有攻击目标,后面要改；
+public boolean haveAttack(Tile tile)
 {return true;
 	}
+
 //相邻单位
 public List<Unit> getAdjacenUnit(Tile tile)
 {List<Unit> adjacenUnit=new ArrayList<Unit>();
@@ -300,7 +303,7 @@ while (!queue.isEmpty()) {
 return null; // 没有找到包含用户unit的tile
 }
 
-
+//判断找的最近位置是否合理
 private static boolean isValid(int row, int col, int rows, int cols) {
 return row >= 0 && row < rows && col >= 0 && col < cols;
 }
