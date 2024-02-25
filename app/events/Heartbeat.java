@@ -24,7 +24,7 @@ public class Heartbeat implements EventProcessor{
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
 
-		if(gameState.checkEndCondition()) {
+		if(gameState.isGameEnd()) {
 
 			if(gameState.getAiPlayer().getHealth() <= 0) {
 				BasicCommands.addPlayer1Notification(out, "You win", 2);
