@@ -27,8 +27,18 @@ public class TrueStrikeCard extends Card {
         if(!units.contains(unit)){
             return false;
         }
-        unit.setHealth(Math.max(unit.getHealth()-2,0));//health=0, this unit is dead, where do we write the logic?
+        unit.setHealth(Math.max(unit.getHealth()-2,0));
         BasicCommands.playUnitAnimation(out,unit, UnitAnimationType.channel);
+        //health=0, this attacked unit is dead
+        if (unit.getHealth() == 0) {
+            for (Map.Entry<Tile, Unit> tileUnitEntry : gameState.getUserPlayer().getAllUnits().entrySet()) {
+                if (tileUnitEntry.getValue().equals(unit)) {
+                    BasicCommands.playUnitAnimation(out, unit, UnitAnimationType.death);
+                    tileUnitEntry.getKey().setUnit(null);
+                    gameState.getUserPlayer().getAllUnits().remove(tileUnitEntry);
+                }
+            }
+        }
         return true;
     }
 }
