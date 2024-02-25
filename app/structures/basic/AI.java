@@ -8,6 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
+import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
 import structures.basic.Card;
@@ -17,10 +20,17 @@ import structures.basic.Unit;
 
 public class AI extends Player {
 
-GameState gameState;
+
+
+
 public AI(int health, int mana)
 {super(health,mana);}
 
+public void aiAction(GameState gameState,ActorRef out, JsonNode message)
+{this.useSpellCard(gameState,out,message);
+this.useCreatureCard(gameState,out,message);
+this.moveOrAttack(gameState,out,message);
+	}
 //AI策略先用效果牌，直接先减员。stun卡作用攻击力最高的单位。治疗卡用于已损失生命值最大的单位,或者攻击力最高的单位，或者最易收到攻击的单位。攻击卡用于当前生命值小于
 //等于2的，如果没有，攻击攻击力最高的。
 //召唤类牌蓝耗从小到大，召唤位置优先Avater附近，rush卡尽量靠近地方单位
@@ -37,7 +47,7 @@ for(Card cur:this.getCard())
 
 
 //使用spell卡
-public void useSpellCard()
+public void useSpellCard(GameState gameState,ActorRef out,JsonNode message)
 {List<Card> spellCard=this.haveSpell();
 if(spellCard==null)
 {return;
@@ -48,11 +58,11 @@ else
 	if(this.getMana()>=cur.getManacost())
 	{switch(curname)
 	{
-	case "Sundrop Elixir":useSundrop(cur);
+	case "Sundrop Elixir":useSundrop(cur,gameState, out, message);
 		break;
-	case "True Strike":useTrueStrike(cur);
+	case "True Strike":useTrueStrike(cur,gameState, out, message);
 		break;
-	case "Beam Shock":useStun(cur);
+	case "Beam Shock":useStun(cur,gameState, out, message);
 		break;
 	}
 	}
@@ -63,16 +73,18 @@ else
 
 
 //Beam Shock卡的使用
-public void useStun(Card card) 
+public void useStun(Card card,GameState gameState,ActorRef out, JsonNode message) 
 {Tile attackMax=null;
-for(Tile cur:gameState.players[0].getUnit().keySet())
-{if(gameState.players[0].getUnit().get(cur).getAttack()>gameState.players[0].getUnit().get(attackMax).getAttack())
+for(Tile cur:gameState.getUserPlayer().getAllUnits().keySet())
+{if(!gameState.getUserPlayer().getAllUnits().get(cur).getStunned()&&gameState.getUserPlayer().getAllUnits().get(cur).getAttack()>gameState.getUserPlayer().getAllUnits().get(attackMax).getAttack())
 {attackMax=cur;
 	}
 	}
 //card.stun(Unit unit),这个stun是卡内定义的攻击方法
-if(gameState.players[0].getUnit().get(attackMax).getHealth()<=0)
-{
+
+Card c1=new BeamShockCard();
+if(c1.performSpell(out, gameState ,gameState.getUserPlayer().getAllUnits().get(cur)))
+{c1.highlightTiles( out,  gameState);
 	//播放死亡动画，这个应该在卡里方法检测}
 	}
 this.deleteHandCard(card);
@@ -80,31 +92,39 @@ this.deleteHandCard(card);
 
 
 //Sundrop卡的使用
-public void useSundrop(Card card)
+public void useSundrop(Card card,GameState gameState,ActorRef out, JsonNode message)
 {Tile attackMax=null;
-for(Tile cur:gameState.players[10].getUnit().keySet())
-{if(gameState.players[1].getUnit().get(cur).getAttack()>gameState.players[0].getUnit().get(attackMax).getAttack())
+for(Tile cur:gameState.getUserPlayer().getAllUnits().keySet())
+{if(gameState.getAiPlayer().getAllUnits().get(cur).getAttack()>gameState.getUserPlayer().getAllUnits().get(attackMax).getAttack())
 {attackMax=cur;
 	}
 	}
 //card.Sundrop(Unit unit),这个stun是卡内定义的方法
-
+Card c2=new SundropElixirCard();
+if(c2.performSpell(out, gameState ,gameState.getUserPlayer().getAllUnits().get(cur)))
+{c2.highlightTiles( out,  gameState);
+	//播放死亡动画，这个应该在卡里方法检测}
+	}
 this.deleteHandCard(card);
 this.decreaseMana(1);
 	
 }
 
 //TrueStrike卡的使用
-public void useTrueStrike(Card card)
+public void useTrueStrike(Card card,GameState gameState,ActorRef out, JsonNode message)
 {Tile healthMin=null;
-for(Tile cur:gameState.players[0].getUnit().keySet())
-{if(gameState.players[0].getUnit().get(cur).getCurHealth()<gameState.players[0].getUnit().get(healthMin).getCurHealth())
+for(Tile cur:gameState.getUserPlayer().getAllUnits().keySet())
+{if(gameState.getUserPlayer().getAllUnits().get(cur).getCurHealth()<gameState.getUserPlayer().getAllUnits().get(healthMin).getCurHealth())
 {healthMin=cur;
 	}
 	}
-//card.Sundrop(Unit unit),这个stun是卡内定义的方法
-//unit=gameState.players[0].getUnit().get(healthMin)；
 
+
+Card c3=new TrueStrikeCard();
+if(c3.performSpell(out, gameState ,gameState.getUserPlayer().getAllUnits().get(cur)))
+{c3.highlightTiles( out,  gameState);
+	//播放死亡动画，这个应该在卡里方法检测}
+	}
 this.deleteHandCard(card);
 this.decreaseMana(1);
 	
@@ -118,7 +138,7 @@ class PersonComparator implements Comparator<Card> {
         return Integer.compare(c1.getManacost(), c2.getManacost());
     }
 }
-public void useCreatureCard()
+public void useCreatureCard(GameState gameState,ActorRef out,JsonNode message)
 {if(this.getMana()==0)
 {
 	return;}
@@ -131,26 +151,30 @@ else
 		return;
 	}
 		Tile tile=placeableArea();
+		if(tile!=null)
+		{
+			cur.summonUnit(out,gameState,tile.getTilex(),tile.getTiley());
+		}
 		//summon(Tile tile)召唤
 	}
 }
 	
 }
 public boolean isPlaceBle(int x,int y,GameState gameState)
-{if(x<0||x>8||y<0||y>4||gameState.players[0].getUnit().containsKey(gameState.boardTile[x][y]))//这里得再加AI类的unit判断
+{if(x<0||x>8||y<0||y>4||gameState.getUserPlayer().getAllUnits().containsKey(gameState.getTileByPos(x, y)))//这里得再加AI类的unit判断
 {return false;}
 return true;
 }
-public Tile placeableArea()//后期加avatar附近没放置区域的代码
-{for(Tile cur:this.getUnit().keySet())
-{if(this.getUnit().get(cur).getId()==1)//假设avatar的id是1
+public Tile placeableArea(GameState gameState)//后期加avatar附近没放置区域的代码
+{for(Tile cur:this.getAllUnits().keySet())
+{if(this.getAllUnits().get(cur).getId()==1)//假设avatar的id是1
 {	int x=cur.getTilex()-1;
 int y=cur.getTiley()-1;
 	for(int i=0;i<3;i++)
 {for(int j=0;j<3;j++)
 {if(isPlaceBle(x+i,y+j,gameState))
 {
-	return gameState.boardTile[x+i][y+j];
+	return gameState.getTileByPos(x+i,y+j);
 }
 
 }
@@ -160,17 +184,17 @@ int y=cur.getTiley()-1;
 return null;
 	}
 
+
+
 //攻击或者移动，如果没有攻击目标，则朝着最近目标移动，后续再优化
-public void moveOrAttack()
-{for(Tile cur:this.getUnit().keySet())
-{Unit aiUnit = gameState.getAiPlayer().getUnitByTile(cur);
-Unit userUnit=gameState.players[0].getUnit().get(getClosestTile(cur));
+public void moveOrAttack(GameState gameState,ActorRef out, JsonNode message)
+{for(Tile cur:this.getAllUnits().keySet())
+{Unit aiUnit = gameState.getAiPlayer().getAllUnitsByTile(cur);
+Unit userUnit=gameState.getUserPlayer().getAllUnits().get(getClosestTile(cur));
 List<Tile> tilesAccessible = gameState.getTilesAccessible(aiUnit);
-	if(haveAttack(cur))
-{//攻击
 	
+	//第一个分支，相邻单位可以攻击
 	if (gameState.unitsAdjacent(aiUnit, userUnit)) {
-		
 		// user unit and ai unit are adjacent
 		aiUnit.unitAttack(out, gameState, userUnit);
 		if (userUnit.getHealth() > 0) {
@@ -180,17 +204,36 @@ List<Tile> tilesAccessible = gameState.getTilesAccessible(aiUnit);
 		gameState.clearActiveUnit();
 		break;
 	}
+	//相邻单位无可攻击单位
 	else
 	{Tile targetTile = null;
 	for (Tile tile : tilesAccessible) {
-		if (gameState.tilesAdjacent(tile, getClosestTile(cur))) {
+		if (gameState.tilesAdjacent(tile, getClosestTile(cur,gameState))) {
 			targetTile = tile;
 			break;
 		}
 	}
+	//移动之后也无可攻击单位，超最近目标移动
 	if (targetTile == null) {
 		// cannot perform move + attack
+		int distancex=getClosestTile(cur).getTilex()-cur.getTilex();
+		int distancey=getClosestTile(cur).getTiley()-cur.getTiley();
+		if(Math.abs(distancex)>Math.abs(distancey))
+		{
+			aiUnit.unitMove(out, gameState, gameState.getTileByPos(cur.getTilex()+Integer.signum(distancex)*2,cur.getTiley()));
+		}
+		else if(Math.abs(distancex)==Math.abs(distancey))
+		{
+			aiUnit.unitMove(out, gameState, gameState.getTileByPos(cur.getTilex()+Integer.signum(distancex),cur.getTiley()+Integer.signum(distancey)));
+		}
+		else
+		{
+			aiUnit.unitMove(out, gameState, gameState.getTileByPos(cur.getTilex(),cur.getTiley()+Integer.signum(distancey)*2));
+		}
 		break;
+		}
+	//移动后攻击
+	else {
 		String reason = gameState.unitCanMove(aiUnit);
 		if (reason != null) {
 			
@@ -199,68 +242,39 @@ List<Tile> tilesAccessible = gameState.getTilesAccessible(aiUnit);
 		Action action = new Action() {
 			@Override
 			public void doAction(ActorRef out, GameState gameState) {
-				aiUnit.unitAttack(out, gameState, userUnit);
-				if (aiUnit.getHealth() > 0) {
-					// perform counter attack
-					userUnit.unitAttack(out, gameState, aiUnit);
-					gameState.clearActiveUnit();
-				}
+				performAttackAndCounterAttack(out, gameState, aiUnit, userUnit);
+				gameState.clearActiveUnit();
+
 			}
 		};
+	
+	}
+	
 		gameState.setPendingAction(action);
 		// clear current tile effects
-		
 		// tell unit to move
 		aiUnit.unitMove(out, gameState, targetTile);
-
 	}
-
-
 	}
-
-	
-	
-
-	}
-//无攻击目标，向目标靠近
-else {
-	//靠近目标
-	int distancex=getClosestTile(cur).getTilex()-cur.getTilex();
-	int distancey=getClosestTile(cur).getTiley()-cur.getTiley();
-	if(Math.abs(distancex)>Math.abs(distancey))
-	{
-		aiUnit.unitMove(out, gameState, gameState.boardTile[cur.getTilex()+Integer.signum(distancex)*2][cur.getTiley()]);
-	}
-	else if(Math.abs(distancex)==Math.abs(distancey))
-	{
-		aiUnit.unitMove(out, gameState, gameState.boardTile[cur.getTilex()+Integer.signum(distancex)][cur.getTiley()+Integer.signum(distancey)]);
-	}
-	else
-	{
-		aiUnit.unitMove(out, gameState, gameState.boardTile[cur.getTilex()][cur.getTiley()+Integer.signum(distancey)*2]);
-	}
-	
 }
-	}
-	}
 
 //判断是否有攻击目标,后面要改；
-public boolean haveAttack(Tile tile)
+public boolean haveAttack(Tile tile,GameState gameState,ActorRef out, JsonNode message)
 {return true;
 	}
 
 //相邻单位
-public List<Unit> getAdjacenUnit(Tile tile)
+public List<Unit> getAdjacenUnit(Tile tile,GameState gameState)
 {List<Unit> adjacenUnit=new ArrayList<Unit>();
 int x=tile.getTilex();
-int y=tile.getTiley();)
+int y=tile.getTiley();
 for(int i=0;i<3;i++)
 {
 	for(int j=0;j<3;j++)
 		{
-		if(gameState.players[0].getUnit().containsKey(gameState.boardTile[x-1+i][y-1+i]))
+		if(gameState.getUserPlayer().getAllUnits().containsKey(gameState.getTileByPos(x-1+i,y-1+i)))
 		{
-			adjacenUnit.add(gameState.players[0].getUnit().get(gameState.boardTile[x-1+i][y-1+i]));
+			adjacenUnit.add(gameState.getUserPlayer().getAllUnits().get(gameState.getTileByPos(x-1+i,y-1+i)));
 		}
 		}
 	}
@@ -268,7 +282,7 @@ return adjacenUnit;
 	}
 
 //找最近的攻击单位
-public Tile getClosestTile(Tile aitile)
+public Tile getClosestTile(Tile aitile,GameState gameState)
 {  int rows = 9;//行数
 int cols = 5;//列数
 boolean[][] visited = new boolean[rows][cols];
@@ -285,8 +299,8 @@ while (!queue.isEmpty()) {
     int currentRow = currentCell[0];
      int currentCol = currentCell[1];
 
-    if (gameState.players[0].getUnit().containsKey(gameState.boardTile[currentRow][currentCol])) {
-        return gameState.boardTile[currentRow][currentCol]; // 找到最近的tile
+    if (gameState.getUserPlayer().getAllUnits().containsKey(gameState.getTileByPos(currentRow,currentCol))) {
+        return gameState.getTileByPos(currentRow,currentCol); // 找到最近的tile
     }
 
     for (int[] direction : directions) {
