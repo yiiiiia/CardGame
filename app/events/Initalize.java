@@ -87,12 +87,12 @@ public class Initalize implements EventProcessor {
         humanAvatar.setHealth(20);
         humanAvatar.setAttack(2);
         //place human avatar
-        humanAvatar.setPositionByTile(gameState.getTileByPos(1, 1));
-        BasicCommands.drawUnit(out, humanAvatar, gameState.getTileByPos(1, 1));
+        humanAvatar.setPositionByTile(gameState.getTileByPos(1, 2));
+        BasicCommands.drawUnit(out, humanAvatar, gameState.getTileByPos(1, 2));
         //add human avatar to player's allUnits map
-        gameState.getUserPlayer().getAllUnits().put(gameState.getTileByPos(1, 1), humanAvatar);
+        gameState.getUserPlayer().getAllUnits().put(gameState.getTileByPos(1, 2), humanAvatar);
         //set human avatar to the tile
-        gameState.getTileByPos(1, 1).setUnit(humanAvatar);
+        gameState.getTileByPos(1, 2).setUnit(humanAvatar);
 
         //create ai avatar
         Unit aiAvatar = BasicObjectBuilders.loadUnit(StaticConfFiles.aiAvatar, ids.get(1), Unit.class);
