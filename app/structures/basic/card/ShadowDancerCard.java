@@ -9,8 +9,8 @@ import structures.basic.unit.ShadowDancer;
 public class ShadowDancerCard extends Card {
     public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
         ShadowDancer shadowDancerUnit=new ShadowDancer();
-        shadowDancerUnit.setPositionByTile(gameState.getGameTiles()[tilex][tiley]);
-        BasicCommands.drawUnit(out, shadowDancerUnit, gameState.getGameTiles()[tilex][tiley]);
-        gameState.getUserPlayer().getAllUnits().put(gameState.getGameTiles()[tilex][tiley],shadowDancerUnit);
+        shadowDancerUnit.setPositionByTile(gameState.getTileByPos(tilex,tiley));
+        BasicCommands.drawUnit(out, shadowDancerUnit, gameState.getTileByPos(tilex,tiley));
+        gameState.getUserPlayer().getAllUnits().put(gameState.getTileByPos(tilex,tiley),shadowDancerUnit);
     }
 }

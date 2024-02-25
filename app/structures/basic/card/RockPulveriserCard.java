@@ -9,8 +9,8 @@ import structures.basic.unit.RockPulveriser;
 public class RockPulveriserCard extends Card {
     public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
         RockPulveriser rockPulveriserUnit=new RockPulveriser();
-        rockPulveriserUnit.setPositionByTile(gameState.getGameTiles()[tilex][tiley]);
-        BasicCommands.drawUnit(out, rockPulveriserUnit, gameState.getGameTiles()[tilex][tiley]);
-        gameState.getUserPlayer().getAllUnits().put(gameState.getGameTiles()[tilex][tiley],rockPulveriserUnit);
+        rockPulveriserUnit.setPositionByTile(gameState.getTileByPos(tilex,tiley));
+        BasicCommands.drawUnit(out, rockPulveriserUnit, gameState.getTileByPos(tilex,tiley));
+        gameState.getUserPlayer().getAllUnits().put(gameState.getTileByPos(tilex,tiley),rockPulveriserUnit);
     }
 }

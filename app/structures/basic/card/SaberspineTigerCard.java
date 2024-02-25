@@ -10,8 +10,8 @@ import structures.basic.unit.SwampEntangler;
 public class SaberspineTigerCard extends Card {
     public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
         SaberspineTiger saberspineTigerUnit=new SaberspineTiger();
-        saberspineTigerUnit.setPositionByTile(gameState.getGameTiles()[tilex][tiley]);
-        BasicCommands.drawUnit(out, saberspineTigerUnit, gameState.getGameTiles()[tilex][tiley]);
-        gameState.getAiPlayer().getAllUnits().put(gameState.getGameTiles()[tilex][tiley],saberspineTigerUnit);
+        saberspineTigerUnit.setPositionByTile(gameState.getTileByPos(tilex,tiley));
+        BasicCommands.drawUnit(out, saberspineTigerUnit, gameState.getTileByPos(tilex,tiley));
+        gameState.getAiPlayer().getAllUnits().put(gameState.getTileByPos(tilex,tiley),saberspineTigerUnit);
     }
 }

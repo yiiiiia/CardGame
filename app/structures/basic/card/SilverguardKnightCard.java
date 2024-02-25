@@ -9,8 +9,8 @@ import structures.basic.unit.SilverguardKnight;
 public class SilverguardKnightCard extends Card {
     public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
         SilverguardKnight silverguardKnightUnit=new SilverguardKnight();
-        silverguardKnightUnit.setPositionByTile(gameState.getGameTiles()[tilex][tiley]);
-        BasicCommands.drawUnit(out, silverguardKnightUnit, gameState.getGameTiles()[tilex][tiley]);
-        gameState.getAiPlayer().getAllUnits().put(gameState.getGameTiles()[tilex][tiley],silverguardKnightUnit);
+        silverguardKnightUnit.setPositionByTile(gameState.getTileByPos(tilex,tiley));
+        BasicCommands.drawUnit(out, silverguardKnightUnit, gameState.getTileByPos(tilex,tiley));
+        gameState.getAiPlayer().getAllUnits().put(gameState.getTileByPos(tilex,tiley),silverguardKnightUnit);
     }
 }

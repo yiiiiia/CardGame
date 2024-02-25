@@ -10,8 +10,8 @@ public class BadOmenCard extends Card {
 
     public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
         BadOmen badOmenUnit=new BadOmen();
-        badOmenUnit.setPositionByTile(gameState.getGameTiles()[tilex][tiley]);
-        BasicCommands.drawUnit(out, badOmenUnit, gameState.getGameTiles()[tilex][tiley]);
-        gameState.getUserPlayer().getAllUnits().put(gameState.getGameTiles()[tilex][tiley],badOmenUnit);
+        badOmenUnit.setPositionByTile(gameState.getTileByPos(tilex,tiley));
+        BasicCommands.drawUnit(out, badOmenUnit, gameState.getTileByPos(tilex,tiley));
+        gameState.getUserPlayer().getAllUnits().put(gameState.getTileByPos(tilex,tiley),badOmenUnit);
     }
 }

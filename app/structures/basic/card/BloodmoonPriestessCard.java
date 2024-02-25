@@ -9,8 +9,8 @@ import structures.basic.unit.BloodmoonPriestess;
 public class BloodmoonPriestessCard extends Card {
     public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
         BloodmoonPriestess bloodmoonPriestessUnit=new BloodmoonPriestess();
-        bloodmoonPriestessUnit.setPositionByTile(gameState.getGameTiles()[tilex][tiley]);
-        BasicCommands.drawUnit(out, bloodmoonPriestessUnit, gameState.getGameTiles()[tilex][tiley]);
-        gameState.getUserPlayer().getAllUnits().put(gameState.getGameTiles()[tilex][tiley],bloodmoonPriestessUnit);
+        bloodmoonPriestessUnit.setPositionByTile(gameState.getTileByPos(tilex,tiley));
+        BasicCommands.drawUnit(out, bloodmoonPriestessUnit, gameState.getTileByPos(tilex,tiley));
+        gameState.getUserPlayer().getAllUnits().put(gameState.getTileByPos(tilex,tiley),bloodmoonPriestessUnit);
     }
 }

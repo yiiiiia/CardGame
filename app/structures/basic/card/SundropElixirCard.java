@@ -18,7 +18,7 @@ public class SundropElixirCard extends Card {
         for(Unit unit:units){
             int tilex = unit.getPosition().getTilex();
             int tiley = unit.getPosition().getTiley();
-            Tile tile = gameState.getGameTiles()[tilex][tiley];
+            Tile tile = gameState.getTileByPos(tilex,tiley);
             BasicCommands.drawTile(out,tile,1);//mode=1 means highlight
         }
     }

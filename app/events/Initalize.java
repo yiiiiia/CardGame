@@ -9,7 +9,6 @@ import demo.CommandDemo;
 import demo.Loaders_2024_Check;
 import structures.GameState;
 import structures.basic.*;
-import structures.basic.card.*;
 import utils.BasicObjectBuilders;
 import utils.OrderedCardLoader;
 import utils.StaticConfFiles;
@@ -30,14 +29,6 @@ public class Initalize implements EventProcessor {
 
     @Override
     public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
-        // hello this is a change
-
-        gameState.gameInitalised = true;
-
-        // User 1 makes a change
-        //CommandDemo.executeDemo(out); // this executes the command demo, comment out this when implementing your solution
-        //Loaders_2024_Check.test(out);
-
         //Turn Initialization
         gameState.setTurn(1);
 
@@ -63,9 +54,9 @@ public class Initalize implements EventProcessor {
 
     private void playersInitialization(ActorRef out, GameState gameState) {
         Player player = new Player(20, 2);
-        gameState.setPlayer(player);
+        gameState.setUserPlayer(player);
         AI ai = new AI(20, 2);
-        gameState.setAi(ai);
+        gameState.setAiPlayer(ai);
 
         //mana and health visualization
         BasicCommands.setPlayer1Mana(out, gameState.getUserPlayer());
@@ -74,13 +65,9 @@ public class Initalize implements EventProcessor {
     }
 
     private void boardInitialization(ActorRef out, GameState gameState) {
-        Tile[][] gameTiles = new Tile[9][5];
-        gameState.setGameTiles(gameTiles);
-        for (int i = 0; i < gameTiles.length; i++) {
-            for (int j = 0; j < gameTiles[0].length; j++) {
-                gameState.getGameTiles()[i][j] = BasicObjectBuilders.loadTile(i, j);
-                BasicCommands.drawTile(out, gameState.getGameTiles()[i][j], 0);
-            }
+        gameState.initGameTiles();
+        for (Tile gameTile : gameState.getGameTiles()) {
+            BasicCommands.drawTile(out, gameTile, 0);
         }
     }
 
@@ -100,27 +87,27 @@ public class Initalize implements EventProcessor {
         humanAvatar.setHealth(20);
         humanAvatar.setAttack(2);
         //place human avatar
-        humanAvatar.setPositionByTile(gameState.getGameTiles()[1][2]);
-        BasicCommands.drawUnit(out, humanAvatar, gameState.getGameTiles()[1][2]);
+        humanAvatar.setPositionByTile(gameState.getTileByPos(1, 1));
+        BasicCommands.drawUnit(out, humanAvatar, gameState.getTileByPos(1, 1));
         //add human avatar to player's allUnits map
-        gameState.getUserPlayer().getAllUnits().put(gameState.getGameTiles()[1][2], humanAvatar);
+        gameState.getUserPlayer().getAllUnits().put(gameState.getTileByPos(1, 1), humanAvatar);
         //set human avatar to the tile
-        gameState.getGameTiles()[1][2].setUnit(humanAvatar);
+        gameState.getTileByPos(1, 1).setUnit(humanAvatar);
 
         //create ai avatar
         Unit aiAvatar = BasicObjectBuilders.loadUnit(StaticConfFiles.aiAvatar, ids.get(1), Unit.class);
         aiAvatar.setHealth(20);
         aiAvatar.setAttack(2);
         //place ai avatar
-        aiAvatar.setPositionByTile(gameState.getGameTiles()[7][2]);
-        BasicCommands.drawUnit(out, aiAvatar, gameState.getGameTiles()[7][2]);
+        aiAvatar.setPositionByTile(gameState.getTileByPos(7, 2));
+        BasicCommands.drawUnit(out, aiAvatar, gameState.getTileByPos(7, 2));
         //add ai avatar to ai's allUnits map
-        gameState.getAiPlayer().getAllUnits().put(gameState.getGameTiles()[7][2], aiAvatar);
+        gameState.getAiPlayer().getAllUnits().put(gameState.getTileByPos(7, 2), aiAvatar);
         //set ai avatar to the tile
-        gameState.getGameTiles()[1][2].setUnit(aiAvatar);
+        gameState.getTileByPos(7, 2).setUnit(aiAvatar);
 
         gameState.sleepMilliseconds(2000);
-        
+
         //setUnitAttack
         BasicCommands.setUnitAttack(out, humanAvatar, 2);
         BasicCommands.setUnitAttack(out, aiAvatar, 2);

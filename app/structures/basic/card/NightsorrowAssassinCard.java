@@ -9,8 +9,8 @@ import structures.basic.unit.NightsorrowAssassin;
 public class NightsorrowAssassinCard extends Card {
     public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
         NightsorrowAssassin nightsorrowAssassinUnit=new NightsorrowAssassin();
-        nightsorrowAssassinUnit.setPositionByTile(gameState.getGameTiles()[tilex][tiley]);
-        BasicCommands.drawUnit(out, nightsorrowAssassinUnit, gameState.getGameTiles()[tilex][tiley]);
-        gameState.getUserPlayer().getAllUnits().put(gameState.getGameTiles()[tilex][tiley],nightsorrowAssassinUnit);
+        nightsorrowAssassinUnit.setPositionByTile(gameState.getTileByPos(tilex,tiley));
+        BasicCommands.drawUnit(out, nightsorrowAssassinUnit, gameState.getTileByPos(tilex,tiley));
+        gameState.getUserPlayer().getAllUnits().put(gameState.getTileByPos(tilex,tiley),nightsorrowAssassinUnit);
     }
 }

@@ -9,8 +9,8 @@ import structures.basic.unit.ShadowWatcher;
 public class ShadowWatcherCard extends Card {
     public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
         ShadowWatcher shadowWatcherUnit=new ShadowWatcher();
-        shadowWatcherUnit.setPositionByTile(gameState.getGameTiles()[tilex][tiley]);
-        BasicCommands.drawUnit(out, shadowWatcherUnit, gameState.getGameTiles()[tilex][tiley]);
-        gameState.getUserPlayer().getAllUnits().put(gameState.getGameTiles()[tilex][tiley],shadowWatcherUnit);
+        shadowWatcherUnit.setPositionByTile(gameState.getTileByPos(tilex,tiley));
+        BasicCommands.drawUnit(out, shadowWatcherUnit, gameState.getTileByPos(tilex,tiley));
+        gameState.getUserPlayer().getAllUnits().put(gameState.getTileByPos(tilex,tiley),shadowWatcherUnit);
     }
 }
