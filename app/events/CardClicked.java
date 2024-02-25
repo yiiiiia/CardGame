@@ -1,11 +1,20 @@
-package events;
+package draft;
 
+
+
+
+
+
+
+import java.util.HashSet;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import akka.actor.ActorRef;
 import akka.stream.impl.fusing.Map;
 import commands.BasicCommands;
+import events.EventProcessor;
 import structures.GameState;
 import structures.GameState.Status;
 import structures.basic.Tile;
@@ -23,7 +32,7 @@ import structures.basic.Unit;
  * @author Dr. Richard McCreadie
  *
  */
-public class CardClicked implements EventProcessor{
+public class CardcCicked implements EventProcessor{
 	public  void PlaceableArea(ActorRef out,GameState gameState,Tile tile,int is)//参数需要调整
 	{int x=tile.getTilex()-1;
 		int y=tile.getTiley()-1;
@@ -31,14 +40,14 @@ public class CardClicked implements EventProcessor{
 	{for(int j=0;j<3;j++)
 		{if(isPlaceBle(x+i,y+j,gameState))
 		{
-			BasicCommands.drawTile(out, gameState.boardTile[x+i][y+j], is);
+			BasicCommands.drawTile(out, gameState.getTileByPos(x+i,y+j), is);
 		}
 		
 		}}
 	
 	}
 	public boolean isPlaceBle(int x,int y,GameState gameState)
-	{if(x<0||x>8||y<0||y>4||gameState.players[0].getUnit().containsKey(gameState.boardTile[x][y]))//这里得再加AI类的unit判断
+	{if(x<0||x>8||y<0||y>4||gameState.getUserPlayer().getUnit().containsKey(gameState.getTileByPos(x,y)))//这里得再加AI类的unit判断
 	{return false;}
 	return true;
 	}
@@ -48,9 +57,9 @@ public class CardClicked implements EventProcessor{
 		
 			int handPosition = message.get("position").asInt();
 			int pos=handPosition-1;
-			BasicCommands.drawCard(out, gameState.players[0].getCard().get(pos), handPosition, 1);
-		if(gameState.players[0].getCard().get(pos).isCreature())
-			{for(Tile cur:gameState.players[0].getUnit().keySet())
+			BasicCommands.drawCard(out, gameState.getUserPlayer().getCard().get(pos), handPosition, 1);
+		if(gameState.getUserPlayer().getCard().get(pos).isCreature())
+			{for(Tile cur:gameState.getUserPlayer().getUnit().keySet())
 		{
 			PlaceableArea(out,gameState,cur,1);
 			
@@ -58,18 +67,22 @@ public class CardClicked implements EventProcessor{
 			}
 		
 		else
-		{String name=gameState.players[0].getCard().get(pos).getCardname();
+		{String name=gameState.getUserPlayer().getCard().get(pos).getCardname();
 		
 		switch(name)
 		{
-		case "DarkTerminus":for(Tile cur:gameState.players[1].getUnit().keySet())
+		case "DarkTerminus":for(Tile cur:gameState.getAiPlayer().getUnit().keySet())
 		{
 			BasicCommands.drawTile(out, cur, 2);
 		}
 		break;
 		
 		case "WraithlingSwarm":
-			for(Tile cur:gameState.players[0].getUnit().keySet())
+			Set<Tile> keySet1 = gameState.getUserPlayer().getUnit().keySet();
+			Set<Tile> keySet2 = gameState.getAiPlayer().getUnit().keySet();
+			Set<Tile> combinedKeySet = new HashSet<>(keySet1);
+			combinedKeySet.addAll(keySet2);
+			for(Tile cur:combinedKeySet)
 			{
 				PlaceableArea(out,gameState,cur,1);
 				
@@ -77,7 +90,14 @@ public class CardClicked implements EventProcessor{
 			//To do，召唤生物
 			break;
 			
-		case "HornoftheForsaken":
+		case "HornoftheForsaken":for(Tile cur:gameState.getUserPlayer().getUnit().keySet())
+		{
+			if(gameState.getUserPlayer().getUnit().get(cur).getId()==0)//假设avatarid为0；
+			{
+				BasicCommands.drawTile(out, cur, 2);
+				break;
+			}
+		}
 			//显示Avatar位置
 			break;
 		
@@ -92,3 +112,5 @@ public class CardClicked implements EventProcessor{
 	}
 
 }
+
+
