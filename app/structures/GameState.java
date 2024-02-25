@@ -46,27 +46,27 @@ public class GameState {
 	private Unit aiAvatar;
 	private List<Tile> provokeAreas; // A list of tiles where units on which will be provoked
 
-	public void initGameTiles() {
-		gameTiles = new Tile[ROWS][COLS];
-		for (int y = 0; y < ROWS; y++) {
-			for (int x = 0; x < COLS; x++) {
-				Tile tile = BasicObjectBuilders.loadTile(x, y);
-				gameTiles[y][x] = tile;
-			}
-		}
-	}
+    public void initGameTiles() {
+        gameTiles = new Tile[COLS][ROWS];
+        for (int x = 0; x < COLS; x++) {
+            for (int y = 0; y < ROWS; y++) {
+                Tile tile = BasicObjectBuilders.loadTile(x, y);
+                gameTiles[x][y] = tile;
+            }
+        }
+    }
 
-	public List<Tile> getGameTiles() {
-		List<Tile> tiles = new ArrayList<>();
-		if (gameTiles != null && gameTiles.length == 0) {
-			for (int row = 0; row < ROWS; row++) {
-				for (int col = 0; col < COLS; col++) {
-					tiles.add(gameTiles[row][col]);
-				}
-			}
-		}
-		return tiles;
-	}
+    public List<Tile> getGameTiles() {
+        List<Tile> tiles = new ArrayList<>();
+        if (gameTiles != null && gameTiles.length != 0) {
+            for (int row = 0; row < ROWS; row++) {
+                for (int col = 0; col < COLS; col++) {
+                    tiles.add(gameTiles[col][row]);
+                }
+            }
+        }
+        return tiles;
+    }
 
 	public Unit getUserAvatar() {
 		return userAvatar;
@@ -93,12 +93,12 @@ public class GameState {
 	}
 
 	// Method to retrieve a Tile by its position
-	public Tile getTileByPos(int tilex, int tiley) {
-		if (tiley >= 0 && tiley < ROWS && tilex >= 0 && tilex < COLS) {
-			return gameTiles[tiley][tilex];
-		}
-		return null;
-	}
+    public Tile getTileByPos(int tilex, int tiley) {
+        if (tiley >= 0 && tiley < ROWS && tilex >= 0 && tilex < COLS) {
+            return gameTiles[tilex][tiley];
+        }
+        return null;
+    }
 
 	// Method to get the user player
 	public Player getUserPlayer() {
