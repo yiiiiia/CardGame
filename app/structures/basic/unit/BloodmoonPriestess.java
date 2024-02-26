@@ -32,7 +32,7 @@ public class BloodmoonPriestess extends Unit {
         }
         if (emptyTiles.size() > 0) {
             int randomTile = r.nextInt(emptyTiles.size());
-            BasicCommands.playEffectAnimation(out, "f1_wraithsummon", emptyTiles.get(randomTile);
+            BasicCommands.playEffectAnimation(out, "f1_wraithsummon", emptyTiles.get(randomTile));
             Wraithling wraithling = (Wraithling)BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Wraithling.class);
             wraithling.setPositionByTile(emptyTiles.get(randomTile));
             BasicCommands.drawUnit(out, wraithling, emptyTiles.get(randomTile));
