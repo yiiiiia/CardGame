@@ -25,7 +25,7 @@ public class WraithlingSwarmCard extends Card {
                 if(emptyTile.getUnit()!=null) {
                     emptyTiles.remove(emptyTile);
                 }else {
-                    BasicCommands.drawTile(out, emptyTile, 1);
+                    BasicCommands.drawTile(out, emptyTile, Tile.TILE_WHITE_MODE);
                 }
             }
             if(!emptyTiles.isEmpty()) {
