@@ -9,8 +9,11 @@ import utils.StaticConfFiles;
 
 public class GloomChaser extends Unit{
 
-        protected int health;
-        protected int attack;
+    public static final int initialHealth = 1;
+    public static final int initialAttack = 3;
+    
+    protected int health;
+    protected int attack;
     
     public GloomChaser() {
         super();
@@ -30,6 +33,6 @@ public class GloomChaser extends Unit{
     }
 
     public static GloomChaser getInstance(String configpaths) {
-        return (GloomChaser) BasicObjectBuilders.loadUnit(configpaths, 4, GloomChaser.class);
+        return (GloomChaser) BasicObjectBuilders.loadUnit(configpaths, 3w, GloomChaser.class);
     }
 }
