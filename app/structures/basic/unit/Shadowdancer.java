@@ -8,6 +8,9 @@ import utils.BasicObjectBuilders;
 
 public class Shadowdancer extends Unit {
     
+    public static final int initialHealth = 10;
+    public static final int initialAttack = 3;
+
     protected int health;
     protected int attack;
 
@@ -34,6 +37,6 @@ public class Shadowdancer extends Unit {
     }
 
     public static Shadowdancer getInstance(String configpaths) {
-        return (Shadowdancer)BasicObjectBuilders.loadUnit(configpaths, 9, Shadowdancer.class);
+        return (Shadowdancer)BasicObjectBuilders.loadUnit(configpaths, 8, Shadowdancer.class);
     }
 }
