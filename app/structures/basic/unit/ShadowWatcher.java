@@ -7,6 +7,9 @@ import utils.BasicObjectBuilders;
 
 public class ShadowWatcher extends Unit {
     
+    public static final int initialHealth = 2;
+    public static final int initialAttack = 3;
+
     protected int health;
     protected int attack;
 
@@ -25,6 +28,6 @@ public class ShadowWatcher extends Unit {
     }
 
     public static ShadowWatcher getInstance(String configpaths) {
-        return (ShadowWatcher)BasicObjectBuilders.loadUnit(configpaths, 6, ShadowWatcher.class);
+        return (ShadowWatcher)BasicObjectBuilders.loadUnit(configpaths, 5, ShadowWatcher.class);
     }
 }
