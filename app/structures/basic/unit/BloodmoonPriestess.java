@@ -1,46 +1,16 @@
-package structures.basic.unit;
+package structures.basic.card;
 
-import java.util.List;
-import java.util.Random;
-
+import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
-import structures.basic.Tile;
-import structures.basic.Unit;
-import utils.BasicObjectBuilders;
-import utils.StaticConfFiles;
+import structures.basic.Card;
+import structures.basic.unit.BloodmoonPriestess;
 
-public class BloodmoonPriestess extends Unit {
-        
-    protected int health;
-    protected int attack;
-
-    public BloodmoonPriestess() {
-        super();
-        health = 3;
-        attack = 3;
-    }
-
-    public void performDeathWatch(ActorRef out, GameState gameState) {
-        //whenever a unit, friendly or enemy dies
-        Random r = new Random();
-        List<Tile> emptyTiles = gameState.getAllTiles();
-        for(Tile tile: emptyTiles) {
-            if(tile.getUnit()!=null) {
-                emptyTiles.remove(tile);
-            }
-        }
-        if (emptyTiles.size() > 0) {
-            int randomTile = r.nextInt(emptyTiles.size());
-            BasicCommands.playEffectAnimation(out, "f1_wraithsummon", emptyTiles.get(randomTile));
-            Wraithling wraithling = (Wraithling)BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Wraithling.class);
-            wraithling.setPositionByTile(emptyTiles.get(randomTile));
-            BasicCommands.drawUnit(out, wraithling, emptyTiles.get(randomTile));
-            gameState.getPlayerUnits().put(emptyTiles.get(randomTile), wraithling);
-        }
-    }
-
-    public static BloodmoonPriestess getInstance(String configpaths) {
-        return (BloodmoonPriestess)BasicObjectBuilders.loadUnit(configpaths, 8, BloodmoonPriestess.class);
+public class BloodmoonPriestessCard extends Card {
+    public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
+        BloodmoonPriestess bloodmoonPriestessUnit=new BloodmoonPriestess();
+        bloodmoonPriestessUnit.setPositionByTile(gameState.getGameTiles()[tilex][tiley]);
+        BasicCommands.drawUnit(out, bloodmoonPriestessUnit, gameState.getGameTiles()[tilex][tiley]);
+        gameState.getUserPlayer().getAllUnits().put(gameState.getGameTiles()[tilex][tiley],bloodmoonPriestessUnit);
     }
 }
