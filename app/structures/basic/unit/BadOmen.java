@@ -1,17 +1,32 @@
-package structures.basic.card;
+package structures.basic.unit;
 
-import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
-import structures.basic.Card;
-import structures.basic.unit.BadOmen;
+import structures.basic.Unit;
+import utils.BasicObjectBuilders;
 
-public class BadOmenCard extends Card {
+public class BadOmen extends Unit {
 
-    public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
-        BadOmen badOmenUnit=new BadOmen();
-        badOmenUnit.setPositionByTile(gameState.getGameTiles()[tilex][tiley]);
-        BasicCommands.drawUnit(out, badOmenUnit, gameState.getGameTiles()[tilex][tiley]);
-        gameState.getUserPlayer().getAllUnits().put(gameState.getGameTiles()[tilex][tiley],badOmenUnit);
+    public static final int initialHealth = 1;
+    public static final int initialAttack = 0;
+
+    protected int health;
+    protected int attack;
+
+    public BadOmen() {
+        super();
+        health = 1;
+        attack = 0;
+    }
+
+    public void performDeathWatch(ActorRef out, GameState gameState) {
+        //whenever a unit, friendly or enemy dies
+        this.setAttack(attack + 1);
+        BasicCommands.setUnitAttack(out, this, attack + 1);
+    }
+
+    public static BadOmen getInstance(String configpaths) {
+        return (BadOmen)BasicObjectBuilders.loadUnit(configpaths, 2, BadOmen.class);
     }
 }
+
