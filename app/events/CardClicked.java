@@ -16,7 +16,7 @@ import akka.stream.impl.fusing.Map;
 import commands.BasicCommands;
 import events.EventProcessor;
 import structures.GameState;
-import structures.GameState.Status;
+
 import structures.basic.Tile;
 import structures.basic.Unit;
 
@@ -33,7 +33,14 @@ import structures.basic.Unit;
  *
  */
 public class CardcCicked implements EventProcessor{
-	public  void PlaceableArea(ActorRef out,GameState gameState,Tile tile,int is)//参数需要调整
+	
+	/*This method is used to detect the placeable area near the tile, 
+	 * and then mark the color of the placeable area as highlight white
+	 *  @param tile:Tiles that need to be detected
+	 *          is:Which state to convert the tile to
+	 *  */
+	
+	public  void PlaceableArea(ActorRef out,GameState gameState,Tile tile,int is)
 	{int x=tile.getTilex()-1;
 		int y=tile.getTiley()-1;
 		for(int i=0;i<3;i++)
@@ -46,8 +53,15 @@ public class CardcCicked implements EventProcessor{
 		}}
 	
 	}
+	
+	/*This method is used to determine whether the coordinates are a placeable area.
+	 *  @param x:The abscissa of the tile
+	 *         y:vertical coordinate of tile
+	 *  @return:Return value of Boolean type, true means it can be placed, 
+	 *  false means it cannot be placed.
+	 *  */
 	public boolean isPlaceBle(int x,int y,GameState gameState)
-	{if(x<0||x>8||y<0||y>4||gameState.getUserPlayer().getUnit().containsKey(gameState.getTileByPos(x,y)))//这里得再加AI类的unit判断
+	{if(x<0||x>8||y<0||y>4||gameState.getUserPlayer().getAllUnitsAndTile().containsKey(gameState.getTileByPos(x,y)))//这里得再加AI类的unit判断
 	{return false;}
 	return true;
 	}
@@ -57,29 +71,40 @@ public class CardcCicked implements EventProcessor{
 		
 			int handPosition = message.get("position").asInt();
 			int pos=handPosition-1;
-			BasicCommands.drawCard(out, gameState.getUserPlayer().getCard().get(pos), handPosition, 1);
-		if(gameState.getUserPlayer().getCard().get(pos).isCreature())
-			{for(Tile cur:gameState.getUserPlayer().getUnit().keySet())
+			if(gameState.getActivateCard()!=null)
+			{
+				{for(Tile cur:gameState.getUserPlayer().getAllUnitsAndTile().keySet())
+				{
+					PlaceableArea(out,gameState,cur,0);
+					
+				}
+					}
+			}
+		
+			//If it is a summoning card, detect the place where it can be placed
+			if(gameState.getUserPlayer().getHandCards().get(pos).isCreature())
+			{for(Tile cur:gameState.getUserPlayer().getAllUnitsAndTile().keySet())
 		{
 			PlaceableArea(out,gameState,cur,1);
 			
 		}
+			gameState.setActivateCard(gameState.getUserPlayer().getHandCards().get(pos));
 			}
-		
+		//Non-creature card, detect which spell card it is(based on the card's name)
 		else
-		{String name=gameState.getUserPlayer().getCard().get(pos).getCardname();
+		{String name=gameState.getUserPlayer().getHandCards().get(pos).getCardname();
 		
 		switch(name)
 		{
-		case "DarkTerminus":for(Tile cur:gameState.getAiPlayer().getUnit().keySet())
+		case "DarkTerminusCard":for(Tile cur:gameState.getAiPlayer().getAllUnitsAndTile().keySet())
 		{
 			BasicCommands.drawTile(out, cur, 2);
 		}
 		break;
 		
-		case "WraithlingSwarm":
-			Set<Tile> keySet1 = gameState.getUserPlayer().getUnit().keySet();
-			Set<Tile> keySet2 = gameState.getAiPlayer().getUnit().keySet();
+		case "WraithlingSwarmCard":
+			Set<Tile> keySet1 = gameState.getUserPlayer().getAllUnitsAndTile().keySet();
+			Set<Tile> keySet2 = gameState.getAiPlayer().getAllUnitsAndTile().keySet();
 			Set<Tile> combinedKeySet = new HashSet<>(keySet1);
 			combinedKeySet.addAll(keySet2);
 			for(Tile cur:combinedKeySet)
@@ -87,30 +112,24 @@ public class CardcCicked implements EventProcessor{
 				PlaceableArea(out,gameState,cur,1);
 				
 			}
-			//To do，召唤生物
+			
 			break;
 			
-		case "HornoftheForsaken":for(Tile cur:gameState.getUserPlayer().getUnit().keySet())
+		case "HornOfTheForsakenCard":for(Tile cur:gameState.getUserPlayer().getAllUnitsAndTile().keySet())
 		{
-			if(gameState.getUserPlayer().getUnit().get(cur).getId()==0)//假设avatarid为0；
+			if(gameState.getUserPlayer().getAllUnitsAndTile().get(cur).getId()==0)//假设avatarid为0；
 			{
 				BasicCommands.drawTile(out, cur, 2);
 				break;
 			}
-		}
-			//显示Avatar位置
+		}		
 			break;
-		
-		}
-			
-		}
-		
-		
-		
-		
-		
-	}
 
+		}
+		gameState.setActivateCard(gameState.getUserPlayer().getHandCards().get(pos));
+		}
+
+	}
 }
 
 
