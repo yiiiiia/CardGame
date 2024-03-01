@@ -58,11 +58,11 @@ else
 	if(this.getMana()>=cur.getManacost())
 	{switch(curname)
 	{
-	case "Sundrop Elixir":useSundrop(cur,gameState, out, message);
+	case "Sundrop Elixir":useSundrop(cur,gameState, out, message);//改一下使用时机
 		break;
 	case "True Strike":useTrueStrike(cur,gameState, out, message);
 		break;
-	case "Beam Shock":useStun(cur,gameState, out, message);
+	case "Beam Shock":useStun(cur,gameState, out, message);//后续升级成攻击一次后使用bean shock
 		break;
 	}
 	}
@@ -94,9 +94,12 @@ this.deleteHandCard(card);
 //Sundrop卡的使用
 public void useSundrop(Card card,GameState gameState,ActorRef out, JsonNode message)
 {Tile attackMax=null;
+int maxLostHp=0;
 for(Tile cur:gameState.getUserPlayer().getAllUnits().keySet())
-{if(gameState.getAiPlayer().getAllUnits().get(cur).getAttack()>gameState.getUserPlayer().getAllUnits().get(attackMax).getAttack())
+{int nowLostHp=gameState.getUserPlayer().getAllUnits().get(cur).getMaxHealth()-gameState.getUserPlayer().getAllUnits().get(cur).getCurHealth();
+	if(maxLostHp<nowLostHp)
 {attackMax=cur;
+maxLostHp=nowLostHp;
 	}
 	}
 //card.Sundrop(Unit unit),这个stun是卡内定义的方法
@@ -138,6 +141,8 @@ class PersonComparator implements Comparator<Card> {
         return Integer.compare(c1.getManacost(), c2.getManacost());
     }
 }
+
+//使用召唤类卡片
 public void useCreatureCard(GameState gameState,ActorRef out,JsonNode message)
 {if(this.getMana()==0)
 {
@@ -160,15 +165,20 @@ else
 }
 	
 }
+
+//判断是否是可放置区域
 public boolean isPlaceBle(int x,int y,GameState gameState)
 {if(x<0||x>8||y<0||y>4||gameState.getUserPlayer().getAllUnits().containsKey(gameState.getTileByPos(x, y)))//这里得再加AI类的unit判断
 {return false;}
 return true;
 }
-public Tile placeableArea(GameState gameState)//后期加avatar附近没放置区域的代码
+
+
+//返回可召唤生物的Tile
+public Tile placeableArea(GameState gameState)//后期可以加一点放在哪里的策略
 {for(Tile cur:this.getAllUnits().keySet())
-{if(this.getAllUnits().get(cur).getId()==1)//假设avatar的id是1
-{	int x=cur.getTilex()-1;
+{
+	int x=cur.getTilex()-1;
 int y=cur.getTiley()-1;
 	for(int i=0;i<3;i++)
 {for(int j=0;j<3;j++)
@@ -179,7 +189,7 @@ int y=cur.getTiley()-1;
 
 }
 }
-	}
+	
 	}
 return null;
 	}
@@ -258,7 +268,7 @@ List<Tile> tilesAccessible = gameState.getTilesAccessible(aiUnit);
 	}
 }
 
-//判断是否有攻击目标,后面要改；
+//判断是否有攻击目标,后面要改，目前没用上；
 public boolean haveAttack(Tile tile,GameState gameState,ActorRef out, JsonNode message)
 {return true;
 	}
@@ -282,16 +292,16 @@ return adjacenUnit;
 	}
 
 //找最近的攻击单位
-public Tile getClosestTile(Tile aitile,GameState gameState)
+public Tile getClosestTile(Tile aitile,GameState gameState)//保证第一轮走完一周，判断有没有provoke卡
 {  int rows = 9;//行数
 int cols = 5;//列数
 boolean[][] visited = new boolean[rows][cols];
-
+int k=0;//计数器，用来判断第一周是否有provoke卡
 Queue<int[]> queue = new LinkedList<>();
 queue.offer(new int[]{aitile.getTilex(), aitile.getTiley()});
 visited[aitile.getTilex()][aitile.getTiley()] = true;
-
-int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};//后续改下这个矩阵，从左开始比较好
+Tile targetTile=null;
+int[][] directions = {{-1, 0},{-1,-1}, {1, 0},{1,1}, {0, -1},{-1,-1}, {0, 1},{1,1}};//后续改下这个矩阵，从左开始比较好
 
 
 while (!queue.isEmpty()) {
@@ -299,9 +309,26 @@ while (!queue.isEmpty()) {
     int currentRow = currentCell[0];
      int currentCol = currentCell[1];
 
-    if (gameState.getUserPlayer().getAllUnits().containsKey(gameState.getTileByPos(currentRow,currentCol))) {
+    if (k>8&&gameState.getUserPlayer().getAllUnits().containsKey(gameState.getTileByPos(currentRow,currentCol))) {
         return gameState.getTileByPos(currentRow,currentCol); // 找到最近的tile
     }
+    else
+    {if(k==8&&targetTile!=null)
+    {
+    	return targetTile;
+    }
+    if(gameState.getUserPlayer().getAllUnits().containsKey(gameState.getTileByPos(currentRow,currentCol))&&gameState.getUserPlayer().getAllUnits().get(gameState.getTileByPos(currentRow,currentCol)).getName().equals("Rock Pulveriser"))
+    {
+    	return gameState.getTileByPos(currentRow,currentCol);
+    }
+    if(gameState.getUserPlayer().getAllUnits().containsKey(gameState.getTileByPos(currentRow,currentCol))) 
+    {
+    	targetTile=gameState.getTileByPos(currentRow,currentCol);
+    }
+    
+    	
+    }
+    k++;
 
     for (int[] direction : directions) {
         int newRow = currentRow + direction[0];
