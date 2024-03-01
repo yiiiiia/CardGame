@@ -2,8 +2,10 @@ package structures.basic;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * A basic representation of of the Player. A player
@@ -14,112 +16,112 @@ import java.util.Map;
  */
 public class Player {
 
-	private int m_health;
-	private int m_mana;
-	private int m_maxHandCard;
+	public static final int MAX_HAND_CARD_NUM = 6;
+	private int health;
+	private int mana;
+	// All units on the board that belong to this player
+	private Map<Tile, Unit> allUnits;//All units on the player's field
+	
+	// private  Map<Tile,Unit> allUnits;//
+	private List<Card> handCard;//Current hand
+	private List<Card> cardsRemain;//The remaining cards in the deck
 
-	private ArrayList<Unit> m_allUnit;//可召唤的所有生物
-	private  Map<Tile,Unit> m_unit;//现在场上的单位
-	private List<Card> m_handCard;//现在的手牌
-	private List<Card> m_cardsRemain;//牌库剩余的牌
 	
 	
-	
+	public Player() {
+		super();
+		this.health = 20;
+		this.mana = 0;
+		this.allUnits = new HashMap<>();
+	}
+
 	public Player(int health, int mana) {
 		super();
-		this.m_health = health;
-		this.m_mana = mana;
-		this.m_maxHandCard=6;
-		
-		m_allUnit=new ArrayList<Unit>();
-		m_unit=new HashMap<Tile,Unit>();
-		m_handCard=new ArrayList<Card>();
-		m_cardsRemain=new ArrayList<Card>();
+		this.health = health;
+		this.mana = mana;
+		this.allUnits = new HashMap<>();
 	}
-	public Player(int health, int mana,int maxhandcard) {
-		super();
-		this.m_health = health;
-		this.m_mana = mana;
-		this.m_maxHandCard=maxhandcard;
-		
-		m_allUnit=new ArrayList<Unit>();
-		m_unit=new HashMap<Tile,Unit>();
-		m_handCard=new ArrayList<Card>();
-		m_cardsRemain=new ArrayList<Card>();
-	}
-	
-	public int getNumCard()
-	{return this.m_handCard.size();}
-	
-	public Map<Tile,Unit> getUnit()
-	{return this.m_unit;}
-	
+
 	public int getHealth() {
-		return m_health;
+		return health;
 	}
+
 	public void setHealth(int health) {
-		this.m_health = health;
+		this.health = health;
 	}
+
 	public int getMana() {
-		return m_mana;
+		return mana;
 	}
+
 	public void setMana(int mana) {
-		this.m_mana = mana;
+		this.mana = mana;
+	}
+
+	public Unit getUnitByTile(Tile tile) {
+		return allUnits.get(tile);
+	}
+
+	public void addUnitOnTile(Tile tile, Unit unit) {
+		tile.setUnit(unit);
+		allUnits.put(tile, unit);
+	}
+
+	public List<Unit> getAllUnits() {
+		List<Unit> units = new ArrayList<>();
+		units.addAll(allUnits.values());
+		return units;	
 	}
 	
-	public void addMana(int mana)
-	{
-		this.m_mana+=mana;
+	public Map<Tile, Unit> getAllUnitsAndTile() {
+		return this.allUnits;	
 	}
-	
-	public void decreaseMana(int mana)
-	{
-		this.m_mana-=mana;
+
+
+	public void removeHandCardById(int id) {
+		Iterator<Card> it = this.getHandCards().iterator();
+		while(it.hasNext()){              
+			Card temp =  it.next();                       
+			if(temp.getId()==id){                              
+			it.remove();  
+			return;
+			}      
+			}  
 	}
-	
-	public  List<Card> getCard()
-	{
-		return this.m_handCard;
+
+	public List<Card> getHandCards() {
+		// TODO implementation
+		return this.handCard;
 	}
-	
-	public void addUnit(Tile tile,Unit unit)
-	{this.m_unit.put(tile, unit);}
-	
-	public void deleteUnit(Tile tile,Unit unit)
-	{this.m_unit.remove(tile);}
-	
-	public void addHandCard(Card card)
-	{if(this.m_handCard.size()>=this.m_maxHandCard)
-	{return;}
-		//手牌+1，牌库-1；
-	m_handCard.add(card);
-		m_cardsRemain.remove(card);
+
+	public void removeUnit(Unit unit) {
+		Iterator<Entry<Tile, Unit>> iterator = allUnits.entrySet().iterator();
+		while (iterator.hasNext()) {
+			Tile tile = iterator.next().getKey();
+			Unit u = iterator.next().getValue();
+			if (u.getId() == unit.getId()) {
+				tile.clearUnit();
+				iterator.remove();
+			}
+		}
 	}
-	
-	public void deleteHandCard(Card card)//在点击手牌那里实现
-	{
-		
-		
+
+	public boolean hasUnit(Unit unit) {
+		if (allUnits == null || allUnits.size() == 0) {
+			return false;
+		}
+		for (Unit u : allUnits.values()) {
+			if (u.getId() == unit.getId()) {
+				return true;
+			}
+		}
+		return false;
 	}
-	
-	public void useCard(Card card,Tile tile)//用卡
-	{
-		Unit curunit;
-		int unitId=card.getId()>10?card.getId()-10:card.getId();
-		curunit=this.m_allUnit.get(unitId);
-		this.m_unit.put(tile, curunit);
-		this.decreaseMana(card.getManacost());
-		this.deleteHandCard(card);
+
+	public int getCardPosition(Card card) {
+		// TODO: implementation
+		return 0;
 	}
-	
-	public void addCardRemain(Card card)
-	{
-		m_cardsRemain.add(card);
-	}
-	
-	public void deleteCardRemain(Card card)
-	{
-		m_cardsRemain.remove(card);
-	}
+
 	
 }
