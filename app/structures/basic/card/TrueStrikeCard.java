@@ -28,7 +28,7 @@ public class TrueStrikeCard extends Card {
             return false;
         }
         unit.setHealth(Math.max(unit.getHealth()-2,0));
-        BasicCommands.playUnitAnimation(out,unit, UnitAnimationType.channel);
+        BasicCommands.playUnitAnimation(out,unit, UnitAnimationType.hit);
         //health=0, this attacked unit is dead
         if (unit.getHealth() == 0) {
             for (Map.Entry<Tile, Unit> tileUnitEntry : gameState.getUserPlayer().getAllUnits().entrySet()) {
