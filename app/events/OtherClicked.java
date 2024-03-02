@@ -11,35 +11,28 @@ import structures.basic.Unit;
 import utils.BasicObjectBuilders;
 
 /**
- * Indicates that the user has clicked an object on the game canvas, in this case
- * somewhere that is not on a card tile or the end-turn button.
+ * Indicates that the user has clicked an object on the game canvas, in this
+ * case somewhere that is not on a card tile or the end-turn button.
  * 
- * { 
- *   messageType = “otherClicked”
- * }
+ * { messageType = “otherClicked” }
  * 
  * @author Dr. Richard McCreadie
  *
  */
-public class OtherClicked implements EventProcessor{
-	
+public class OtherClicked implements EventProcessor {
+
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
-		if(gameState.getActivateCard()!=null)
-		{
-			{for(Tile cur:gameState.getUserPlayer().getAllUnitsAndTile().keySet())
+		if (gameState.getActivateCard() != null) {
 			{
-				gameState.PlaceableArea(out,cur,0);
-				
-			}
+				for (Tile cur : gameState.getUserPlayer().getAllUnitsAndTile().keySet()) {
+					gameState.PlaceableArea(out, cur, 0);
+
+				}
 			}
 			gameState.setActivateCard(null);
 		}
-		
-		
-		
+
 	}
 
 }
-
-
