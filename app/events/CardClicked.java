@@ -39,20 +39,8 @@ public class CardcCicked implements EventProcessor{
 	 *  @param tile:Tiles that need to be detected
 	 *          is:Which state to convert the tile to
 	 *  */
+	//Later put this method it in GameState
 	
-	public  void PlaceableArea(ActorRef out,GameState gameState,Tile tile,int is)
-	{int x=tile.getTilex()-1;
-		int y=tile.getTiley()-1;
-		for(int i=0;i<3;i++)
-	{for(int j=0;j<3;j++)
-		{if(isPlaceBle(x+i,y+j,gameState))
-		{
-			BasicCommands.drawTile(out, gameState.getTileByPos(x+i,y+j), is);
-		}
-		
-		}}
-	
-	}
 	
 	/*This method is used to determine whether the coordinates are a placeable area.
 	 *  @param x:The abscissa of the tile
@@ -60,22 +48,19 @@ public class CardcCicked implements EventProcessor{
 	 *  @return:Return value of Boolean type, true means it can be placed, 
 	 *  false means it cannot be placed.
 	 *  */
-	public boolean isPlaceBle(int x,int y,GameState gameState)
-	{if(x<0||x>8||y<0||y>4||gameState.getUserPlayer().getAllUnitsAndTile().containsKey(gameState.getTileByPos(x,y)))//这里得再加AI类的unit判断
-	{return false;}
-	return true;
-	}
+	//Later put this method it in GameState
+	
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
 		
 		
 			int handPosition = message.get("position").asInt();
 			int pos=handPosition-1;
-			if(gameState.getActivateCard()!=null)
+			if(gameState.getActivateCard()!=null&&gameState.getUserPlayer().getHandCards().get(pos)!=gameState.getActivateCard())
 			{
 				{for(Tile cur:gameState.getUserPlayer().getAllUnitsAndTile().keySet())
 				{
-					PlaceableArea(out,gameState,cur,0);
+					gameState.PlaceableArea(out,cur,0);
 					
 				}
 					}
@@ -85,7 +70,7 @@ public class CardcCicked implements EventProcessor{
 			if(gameState.getUserPlayer().getHandCards().get(pos).isCreature())
 			{for(Tile cur:gameState.getUserPlayer().getAllUnitsAndTile().keySet())
 		{
-			PlaceableArea(out,gameState,cur,1);
+				gameState.PlaceableArea(out,cur,1);
 			
 		}
 			gameState.setActivateCard(gameState.getUserPlayer().getHandCards().get(pos));
@@ -109,7 +94,7 @@ public class CardcCicked implements EventProcessor{
 			combinedKeySet.addAll(keySet2);
 			for(Tile cur:combinedKeySet)
 			{
-				PlaceableArea(out,gameState,cur,1);
+				gameState.PlaceableArea(out,cur,1);
 				
 			}
 			
