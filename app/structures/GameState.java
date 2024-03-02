@@ -468,7 +468,7 @@ public class GameState {
 	}
 	
 	public boolean isPlaceBle(int x,int y)
-	{if(x<0||x>8||y<0||y>4||this.getUserPlayer().getAllUnitsAndTile().containsKey(this.getTileByPos(x,y)))//这里得再加AI类的unit判断
+	{if(this.getUserPlayer().getAllUnitsAndTile().containsKey(this.getTileByPos(x,y))||x<0||x>8||y<0||y>4||this.getUserPlayer().getAllUnitsAndTile().containsKey(this.getTileByPos(x,y)))//这里得再加AI类的unit判断
 	{return false;}
 	return true;
 	}
