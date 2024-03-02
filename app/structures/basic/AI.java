@@ -1,4 +1,4 @@
-package draft;
+package structures.basic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
