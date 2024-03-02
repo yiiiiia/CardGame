@@ -1,5 +1,7 @@
 package structures.basic;
 
+import akka.actor.ActorRef;
+import structures.GameState;
 
 /**
  * This is the base representation of a Card which is rendered in the player's hand.
@@ -11,17 +13,20 @@ package structures.basic;
  *
  */
 public class Card {
-	
-	int id;
-	
-	String cardname;
-	int manacost;
-	
-	MiniCard miniCard;
-	BigCard bigCard;
-	
-	boolean isCreature;
-	String unitConfig;
+	public static final int APPLY_NO_UNIT = 0; // cannot apply to any unit
+	public static final int APPLY_ENEMY_UNIT = 0; // can only apply to enemy unit
+	public static final int APPLY_ALLY_UNIT = 0; // can only apply to ally unit
+	public static final int CARD_NORMAL_MODE = 0;
+	public static final int CARD_ACTIVE_MODE = 1;
+
+	private int id;
+	private String cardname;
+	private int manacost;
+	private MiniCard miniCard;
+	private BigCard bigCard;
+	private boolean isCreature;
+	private String unitConfig;
+	private int applyOnUnitType;
 	
 	public Card() {};
 	
@@ -34,6 +39,18 @@ public class Card {
 		this.bigCard = bigCard;
 		this.isCreature = isCreature;
 		this.unitConfig = unitConfig;
+	}
+
+	// TODO implementation
+	// perform spell cast on the unit
+	public void castSpell(ActorRef out, GameState gameState, Unit unit) {
+		throw new RuntimeException("should be override by sub-class");
+	}
+
+	// TODO implementation
+	// summon unit on the tile
+	public void summonUnit(ActorRef out, GameState gameState, Tile tile) {
+		throw new RuntimeException("should be override by sub-class");
 	}
 	
 	public int getId() {
@@ -85,5 +102,11 @@ public class Card {
 		this.unitConfig = unitConfig;
 	}
 
-	
+	public int getApplyOnUnitType() {
+		return applyOnUnitType;
+	}
+
+	public void setApplyOnUnitType(int applyOnUnitType) {
+		this.applyOnUnitType = applyOnUnitType;
+	}
 }

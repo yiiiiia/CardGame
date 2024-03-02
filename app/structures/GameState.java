@@ -72,11 +72,6 @@ public class GameState {
 		return userAvatar;
 	}
 
-	
-
-
-
-
 	public void setUserAvatar(Unit userAvatar) {
 		this.userAvatar = userAvatar;
 	}
