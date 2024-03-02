@@ -447,5 +447,26 @@ public class GameState {
 			e.printStackTrace();
 		}
 	}
+	
+	public  void PlaceableArea(ActorRef out,Tile tile,int is)
+	{int x=tile.getTilex()-1;
+		int y=tile.getTiley()-1;
+		for(int i=0;i<3;i++)
+	{for(int j=0;j<3;j++)
+		{if(isPlaceBle(x+i,y+j))
+		{
+			BasicCommands.drawTile(out, this.getTileByPos(x+i,y+j), is);
+		}
+		
+		}}
+	
+	}
+	
+	public boolean isPlaceBle(int x,int y)
+	{if(this.getUserPlayer().getAllUnitsAndTile().containsKey(this.getTileByPos(x,y))||x<0||x>8||y<0||y>4||this.getUserPlayer().getAllUnitsAndTile().containsKey(this.getTileByPos(x,y)))
+	{return false;}
+	return true;
+	}
 
 }
+
