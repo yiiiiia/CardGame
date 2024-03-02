@@ -8,8 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * A basic representation of of the Player. A player
- * has health and mana.
+ * A basic representation of of the Player. A player has health and mana.
  * 
  * @author Dr. Richard McCreadie
  *
@@ -20,14 +19,12 @@ public class Player {
 	private int health;
 	private int mana;
 	// All units on the board that belong to this player
-	private Map<Tile, Unit> allUnits;//All units on the player's field
-	
-	// private  Map<Tile,Unit> allUnits;//
-	private List<Card> handCard;//Current hand
-	private List<Card> cardsRemain;//The remaining cards in the deck
+	private Map<Tile, Unit> allUnits;// All units on the player's field
 
-	
-	
+	// private Map<Tile,Unit> allUnits;//
+	private List<Card> handCard;// Current hand
+	private List<Card> cardsRemain;// The remaining cards in the deck
+
 	public Player() {
 		super();
 		this.health = 20;
@@ -70,23 +67,22 @@ public class Player {
 	public List<Unit> getAllUnits() {
 		List<Unit> units = new ArrayList<>();
 		units.addAll(allUnits.values());
-		return units;	
-	}
-	
-	public Map<Tile, Unit> getAllUnitsAndTile() {
-		return this.allUnits;	
+		return units;
 	}
 
+	public Map<Tile, Unit> getAllUnitsAndTile() {
+		return this.allUnits;
+	}
 
 	public void removeHandCardById(int id) {
 		Iterator<Card> it = this.getHandCards().iterator();
-		while(it.hasNext()){              
-			Card temp =  it.next();                       
-			if(temp.getId()==id){                              
-			it.remove();  
-			return;
-			}      
-			}  
+		while (it.hasNext()) {
+			Card temp = it.next();
+			if (temp.getId() == id) {
+				it.remove();
+				return;
+			}
+		}
 	}
 
 	public List<Card> getHandCards() {
@@ -123,5 +119,4 @@ public class Player {
 		return 0;
 	}
 
-	
 }
