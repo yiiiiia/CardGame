@@ -1,0 +1,9 @@
+target/
+.classpath
+.bloop
+.tool-versions
+.metals
+.settings/
+.vscode
+project/metals.sbt
+logs/

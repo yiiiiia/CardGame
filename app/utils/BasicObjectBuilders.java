@@ -81,7 +81,6 @@ public class BasicObjectBuilders {
 	 * @return
 	 */
 	public static Unit loadUnit(String configFile, int id,  Class<? extends Unit> classType) {
-
 		try {
 			Unit unit = mapper.readValue(new File(configFile), classType);
 
@@ -186,9 +185,6 @@ public class BasicObjectBuilders {
 			for (int i =0; i<unit.getAnimations().getAllFrames().size(); i++) {
 				unit.getAnimations().getAllFrames().set(i, unit.getAnimations().getFrameDIR()+unit.getAnimations().getAllFrames().get(i));
 			}
-
-
-
 			unit.setId(id);
 			return unit;
 		} catch (Exception e) {
