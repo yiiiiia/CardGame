@@ -22,9 +22,7 @@
 			"This cannot take a unit over",
 			"its starting health value."
 		],
-		"cardTextures": [
-			"assets/game/extra/cards/neutral_spell.png"
-		],
+		"cardTextures": ["assets/game/extra/cards/neutral_spell.png"],
 		"attack": -1,
 		"health": -1
 	},

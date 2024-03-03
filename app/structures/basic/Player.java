@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import akka.actor.ActorRef;
+import structures.GameState;
 
 /**
  * A basic representation of of the Player. A player has health and mana.
@@ -13,117 +15,182 @@ import java.util.Map.Entry;
  * @author Dr. Richard McCreadie
  */
 public class Player {
+	public static final int MAX_HAND_CARD_NUM = 6;
 
-    public static final int MAX_HAND_CARD_NUM = 6;
-    private int health;
-    private int mana;
-    // All units on the board that belong to this player
-    private Map<Tile, Unit> allUnits;// All units on the player's field
+	protected int health;
+	protected int mana;
+	// Keep all units on the board that belong to this player
+	// and the tiles occupied
+	protected Map<Tile, Unit> tileAndUnits;
+	protected List<Card> deckCards;
+	protected Card[] handCards;
 
-    // private Map<Tile,Unit> allUnits;//
-    private List<Card> handCard;// Current hand
-    private List<Card> cardsRemain;// The remaining cards in the deck
+	public Player() {
+		this.health = 20;
+		this.mana = 0;
+		this.tileAndUnits = new HashMap<>();
+		this.deckCards = new ArrayList<>();
+		this.handCards = new Card[MAX_HAND_CARD_NUM];
+	}
 
-    public Player() {
-        super();
-        this.health = 20;
-        this.mana = 0;
-        this.allUnits = new HashMap<>();
-    }
+	public Player(int health, int mana) {
+		super();
+		this.health = health;
+		this.mana = mana;
+		this.tileAndUnits = new HashMap<>();
+		this.deckCards = new ArrayList<>();
+		this.handCards = new Card[MAX_HAND_CARD_NUM];
+	}
 
-    public Player(int health, int mana) {
-        super();
-        this.health = health;
-        this.mana = mana;
-        this.allUnits = new HashMap<>();
-    }
+	public int getHealth() {
+		return health;
+	}
 
-    public int getHealth() {
-        return health;
-    }
+	public void setHealth(int health) {
+		this.health = health;
+	}
 
-    public void setHealth(int health) {
-        this.health = health;
-    }
+	public int getMana() {
+		return mana;
+	}
 
-    public int getMana() {
-        return mana;
-    }
+	public void setMana(int mana) {
+		this.mana = mana;
+	}
 
-    public void setMana(int mana) {
-        this.mana = mana;
-    }
+	public Map<Tile, Unit> getTileAndUnits() {
+		return tileAndUnits;
+	}
 
-    public Unit getUnitByTile(Tile tile) {
-        return allUnits.get(tile);
-    }
+	public List<Card> getDeckCards() {
+		return deckCards;
+	}
 
-    public void addUnitOnTile(Tile tile, Unit unit) {
-        tile.setUnit(unit);
-        allUnits.put(tile, unit);
-    }
+	public void setDeckCards(List<Card> deckCards) {
+		this.deckCards = deckCards;
+	}
 
-    public List<Unit> getAllUnits() {
-        List<Unit> units = new ArrayList<>();
-        units.addAll(allUnits.values());
-        return units;
-    }
+	public void playAiLogic(ActorRef out, GameState gameState) {
+		throw new UnsupportedOperationException("not implemented");
+	}
 
-    public Map<Tile, Unit> getAllUnitsAndTile() {
-        return this.allUnits;
-    }
+	public List<Unit> getAllUnits() {
+		return new ArrayList<>(tileAndUnits.values());
+	}
 
-    public void addHandCard(Card card) {
-        this.handCard.add(card);
-    }
+	public List<Tile> getAllTiles() {
+		return new ArrayList<>(tileAndUnits.keySet());
+	}
 
-    public void removeHandCardById(int id) {
-        Iterator<Card> it = this.getHandCards().iterator();
-        while (it.hasNext()) {
-            Card temp = it.next();
-            if (temp.getId() == id) {
-                it.remove();
-                return;
-            }
-        }
-    }
+	public Unit getUnitByTile(Tile tile) {
+		return tileAndUnits.get(tile);
+	}
 
-    public void removeHandCard(Card card) {
-        this.handCard.remove(card);
-    }
+	public void putUnitOnTile(Tile tile, Unit unit) {
+		if (tile.isOccupied()) {
+			throw new IllegalStateException("put unit on occupied tile");
+		}
+		tile.setUnit(unit);
+		unit.setPositionByTile(tile);
+		tileAndUnits.put(tile, unit);
+	}
 
-    public List<Card> getHandCards() {
-        // TODO implementation
-        return this.handCard;
-    }
+	public void putCardAtPos(Card card, int pos) {
+		if (pos < 0 || pos >= MAX_HAND_CARD_NUM) {
+			throw new IllegalArgumentException("Invalid hand card pos: " + pos);
+		}
+		if (card == null) {
+			throw new IllegalArgumentException("Invalid card: null");
+		}
+		handCards[pos] = card;
+	}
 
-    public void removeUnit(Unit unit) {
-        Iterator<Entry<Tile, Unit>> iterator = allUnits.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Tile tile = iterator.next().getKey();
-            Unit u = iterator.next().getValue();
-            if (u.getId() == unit.getId()) {
-                tile.clearUnit();
-                iterator.remove();
-            }
-        }
-    }
+	public Card drawOneNewCard() {
+		if (deckCards.size() == 0) {
+			return null;
+		}
+		if (getHandCards().size() == MAX_HAND_CARD_NUM) {
+			// do not draw a new card when there are already 6 at hand
+			return null;
+		}
+		int pos = GameState.nextRandInt(deckCards.size());
+		Card newCard = deckCards.remove(pos);
+		int p = 0;
+		Card[] cardsNextTurn = new Card[MAX_HAND_CARD_NUM];
+		for (int i = 0; i < MAX_HAND_CARD_NUM; i++) {
+			if (handCards[i] != null) {
+				cardsNextTurn[p++] = handCards[i];
+			}
+		}
+		cardsNextTurn[p] = newCard;
+		handCards = cardsNextTurn;
+		return newCard;
+	}
 
-    public boolean hasUnit(Unit unit) {
-        if (allUnits == null || allUnits.size() == 0) {
-            return false;
-        }
-        for (Unit u : allUnits.values()) {
-            if (u.getId() == unit.getId()) {
-                return true;
-            }
-        }
-        return false;
-    }
+	public void removeHandCard(Card card) {
+		for (int i = 0; i < MAX_HAND_CARD_NUM; i++) {
+			if (handCards[i] == card) {
+				handCards[i] = null;
+				return;
+			}
+		}
+		throw new IllegalStateException("try remove non-existing card: " + card);
+	}
 
-    public int getCardPosition(Card card) {
-        // TODO: implementation
-        return 0;
-    }
+	public Card getHandCardByPos(int pos) {
+		if (pos < 0 || pos >= MAX_HAND_CARD_NUM) {
+			throw new IllegalArgumentException("Invalid hand card position: " + pos);
+		}
+		if (handCards[pos] == null) {
+			throw new IllegalStateException("No hand card at position: " + pos);
+		}
+		return handCards[pos];
+	}
+
+	public List<Card> getHandCards() {
+		List<Card> results = new ArrayList<>();
+		for (int i = 0; i < MAX_HAND_CARD_NUM; ++i) {
+			Card card = handCards[i];
+			if (card != null) {
+				results.add(card);
+			}
+		}
+		return results;
+	}
+
+	public int getHandCardPosition(Card card) {
+		for (int i = 0; i < MAX_HAND_CARD_NUM; i++) {
+			if (handCards[i] == card) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public void removeUnit(Unit targetUnit) {
+		Iterator<Entry<Tile, Unit>> iterator = tileAndUnits.entrySet().iterator();
+		while (iterator.hasNext()) {
+			Entry<Tile, Unit> entry = iterator.next();
+			Tile tile = entry.getKey();
+			Unit unit = entry.getValue();
+			if (unit.equals(targetUnit)) {
+				tile.clearUnit();
+				iterator.remove();
+				break;
+			}
+		}
+	}
+
+	public boolean hasUnit(Unit unit) {
+		if (tileAndUnits == null || tileAndUnits.size() == 0) {
+			return false;
+		}
+		for (Unit u : tileAndUnits.values()) {
+			if (u.equals(unit)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 }

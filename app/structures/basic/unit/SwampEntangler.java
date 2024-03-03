@@ -6,29 +6,29 @@ import structures.GameState;
 import structures.basic.AbilityType;
 import structures.basic.Unit;
 
-public class SaberspineTiger extends Unit {
+public class SwampEntangler extends Unit {
 
-	public SaberspineTiger() {
-		name = "SaberspineTiger";
-		health = 2;
-		maxHealth = 2;
-		attack = 3;
+	public SwampEntangler() {
+		name = "SwampEntangler";
+		health = 3;
+		maxHealth = 3;
+		attack = 0;
+	}
+
+	public void performProvoke(ActorRef out, GameState gameState) {
+		gameState.updateProvokeAreas();
 	}
 
 	@Override
 	public void performAbility(AbilityType type, ActorRef out, GameState gameState) {
-		if (type != AbilityType.RUSH) {
+		if (type != AbilityType.PROVOKE) {
 			return;
 		}
-		performRush(out, gameState);
+		performProvoke(out, gameState);
 	}
 
 	@Override
 	public List<AbilityType> getAbilityTypes() {
-		return List.of(AbilityType.RUSH);
-	}
-
-	private void performRush(ActorRef out, GameState gameState) {
-		// TODO integrated with AI logic
+		return List.of(AbilityType.PROVOKE);
 	}
 }

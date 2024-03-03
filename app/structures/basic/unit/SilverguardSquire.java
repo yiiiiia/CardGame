@@ -1,46 +1,59 @@
 package structures.basic.unit;
 
+import java.util.List;
+import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
+import structures.basic.AbilityType;
 import structures.basic.Tile;
 import structures.basic.Unit;
-import utils.BasicObjectBuilders;
 
 public class SilverguardSquire extends Unit {
-    
-    public static final int initialHealth = 1;
-    public static final int initialAttack = 1;
 
-    protected int health;
-    protected int attack;
+	public SilverguardSquire() {
+		name = "SilverguardSquire";
+		health = 1;
+		maxHealth = 1;
+		attack = 1;
+	}
 
-    public SilverguardSquire() {
-        super();
-        health = 1;
-        attack = 1;
-    }
+	public void performGambit(ActorRef out, GameState gameState) {
+		Unit aiAvatar = gameState.getAiAvatar();
+		Tile tile = gameState.getUnitTile(aiAvatar);
+		int posX = tile.getTilex();
+		int posY = tile.getTiley();
+		Tile left = gameState.getTileByPos(posX - 1, posY);
+		if (left != null && left.isOccupied()) {
+			Unit leftUnit = left.getUnit();
+			if (gameState.isAiUnit(leftUnit)) {
+				leftUnit.incrAttack();
+				leftUnit.incrHealth();
+				BasicCommands.setUnitAttack(out, leftUnit, leftUnit.getAttack());
+				BasicCommands.setUnitHealth(out, leftUnit, leftUnit.getHealth());
+			}
+		}
+		Tile right = gameState.getTileByPos(posX + 1, posY);
+		if (right != null && right.isOccupied()) {
+			Unit rightUnit = right.getUnit();
+			if (gameState.isAiUnit(rightUnit)) {
+				rightUnit.incrAttack();
+				rightUnit.incrHealth();
+				BasicCommands.setUnitAttack(out, rightUnit, rightUnit.getAttack());
+				BasicCommands.setUnitHealth(out, rightUnit, rightUnit.getHealth());
+			}
+		}
+	}
 
-    public void performGambit (ActorRef out, GameState gameState) {
-        Unit avatar = gameState.getPlayerAvatar();
-        Tile frontTile = gameState.getTileByPos(avatar.getPosition().getTilex()-1, avatar.getPosition().getTilex());
-        Tile backTile = gameState.getTileByPos(avatar.getPosition().getTilex()+1, avatar.getPosition().getTilex());
-        if(frontTile.getUnit()!=null && gameState.getAiUnits().contains(frontTile.getUnit())) {
-            frontTile.getUnit().setHealth(frontTile.getUnit().getHealth() + 1);
-            frontTile.getUnit().setAttack(frontTile.getUnit().getAttack() + 1);
-            BasicCommands.setUnitHealth(out, frontTile.getUnit(), frontTile.getUnit().getHealth() + 1);
-            BasicCommands.setUnitAttack(out, frontTile.getUnit(), frontTile.getUnit().getAttack() + 1);
+	@Override
+	public void performAbility(AbilityType type, ActorRef out, GameState gameState) {
+		if (type != AbilityType.OPENING_GAMBIT) {
+			return;
+		}
+		performGambit(out, gameState);
+	}
 
-        }
-        if(backTile.getUnit()!=null && gameState.getAiUnits().contains(backTile.getUnit())) {
-            backTile.getUnit().setHealth(backTile.getUnit().getHealth() + 1);
-            backTile.getUnit().setAttack(backTile.getUnit().getAttack() + 1);
-            BasicCommands.setUnitHealth(out, backTile.getUnit(), backTile.getUnit().getHealth() + 1);
-            BasicCommands.setUnitAttack(out, backTile.getUnit(), backTile.getUnit().getAttack() + 1);
-
-        }
-    }
-
-    public SilverguardSquire getInstance(String configpaths) {
-        return (SilverguardSquire)BasicObjectBuilders.loadUnit(configpaths, 11, SilverguardSquire.class);
-    }
+	@Override
+	public List<AbilityType> getAbilityTypes() {
+		return List.of(AbilityType.PROVOKE);
+	}
 }

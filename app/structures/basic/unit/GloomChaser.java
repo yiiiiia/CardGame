@@ -1,38 +1,42 @@
 package structures.basic.unit;
 
-import commands.BasicCommands;
+import java.util.List;
+import akka.actor.ActorRef;
 import structures.GameState;
+import structures.basic.AbilityType;
+import structures.basic.Position;
 import structures.basic.Tile;
 import structures.basic.Unit;
-import utils.BasicObjectBuilders;
-import utils.StaticConfFiles;
 
-public class GloomChaser extends Unit{
+public class GloomChaser extends Unit {
+	public GloomChaser() {
+		name = "GloomChaser";
+		health = 1;
+		maxHealth = 1;
+		attack = 3;
+	}
 
-    public static final int initialHealth = 1;
-    public static final int initialAttack = 3;
-    
-    protected int health;
-    protected int attack;
-    
-    public GloomChaser() {
-        super();
-        health = 1;
-        attack = 3;
-    }
+	public void performGambit(ActorRef out, GameState gameState) {
+		Position position = this.getPosition();
+		int posX = position.getTilex();
+		int posY = position.getTiley();
+		Tile tile = gameState.getTileByPos(posX - 1, posY);
+		if (tile == null || tile.isOccupied()) {
+			return;
+		}
+		gameState.summonWraithling(out, tile, GameState.USER_MODE);
+	}
 
-    public void performGambit(ActorRef out, GameState gameState) {
-        Tile tile = gameState.getTileByPos(this.getPosition().getTilex()-1, this.getPosition().getTiley());
-        if(tile.getUnit()==null) {
-            BasicCommands.playEffectAnimation(out, "f1_wraithsummon", tile);
-            Wraithling wraithling = (Wraithling)BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Wraithling.class);
-            wraithling.setPositionByTile(tile);
-            BasicCommands.drawUnit(out, wraithling, tile);
-            gameState.getPlayerUnits().put(tile, wraithling);
-        }
-    }
+	@Override
+	public void performAbility(AbilityType type, ActorRef out, GameState gameState) {
+		if (type != AbilityType.OPENING_GAMBIT) {
+			return;
+		}
+		performGambit(out, gameState);
+	}
 
-    public static GloomChaser getInstance(String configpaths) {
-        return (GloomChaser) BasicObjectBuilders.loadUnit(configpaths, 3w, GloomChaser.class);
-    }
+	@Override
+	public List<AbilityType> getAbilityTypes() {
+		return List.of(AbilityType.OPENING_GAMBIT);
+	}
 }

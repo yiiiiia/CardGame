@@ -1,16 +1,28 @@
 package structures.basic.card;
 
+import java.util.List;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
 import structures.basic.Card;
+import structures.basic.Tile;
+import structures.basic.Unit;
 import structures.basic.unit.BloodmoonPriestess;
 
 public class BloodmoonPriestessCard extends Card {
-    public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
-        BloodmoonPriestess bloodmoonPriestessUnit=new BloodmoonPriestess();
-        bloodmoonPriestessUnit.setPositionByTile(gameState.getTileByPos(tilex,tiley));
-        BasicCommands.drawUnit(out, bloodmoonPriestessUnit, gameState.getTileByPos(tilex,tiley));
-        gameState.getUserPlayer().getAllUnits().put(gameState.getTileByPos(tilex,tiley),bloodmoonPriestessUnit);
-    }
+
+	public static final String CARD_NAME = "Bloodmoon Priestess";
+
+	@Override
+	public void highlightTiles(ActorRef out, GameState gameState) {
+		List<Tile> tiles = gameState.getTilesForSummon(GameState.USER_MODE);
+		for (Tile tile : tiles) {
+			BasicCommands.drawTile(out, tile, Tile.TILE_WHITE_MODE);
+		}
+	}
+
+	@Override
+	public Class<? extends Unit> getSummonedCreatureClass() {
+		return BloodmoonPriestess.class;
+	}
 }

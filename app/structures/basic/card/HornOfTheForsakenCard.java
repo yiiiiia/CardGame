@@ -6,57 +6,39 @@ import structures.GameState;
 import structures.basic.Card;
 import structures.basic.Tile;
 import structures.basic.Unit;
-import structures.basic.UnitAnimationType;
-import structures.basic.unit.Wraithling;
-import utils.BasicObjectBuilders;
 import utils.StaticConfFiles;
-
-import java.util.List;
-import java.util.Random;
 
 public class HornOfTheForsakenCard extends Card {
 
-    //maybe putting it to GameState
-    // public void artifact3 (ActorRef out, GameState gameState) {
-    //     int robustness = 3;
-    //     Unit avatar = gameState.getPlayerUnit().get(0);
-    //     final int currentHp = avatar.getHealth();
-    //     for(int i=0;i>robustness;) {
-    //         //if the avatar attack (should be in avatar unit?
-    //         if(avatar.equals(gameState.getActiveUnit())) {
-    //             List<Tile> emptyTile = checkEmptyTiles(out, gameState);
-    //             if (emptyTile.size()>0) {
-    //                 spawnWraithlings(out, gameState, emptyTile);
-    //             }
-    //         }
-    //         if(avatar.getHealth()<currentHp) {
-    //             avatar.setHealth(currentHp);
-    //             i++;
-    //         }
-    //     }
-    // }
+	public static final String CARD_NAME = "Horn of the Forsaken";
 
-    //summon a wraithling on a random tile if available
-    public void spawnWraithling (ActorRef out, GameState gameState, List<Tile> emptyTiles) {
-        if (emptyTiles.size() > 0) {
-            Random r = new Random();
-            int randomTile = r.nextInt(emptyTiles.size());
-            Tile tile = emptyTiles.get(randomTile);
-            BasicCommands.playEffectAnimation(out, "f1_wraithsummon", tile);
-            Wraithling wraithling = (Wraithling)BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Wraithling.class);
-            wraithling.setPositionByTile(emptyTiles.get(randomTile));
-            BasicCommands.drawUnit(out, wraithling, emptyTiles.get(randomTile));
-            gameState.getPlayerUnits().put(emptyTiles.get(randomTile), wraithling);
-        }
-    }
+	@Override
+	public void highlightTiles(ActorRef out, GameState gameState) {
+		Unit userAvatar = gameState.getUserAvatar();
+		Tile userTile = gameState.getUnitTile(userAvatar);
+		BasicCommands.drawTile(out, userTile, Tile.TILE_WHITE_MODE);
+	}
 
-    public List<Tile> checkEmptyTiles (ActorRef out, GameState gameState) {
-        List<Tile> emptyTiles = gameState.getAllTiles();
-        for(Tile tile: emptyTiles) {
-            if(tile.getUnit()!=null) {
-                emptyTiles.remove(tile);
-            }
-        }
-        return emptyTiles;
-    }
+	@Override
+	public void castSpell(ActorRef out, GameState gameState, Tile tile) {
+		if (manacost > gameState.getUserPlayer().getMana()) {
+			BasicCommands.addPlayer1Notification(out, String.format("Not enough mana to use card %s", CARD_NAME), 5);
+			return;
+		}
+		Unit unitOnTile = tile.getUnit();
+		if (unitOnTile == null) {
+			BasicCommands.addPlayer1Notification(out, String.format("Cannot use this card %s on empty tile", CARD_NAME),
+					5);
+			return;
+		}
+		if (unitOnTile != gameState.getUserAvatar()) {
+			BasicCommands.addPlayer1Notification(out,
+					String.format("Card %s can only be used on user avatar", CARD_NAME), 5);
+			return;
+		}
+		gameState.deductManaFromPlayer(out, manacost, GameState.USER_MODE);
+		unitOnTile.setShieldBuff(3);
+		GameState.playEffectAnimation(out, StaticConfFiles.f1_buff, tile);
+		setUsed(true); // mark card used
+	}
 }

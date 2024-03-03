@@ -1,42 +1,42 @@
 package structures.basic.unit;
 
-import commands.BasicCommands;
+import java.util.List;
+import akka.actor.ActorRef;
 import structures.GameState;
+import structures.basic.AbilityType;
 import structures.basic.Unit;
-import structures.basic.UnitAnimationType;
 import utils.BasicObjectBuilders;
 
 public class Shadowdancer extends Unit {
-    
-    public static final int initialHealth = 10;
-    public static final int initialAttack = 3;
 
-    protected int health;
-    protected int attack;
+	public Shadowdancer() {
+		name = "Shadowdancer";
+		health = 4;
+		maxHealth = 4;
+		attack = 5;
+	}
 
-    public Shadowdancer() {
-        super();
-        health = 4;
-        attack = 5;
-    }
+	private void performDeathWatch(ActorRef out, GameState gameState) {
+		Unit aiAvatar = gameState.getAiAvatar();
+		Unit userAvatar = gameState.getUserAvatar();
+		gameState.dealDamangeToUnit(out, aiAvatar, 1);
+		gameState.healUnit(out, userAvatar, 1);
+	}
 
-    public void performDeathWatch(ActorRef out, GameState gameState) {
-        //whenever a unit, friendly or enemy dies
-        int playerHealth = gameState.getUserPlayer().getHealth();
-        if (playerHealth<20) {
-            gameState.getUserPlayer().setHealth(playerHealth + 1);
-            BasicCommands.setPlayer1Health(out, gameState.getUserPlayer());
-        }
-        int aiHealth = gameState.getAiPlayer().getHealth();
-        gameState.getAiPlayer().setHealth(aiHealth - 1);
-        BasicCommands.setPlayer2Health(out, gameState.getAiPlayer());
-        if (aiHealth <= 0) {
-            BasicCommands.playUnitAnimation(out, gameState.getAIAvatar(), UnitAnimationType.death);
-            BasicCommands.deleteUnit(out, gameState.getAIAvatar());
-        }
-    }
+	public static Shadowdancer getInstance(String configpaths) {
+		return (Shadowdancer) BasicObjectBuilders.loadUnit(configpaths, 8, Shadowdancer.class);
+	}
 
-    public static Shadowdancer getInstance(String configpaths) {
-        return (Shadowdancer)BasicObjectBuilders.loadUnit(configpaths, 8, Shadowdancer.class);
-    }
+	@Override
+	public void performAbility(AbilityType type, ActorRef out, GameState gameState) {
+		if (type != AbilityType.DEATH_WATCH) {
+			return;
+		}
+		performDeathWatch(out, gameState);
+	}
+
+	@Override
+	public List<AbilityType> getAbilityTypes() {
+		return List.of(AbilityType.DEATH_WATCH);
+	}
 }

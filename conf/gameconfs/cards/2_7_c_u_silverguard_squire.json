@@ -16,9 +16,7 @@
 			"Opening Gambit: Allied units in-front",
 			"and behind you get +1/+1."
 		],
-		"cardTextures": [
-			"assets/game/extra/cards/neutral_unit_h.png"
-		],
+		"cardTextures": ["assets/game/extra/cards/neutral_unit_h.png"],
 		"attack": 1,
 		"health": 1
 	},

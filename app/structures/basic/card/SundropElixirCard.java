@@ -1,35 +1,40 @@
 package structures.basic.card;
 
+import java.util.List;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
 import structures.basic.Card;
 import structures.basic.Tile;
 import structures.basic.Unit;
-import structures.basic.UnitAnimationType;
-
-import java.util.Collection;
 
 public class SundropElixirCard extends Card {
 
-    public void highlightTiles(ActorRef out, GameState gameState){
-        //highlight the allied units
-        Collection<Unit> units=gameState.getAiPlayer().getAllUnits().values();
-        for(Unit unit:units){
-            int tilex = unit.getPosition().getTilex();
-            int tiley = unit.getPosition().getTiley();
-            Tile tile = gameState.getTileByPos(tilex,tiley);
-            BasicCommands.drawTile(out,tile,1);//mode=1 means highlight
-        }
-    }
+	public static final String CARD_NAME = "Sundrop Elixir";
 
-    public boolean performSpell(ActorRef out, GameState gameState,Unit unit){
-        Collection<Unit> units=gameState.getAiPlayer().getAllUnits().values();
-        if(!units.contains(unit)){
-            return false;
-        }
-        unit.setHealth(Math.min(unit.getHealth()+4,unit.getMaximumHealth()));
-        BasicCommands.playUnitAnimation(out,unit, UnitAnimationType.channel);
-        return true;
-    }
+	public void highlightTiles(ActorRef out, GameState gameState) {
+		List<Unit> units = gameState.getAiUnits();
+		// highlight the allied units
+		for (Unit unit : units) {
+			Tile tile = gameState.getUnitTile(unit);
+			BasicCommands.drawTile(out, tile, Tile.TILE_WHITE_MODE);
+		}
+	}
+
+	@Override
+	public void castSpell(ActorRef out, GameState gameState, Tile tile) {
+		Unit unitOnTile = tile.getUnit();
+		if (unitOnTile == null) {
+			BasicCommands.addPlayer1Notification(out, String.format("Cannot use card %s on empty tile", CARD_NAME), 5);
+			return;
+		}
+		if (!gameState.isAiUnit(unitOnTile)) {
+			BasicCommands.addPlayer1Notification(out,
+					String.format("Card %s can only be used on ally units", CARD_NAME), 5);
+			return;
+		}
+		gameState.deductManaFromPlayer(out, manacost, GameState.AI_MODE);
+		unitOnTile.healSelf(4);
+		BasicCommands.setUnitHealth(out, unitOnTile, unitOnTile.getHealth());
+	}
 }

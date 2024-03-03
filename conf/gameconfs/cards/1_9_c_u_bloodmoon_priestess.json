@@ -18,9 +18,7 @@
 			"Wraithling on a randomly selected unoccupied",
 			"adjacent tile."
 		],
-		"cardTextures": [
-			"assets/game/extra/cards/neutral_unit_h.png"
-		],
+		"cardTextures": ["assets/game/extra/cards/neutral_unit_h.png"],
 		"attack": 3,
 		"health": 3
 	},
