@@ -1,24 +1,19 @@
 package structures.basic;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.Action;
 import structures.GameState;
-import structures.basic.Card;
-import structures.basic.Player;
-import structures.basic.Tile;
-import structures.basic.Unit;
+import structures.basic.card.BeamShockCard;
+import structures.basic.card.SundropElixirCard;
+import structures.basic.card.TrueStrikeCard;
 
 public class AI extends Player {
 
@@ -26,10 +21,33 @@ public class AI extends Player {
 		super(health, mana);
 	}
 
-	public void aiAction(GameState gameState, ActorRef out, JsonNode message) {
-		this.useSpellCard(gameState, out, message);
-		this.useCreatureCard(gameState, out, message);
-		this.moveOrAttack(gameState, out, message);
+	public void playAiLogic(ActorRef out, GameState gameState) {
+		BasicCommands.addPlayer1Notification(out, "In Ai mode now, sleep 2 seconds", 2);
+		BasicCommands.sleep(2 * 1000);
+		
+		
+		if(gameState.getTurn()>1)
+		{
+			gameState.getAiPlayer().setMana(7);
+		}
+		BasicCommands.setPlayer2Mana(out, gameState.getAiPlayer());
+	    BasicCommands.setPlayer2Health(out, gameState.getAiPlayer());
+		gameState.getAiPlayer().useSpellCard(gameState, out);
+		gameState.getAiPlayer().useCreatureCard(gameState, out);
+		gameState.getAiPlayer().moveOrAttack(gameState, out);
+		BasicCommands.addPlayer1Notification(out, "Ai mode is over", 2);
+		gameState.setGameMode(GameState.USER_MODE);
+
+		// TODO incorporate with jiangdong's code
+	}
+	
+	//ai action
+	public void aiAction(GameState gameState, ActorRef out) {
+		this.useSpellCard(gameState, out);
+		this.useCreatureCard(gameState, out);
+		this.moveOrAttack(gameState, out);
+		gameState.setTurn(gameState.getTurn()+1);
+		gameState.setGameMode(GameState.USER_MODE);
 	}
 
 	/*
@@ -46,7 +64,7 @@ public class AI extends Player {
 	public List<Card> haveSpell() {
 		List<Card> spell = new ArrayList<Card>();
 		for (Card cur : this.getHandCards()) {
-			if (!cur.isCreature()) {
+			if (!cur.isCreature) {
 				spell.add(cur);
 			}
 		}
@@ -57,14 +75,14 @@ public class AI extends Player {
 	{
 		List<Card> creature = new ArrayList<Card>();
 		for (Card cur : this.getHandCards()) {
-			if (cur.isCreature()) {
+			if (cur.isCreature) {
 				creature.add(cur);
 			}
 		}
 		return creature;
 	}
 //use spell card
-	public void useSpellCard(GameState gameState, ActorRef out, JsonNode message) {
+	public void useSpellCard(GameState gameState, ActorRef out) {
 		List<Card> spellCard = this.haveSpell();
 		if (spellCard == null) {
 			return;
@@ -74,15 +92,15 @@ public class AI extends Player {
 				if (this.getMana() >= cur.getManacost()) {
 					switch (curname) {
 					case "SundropElixir":
-						useSundrop(cur, gameState, out, message);// Optimize the timing of use later
+						useSundrop(cur, gameState, out);// Optimize the timing of use later
 						break;
 					case "TrueStrike":
-						useTrueStrike(cur, gameState, out, message);
+						useTrueStrike(cur, gameState, out);
 						break;
 					case "BeamShockCard":
 						Tile tile = this.havaAdUnit(gameState);
 						if (tile != null) {
-							useStun(cur, tile, gameState, out, message);
+							useStun(cur, tile, gameState, out);
 						} // Later upgrade to use bean shock after attacking once
 						break;
 					}
@@ -93,28 +111,29 @@ public class AI extends Player {
 	}
 
 //use Beam Shock card
-	public void useStun(Card card, Tile tile, GameState gameState, ActorRef out, JsonNode message) {
+	public void useStun(Card card, Tile tile, GameState gameState, ActorRef out) {
 
 		// The current card is not locked
 
-		if (!gameState.getUserPlayer().getAllUnitsAndTile().get(tile).getStunned()) {
-			Card c1 = new BeamShockCard();
-			if (c1.performSpell(out, gameState, gameState.getUserPlayer().getAllUnits().get(cur))) {
-				c1.highlightTiles(out, gameState);
+		if (!gameState.getUserPlayer().getAllUnitsAndTile().get(tile).isStunned()) {
+			BeamShockCard c1 = new BeamShockCard();
+			c1.highlightTiles(out, gameState);
+			c1.castSpell(out, gameState, tile) ;
+				
 
-			}
+			
 			this.removeHandCard(card);
 		}
 
 	}
 
 //use Sundrop card
-	public void useSundrop(Card card, GameState gameState, ActorRef out, JsonNode message) {
+	public void useSundrop(Card card, GameState gameState, ActorRef out) {
 		Tile attackMax = null;
 		int maxLostHp = 0;
 		for (Tile cur : gameState.getUserPlayer().getAllUnitsAndTile().keySet()) {
 			int nowLostHp = gameState.getUserPlayer().getAllUnitsAndTile().get(cur).getMaxHealth()
-					- gameState.getUserPlayer().getAllUnits().get(cur).getCurHealth();
+					- gameState.getUserPlayer().getAllUnitsAndTile().get(cur).health;
 			if (maxLostHp < nowLostHp) {
 				attackMax = cur;
 				maxLostHp = nowLostHp;
@@ -127,32 +146,34 @@ public class AI extends Player {
 			return;
 		}
 
-		Card c2 = new SundropElixirCard();
-		if (c2.performSpell(out, gameState, gameState.getUserPlayer().getAllUnitsAndTile().get(attackMax))) {
-			c2.highlightTiles(out, gameState);
+		SundropElixirCard c2 = new SundropElixirCard();
+		c2.highlightTiles(out, gameState);
+		c2.castSpell(out, gameState, attackMax); 
+			
 
-		}
-		this.removeHandCardById(card.getId());
+		
+		this.removeHandCard(card);
 		this.setMana(this.getMana() - 1);
 
 	}
 
 //use TrueStrike card
-	public void useTrueStrike(Card card, GameState gameState, ActorRef out, JsonNode message) {
+	public void useTrueStrike(Card card, GameState gameState, ActorRef out) {
 		Tile healthMin = null;
 		for (Tile cur : gameState.getUserPlayer().getAllUnitsAndTile().keySet()) {
-			if (gameState.getUserPlayer().getAllUnitsAndTile().get(cur).getCurHealth() < gameState.getUserPlayer()
-					.getAllUnitsAndTile().get(healthMin).getCurHealth()) {
+			if (gameState.getUserPlayer().getAllUnitsAndTile().get(cur).getHealth() < gameState.getUserPlayer()
+					.getAllUnitsAndTile().get(healthMin).getHealth()) {
 				healthMin = cur;
 			}
 		}
 
-		Card c3 = new TrueStrikeCard();
-		if (c3.performSpell(out, gameState, gameState.getUserPlayer().getAllUnits().get(cur))) {
-			c3.highlightTiles(out, gameState);
+		TrueStrikeCard c3 = new TrueStrikeCard();
+		c3.highlightTiles(out, gameState);
+		c3.castSpell(out, gameState, healthMin) ;
+		
 
-		}
-		this.removeHandCardById(card.getId());
+		
+		this.removeHandCard(card);
 		this.setMana(this.getMana() - 1);
 
 	}
@@ -174,7 +195,7 @@ public class AI extends Player {
 	}
 
 //use creature card;
-	public void useCreatureCard(GameState gameState, ActorRef out, JsonNode message) {
+	public void useCreatureCard(GameState gameState, ActorRef out) {
 		List<Card> creatureCard=this.haveCreature();
 		if (this.getMana() == 0||creatureCard==null) {
 			return;
@@ -189,7 +210,8 @@ public class AI extends Player {
 				}
 				Tile tile = placeableArea(gameState);
 				if (tile != null) {
-					cur.summonUnit(out, gameState, tile.getTilex(), tile.getTiley());
+					cur.summonUnitOnTile(out, gameState, tile,gameState.AI_MODE);
+					
 				}
 
 			}
@@ -227,7 +249,7 @@ public class AI extends Player {
 	}
 
 //Attack or move. If there is no target to attack, move towards the nearest target and optimize later.
-	public void moveOrAttack(GameState gameState, ActorRef out, JsonNode message) {
+	public  void moveOrAttack(GameState gameState, ActorRef out) {
 		for (Tile cur : this.getAllUnitsAndTile().keySet()) {
 			Unit aiUnit = gameState.getAiPlayer().getUnitByTile(cur);
 			Unit userUnit = gameState.getUserPlayer().getAllUnitsAndTile().get(getClosestTile(cur, gameState));
@@ -236,13 +258,8 @@ public class AI extends Player {
 			// The first branch, adjacent units can attack
 			if (gameState.unitsAdjacent(aiUnit, userUnit)) {
 				// user unit and ai unit are adjacent
-				aiUnit.unitAttack(out, gameState, userUnit);
-				if (userUnit.getHealth() > 0) {
-					// perform counter attack
-					userUnit.unitAttack(out, gameState, aiUnit);
-				}
-				gameState.clearActiveUnit();
-				break;
+				
+				this.performAttackAndCounterAttack(out, gameState, aiUnit, userUnit);
 			}
 			// Adjacent units have no attacking units
 			else {
@@ -272,25 +289,14 @@ public class AI extends Player {
 					break;
 				}
 				// Attack after moving
-				else {
-					// Determine whether it can be moved
-					boolean reason = gameState.unitCanMove(aiUnit);
-					if (!reason) {
-
-						break;
-					}
+				else {Unit userUnit1=targetTile.getUnit();
 					Action action = new Action() {
 						@Override
 						public void doAction(ActorRef out, GameState gameState) {
-							performAttackAndCounterAttack(out, gameState, aiUnit, userUnit);
-							gameState.clearActiveUnit();
-
+							performAttackAndCounterAttack(out, gameState, aiUnit,userUnit1);
 						}
 					};
-
 					gameState.setPendingAction(action);
-					// clear current tile effects
-					// tell unit to move
 					aiUnit.unitMove(out, gameState, targetTile);
 				}
 			}
@@ -298,7 +304,7 @@ public class AI extends Player {
 	}
 
 //Determine whether there is an attack target. This will be changed later. It is not used at the moment.；
-	public boolean haveAttack(Tile tile, GameState gameState, ActorRef out, JsonNode message) {
+	public boolean haveAttack(Tile tile, GameState gameState, ActorRef out) {
 		return true;
 	}
 
@@ -371,6 +377,16 @@ public class AI extends Player {
 		}
 		return null;
 	}
+	
+	private void performAttackAndCounterAttack(ActorRef out, GameState gameState, Unit u1, Unit u2) {
+		if (!gameState.canPerformAttack(u1,u2)) {
+			throw new IllegalStateException("cannot perform attack!");
+		}
+		u1.performAttack(out, gameState, u2);
+		if (u2.getHealth() > 0 && gameState.canPerformAttack(u2, u1)) {
+			// perform counter attack
+			u2.performAttack(out, gameState,u1);
+		}
+	}
+
 }
-
-
