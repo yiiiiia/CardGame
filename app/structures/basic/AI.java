@@ -9,6 +9,7 @@ import java.util.Queue;
 
 import akka.actor.ActorRef;
 import commands.BasicCommands;
+import structures.Action;
 import structures.GameState;
 import structures.basic.card.BeamShockCard;
 import structures.basic.card.SundropElixirCard;
@@ -23,30 +24,27 @@ public class AI extends Player {
 	public void playAiLogic(ActorRef out, GameState gameState) {
 		BasicCommands.addPlayer1Notification(out, "In Ai mode now, sleep 2 seconds", 2);
 		BasicCommands.sleep(2 * 1000);
-		
-		
-		if(gameState.getTurn()>1)
-		{
-			gameState.getAiPlayer().setMana(7);
+
+		if (gameState.getTurn() > 1) {
+			this.setMana(gameState.getTurn+1);
 		}
-		BasicCommands.setPlayer2Mana(out, gameState.getAiPlayer());
-	    BasicCommands.setPlayer2Health(out, gameState.getAiPlayer());
-		gameState.getAiPlayer().useSpellCard(gameState, out);
-		gameState.getAiPlayer().useCreatureCard(gameState, out);
-		gameState.getAiPlayer().moveOrAttack(gameState, out);
+		BasicCommands.setPlayer2Mana(out, this);
+		BasicCommands.setPlayer2Health(out, this);
+		this.useSpellCard(gameState, out);
+		this.useCreatureCard(gameState, out);
+		this.moveOrAttack(gameState, out);
 		BasicCommands.addPlayer1Notification(out, "Ai mode is over", 2);
-		gameState.setTurn(gameState.getTurn+1);
 		gameState.setGameMode(GameState.USER_MODE);
 
 		// TODO incorporate with jiangdong's code
 	}
-	
-	//ai action
+
+	// ai action
 	public void aiAction(GameState gameState, ActorRef out) {
 		this.useSpellCard(gameState, out);
 		this.useCreatureCard(gameState, out);
 		this.moveOrAttack(gameState, out);
-		gameState.setTurn(gameState.getTurn()+1);
+		gameState.setTurn(gameState.getTurn() + 1);
 		gameState.setGameMode(GameState.USER_MODE);
 	}
 
@@ -71,8 +69,7 @@ public class AI extends Player {
 		return spell;
 	}
 
-	public List<Card> haveCreature()
-	{
+	public List<Card> haveCreature() {
 		List<Card> creature = new ArrayList<Card>();
 		for (Card cur : this.getHandCards()) {
 			if (cur.isCreature) {
@@ -81,6 +78,7 @@ public class AI extends Player {
 		}
 		return creature;
 	}
+
 //use spell card
 	public void useSpellCard(GameState gameState, ActorRef out) {
 		List<Card> spellCard = this.haveSpell();
@@ -118,10 +116,8 @@ public class AI extends Player {
 		if (!gameState.getUserPlayer().getAllUnitsAndTile().get(tile).isStunned()) {
 			BeamShockCard c1 = new BeamShockCard();
 			c1.highlightTiles(out, gameState);
-			c1.castSpell(out, gameState, tile) ;
-				
+			c1.castSpell(out, gameState, tile);
 
-			
 			this.removeHandCard(card);
 		}
 
@@ -139,19 +135,16 @@ public class AI extends Player {
 				maxLostHp = nowLostHp;
 			}
 		}
-		
-		//There are currently no injured units
-		if(maxLostHp==0)
-		{
+
+		// There are currently no injured units
+		if (maxLostHp == 0) {
 			return;
 		}
 
 		SundropElixirCard c2 = new SundropElixirCard();
 		c2.highlightTiles(out, gameState);
-		c2.castSpell(out, gameState, attackMax); 
-			
+		c2.castSpell(out, gameState, attackMax);
 
-		
 		this.removeHandCard(card);
 		this.setMana(this.getMana() - 1);
 
@@ -169,10 +162,8 @@ public class AI extends Player {
 
 		TrueStrikeCard c3 = new TrueStrikeCard();
 		c3.highlightTiles(out, gameState);
-		c3.castSpell(out, gameState, healthMin) ;
-		
+		c3.castSpell(out, gameState, healthMin);
 
-		
 		this.removeHandCard(card);
 		this.setMana(this.getMana() - 1);
 
@@ -186,7 +177,7 @@ public class AI extends Player {
 			return Integer.compare(c1.getManacost(), c2.getManacost());
 		}
 	}
-	
+
 	class PersonComparator1 implements Comparator<Card> {
 		@Override
 		public int compare(Card c1, Card c2) {
@@ -196,22 +187,23 @@ public class AI extends Player {
 
 //use creature card;
 	public void useCreatureCard(GameState gameState, ActorRef out) {
-		List<Card> creatureCard=this.haveCreature();
-		if (this.getMana() == 0||creatureCard==null) {
+		List<Card> creatureCard = this.haveCreature();
+		if (this.getMana() == 0 || creatureCard == null) {
 			return;
 		} else {
-			if(gameState.getTurn()<=7)
-			{Collections.sort(creatureCard, new PersonComparator());}
-			else
-			{Collections.sort(creatureCard, new PersonComparator1());}
+			if (gameState.getTurn() <= 7) {
+				Collections.sort(creatureCard, new PersonComparator());
+			} else {
+				Collections.sort(creatureCard, new PersonComparator1());
+			}
 			for (Card cur : creatureCard) {
 				if (this.getMana() < cur.getManacost()) {
 					continue;
 				}
 				Tile tile = placeableArea(gameState);
 				if (tile != null) {
-					cur.summonUnitOnTile(out, gameState, tile,gameState.AI_MODE);
-					
+					cur.summonUnitOnTile(out, gameState, tile, gameState.AI_MODE);
+
 				}
 
 			}
@@ -249,16 +241,16 @@ public class AI extends Player {
 	}
 
 //Attack or move. If there is no target to attack, move towards the nearest target and optimize later.
-	public  void moveOrAttack(GameState gameState, ActorRef out) {
+	public void moveOrAttack(GameState gameState, ActorRef out) {
 		for (Tile cur : this.getAllUnitsAndTile().keySet()) {
-			Unit aiUnit = gameState.getAiPlayer().getUnitByTile(cur);
+			Unit aiUnit = this.getUnitByTile(cur);
 			Unit userUnit = gameState.getUserPlayer().getAllUnitsAndTile().get(getClosestTile(cur, gameState));
 			List<Tile> tilesAccessible = gameState.getTilesUnitCanMoveTo(aiUnit);
 
 			// The first branch, adjacent units can attack
 			if (gameState.unitsAdjacent(aiUnit, userUnit)) {
 				// user unit and ai unit are adjacent
-				
+
 				this.performAttackAndCounterAttack(out, gameState, aiUnit, userUnit);
 			}
 			// Adjacent units have no attacking units
@@ -289,11 +281,12 @@ public class AI extends Player {
 					break;
 				}
 				// Attack after moving
-				else {Unit userUnit1=targetTile.getUnit();
+				else {
+					Unit userUnit1 = targetTile.getUnit();
 					Action action = new Action() {
 						@Override
 						public void doAction(ActorRef out, GameState gameState) {
-							performAttackAndCounterAttack(out, gameState, aiUnit,userUnit1);
+							performAttackAndCounterAttack(out, gameState, aiUnit, userUnit1);
 						}
 					};
 					gameState.setPendingAction(action);
@@ -369,23 +362,23 @@ public class AI extends Player {
 
 	public Tile havaAdUnit(GameState gameState) {
 		for (Tile cur : gameState.getUserPlayer().getAllUnitsAndTile().keySet()) {
-			Unit userUnit = gameState.getAiPlayer().getUnitByTile(cur);
-			Unit aiUnit = gameState.getAiPlayer().getAllUnitsAndTile().get(getClosestTile(cur, gameState));
+			Unit userUnit = this.getUnitByTile(cur);
+			Unit aiUnit = this.getAllUnitsAndTile().get(getClosestTile(cur, gameState));
 			if (gameState.unitsAdjacent(aiUnit, userUnit)) {
 				return cur;
 			}
 		}
 		return null;
 	}
-	
+
 	private void performAttackAndCounterAttack(ActorRef out, GameState gameState, Unit u1, Unit u2) {
-		if (!gameState.canPerformAttack(u1,u2)) {
+		if (!gameState.canPerformAttack(u1, u2)) {
 			throw new IllegalStateException("cannot perform attack!");
 		}
 		u1.performAttack(out, gameState, u2);
 		if (u2.getHealth() > 0 && gameState.canPerformAttack(u2, u1)) {
 			// perform counter attack
-			u2.performAttack(out, gameState,u1);
+			u2.performAttack(out, gameState, u1);
 		}
 	}
 
