@@ -54,10 +54,10 @@ public class AI extends Player {
 	 * unit with the highest attack power, or the unit that is most vulnerable to
 	 * attack. Attack cards are used when the current health value is less than
 	 */
-//Equal to 2, if not, attack with the highest attack power.
-//The mana cost of summoning cards increases from small to large. 
-//The summoning location is prioritized near Avater. Rush cards should be as close to local units as possible.
-//Attack and movement: attack the nearest first */
+    //Equal to 2, if not, attack with the highest attack power.
+    //The mana cost of summoning cards increases from small to large. 
+    //The summoning location is prioritized near Avater. Rush cards should be as close to local units as possible.
+    //Attack and movement: attack the nearest first */
 	public List<Card> haveSpell() {
 		List<Card> spell = new ArrayList<Card>();
 		for (Card cur : this.getHandCards()) {
@@ -78,7 +78,7 @@ public class AI extends Player {
 		return creature;
 	}
 
-//use spell card
+    //use spell card
 	public void useSpellCard(GameState gameState, ActorRef out) {
 		List<Card> spellCard = this.haveSpell();
 		if (spellCard == null) {
@@ -107,7 +107,7 @@ public class AI extends Player {
 
 	}
 
-//use Beam Shock card
+    //use Beam Shock card
 	public void useStun(Card card, Tile tile, GameState gameState, ActorRef out) {
 
 		// The current card is not locked
@@ -122,7 +122,7 @@ public class AI extends Player {
 
 	}
 
-//use Sundrop card
+    //use Sundrop card
 	public void useSundrop(Card card, GameState gameState, ActorRef out) {
 		Tile attackMax = null;
 		int maxLostHp = 0;
@@ -149,7 +149,7 @@ public class AI extends Player {
 
 	}
 
-//use TrueStrike card
+    //use TrueStrike card
 	public void useTrueStrike(Card card, GameState gameState, ActorRef out) {
 		Tile healthMin = null;
 		for (Tile cur : gameState.getUserPlayer().getAllUnitsAndTile().keySet()) {
@@ -168,8 +168,8 @@ public class AI extends Player {
 
 	}
 
-//Arrange cards from least mana cost to most mana cost,After reaching a certain number of rounds, 
-//start to arrange from the largest mana consumption to the smallest mana consumption.
+     //Arrange cards from least mana cost to most mana cost,After reaching a certain number of rounds, 
+    //start to arrange from the largest mana consumption to the smallest mana consumption.
 	class PersonComparator implements Comparator<Card> {
 		@Override
 		public int compare(Card c1, Card c2) {
@@ -184,7 +184,7 @@ public class AI extends Player {
 		}
 	}
 
-//use creature card;
+    //use creature card;
 	public void useCreatureCard(GameState gameState, ActorRef out) {
 		List<Card> creatureCard = this.haveCreature();
 		if (this.getMana() == 0 || creatureCard == null) {
@@ -210,17 +210,17 @@ public class AI extends Player {
 
 	}
 
-//Determine whether it is a placeable area
+    //Determine whether it is a placeable area
 	public boolean isPlaceBle(int x, int y, GameState gameState) {
 		if (x < 0 || x > 8 || y < 0 || y > 4
-				|| gameState.getUserPlayer().getAllUnitsAndTile().containsKey(gameState.getTileByPos(x, y)))// 这里得再加AI类的unit判断
+				|| gameState.getUserPlayer().getAllUnitsAndTile().containsKey(gameState.getTileByPos(x, y)))
 		{
 			return false;
 		}
 		return true;
 	}
 
-//Returns the Tile that can summon creatures
+    //Returns the Tile that can summon creatures
 	public Tile placeableArea(GameState gameState)// Later, can add some strategies on where to put it.
 	{
 		for (Tile cur : this.getAllUnitsAndTile().keySet()) {
@@ -239,7 +239,7 @@ public class AI extends Player {
 		return null;
 	}
 
-//Attack or move. If there is no target to attack, move towards the nearest target and optimize later.
+    //Attack or move. If there is no target to attack, move towards the nearest target and optimize later.
 	public void moveOrAttack(GameState gameState, ActorRef out) {
 		for (Tile cur : this.getAllUnitsAndTile().keySet()) {
 			Unit aiUnit = this.getUnitByTile(cur);
@@ -295,12 +295,12 @@ public class AI extends Player {
 		}
 	}
 
-//Determine whether there is an attack target. This will be changed later. It is not used at the moment.；
+    //Determine whether there is an attack target. This will be changed later. It is not used at the moment.；
 	public boolean haveAttack(Tile tile, GameState gameState, ActorRef out) {
 		return true;
 	}
 
-//Find the nearest attacking unit,Spread outward with the current position as the center
+    //Find the nearest attacking unit,Spread outward with the current position as the center
 	public Tile getClosestTile(Tile aitile, GameState gameState)// Ensure that the first round has been completed for a
 																// week to determine whether there is a provoke card.
 	{
@@ -354,7 +354,7 @@ public class AI extends Player {
 		return null; // No tile found containing user unit
 	}
 
-//Determine whether the nearest location found is reasonable
+    //Determine whether the nearest location found is reasonable
 	private static boolean isValid(int row, int col, int rows, int cols) {
 		return row >= 0 && row < rows && col >= 0 && col < cols;
 	}
