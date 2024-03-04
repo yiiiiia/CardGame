@@ -36,6 +36,7 @@ public class AI extends Player {
 		gameState.getAiPlayer().useCreatureCard(gameState, out);
 		gameState.getAiPlayer().moveOrAttack(gameState, out);
 		BasicCommands.addPlayer1Notification(out, "Ai mode is over", 2);
+		gameState.setTurn(gameState.getTurn+1);
 		gameState.setGameMode(GameState.USER_MODE);
 
 		// TODO incorporate with jiangdong's code
