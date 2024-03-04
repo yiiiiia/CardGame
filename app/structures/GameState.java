@@ -49,7 +49,7 @@ public class GameState {
 	// Collections to track game elements
 	private Tile[][] gameTiles;
 	private Player userPlayer;
-	private AI aiPlayer;
+	private Player aiPlayer;
 	private Action pendingAction; // Action to perform after a unit stops
 	private Unit activeUnit; // Currently selected unit
 	private Card activeCard;
@@ -123,11 +123,11 @@ public class GameState {
 		this.userPlayer = userPlayer;
 	}
 
-	public AI getAiPlayer() {
+	public Player getAiPlayer() {
 		return aiPlayer;
 	}
 
-	public void setAiPlayer(AI aiPlayer) {
+	public void setAiPlayer(Player aiPlayer) {
 		this.aiPlayer = aiPlayer;
 	}
 
