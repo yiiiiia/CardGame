@@ -1,16 +1,28 @@
 package structures.basic.card;
 
+import java.util.List;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
 import structures.basic.Card;
+import structures.basic.Tile;
+import structures.basic.Unit;
 import structures.basic.unit.NightsorrowAssassin;
 
 public class NightsorrowAssassinCard extends Card {
-    public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
-        NightsorrowAssassin nightsorrowAssassinUnit=new NightsorrowAssassin();
-        nightsorrowAssassinUnit.setPositionByTile(gameState.getTileByPos(tilex,tiley));
-        BasicCommands.drawUnit(out, nightsorrowAssassinUnit, gameState.getTileByPos(tilex,tiley));
-        gameState.getUserPlayer().getAllUnits().put(gameState.getTileByPos(tilex,tiley),nightsorrowAssassinUnit);
-    }
+
+	public static final String CARD_NAME = "Nightsorrow Assassin";
+
+	@Override
+	public void highlightTiles(ActorRef out, GameState gameState) {
+		List<Tile> tiles = gameState.getTilesForSummon(GameState.USER_MODE);
+		for (Tile tile : tiles) {
+			BasicCommands.drawTile(out, tile, Tile.TILE_WHITE_MODE);
+		}
+	}
+
+	@Override
+	public Class<? extends Unit> getSummonedCreatureClass() {
+		return NightsorrowAssassin.class;
+	}
 }

@@ -1,18 +1,28 @@
 package structures.basic.unit;
 
+import java.util.Collections;
+import java.util.List;
+import akka.actor.ActorRef;
+import structures.GameState;
+import structures.basic.AbilityType;
 import structures.basic.Unit;
-import utils.BasicObjectBuilders;
 
 public class PlayerAvatar extends Unit {
 
-    protected int health;
-    protected int attack;
-    
-    public PlayerAvatar() {
-        super();
-    }
+	public PlayerAvatar() {
+		name = "PlayerAvatar";
+		health = 20;
+		maxHealth = 20;
+		attack = 2;
+	}
 
-    public static PlayerAvatar getInstance(String configpaths) {
-        return (PlayerAvatar)BasicObjectBuilders.loadUnit(configpaths, 0, PlayerAvatar.class);
-    }
+	@Override
+	public void performAbility(AbilityType type, ActorRef out, GameState gameState) {
+		return;
+	}
+
+	@Override
+	public List<AbilityType> getAbilityTypes() {
+		return Collections.emptyList();
+	}
 }

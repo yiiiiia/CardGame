@@ -16,9 +16,7 @@
 			"Deathwatch: Deal 1 damage to the enemy",
 			"avatar and heal yourself for 1"
 		],
-		"cardTextures": [
-			"assets/game/extra/cards/neutral_unit_h.png"
-		],
+		"cardTextures": ["assets/game/extra/cards/neutral_unit_h.png"],
 		"attack": 5,
 		"health": 4
 	},

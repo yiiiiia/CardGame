@@ -1,31 +1,34 @@
 package structures.basic.unit;
 
 import java.util.List;
-
+import akka.actor.ActorRef;
 import structures.GameState;
-import structures.basic.Tile;
+import structures.basic.AbilityType;
 import structures.basic.Unit;
-import utils.BasicObjectBuilders;
 
 public class YoungFlamewing extends Unit {
-    
-    public static final int initialHealth = 4;
-    public static final int initialAttack = 5;
 
-    protected int health;
-    protected int attack;
+	public YoungFlamewing() {
+		name = "YoungFlamewing";
+		health = 4;
+		maxHealth = 4;
+		attack = 5;
+	}
 
-    public YoungFlamewing() {
-        super();
-        health = 4;
-        attack = 5;
-    }
+	@Override
+	public void performAbility(AbilityType type, ActorRef out, GameState gameState) {
+		if (type == AbilityType.FLYING) {
+			performFlying(out, gameState);
+		}
+		return;
+	}
 
-    public List<Tile> tilesFlyingUnitCanMoveTo (GameState gameState) {
-        return gameState.getAllTiles();
-    }
+	@Override
+	public List<AbilityType> getAbilityTypes() {
+		return List.of(AbilityType.FLYING);
+	}
 
-    public YoungFlamewing getInstance(String configpaths) {
-        return (YoungFlamewing)BasicObjectBuilders.loadUnit(configpaths, 15, YoungFlamewing.class);
-    }
+	private void performFlying(ActorRef out, GameState gameState) {
+		// TODO integrate with AI logic
+	}
 }

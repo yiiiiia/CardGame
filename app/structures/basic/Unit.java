@@ -1,22 +1,19 @@
 package structures.basic;
 
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
 
 /**
- * This is a representation of a Unit on the game board.
- * A unit has a unique id (this is used by the front-end.
- * Each unit has a current UnitAnimationType, e.g. move,
- * or attack. The position is the physical position on the
- * board. UnitAnimationSet contains the underlying information
- * about the animation frames, while ImageCorrection has
- * information for centering the unit on the tile.
+ * This is a representation of a Unit on the game board. A unit has a unique id
+ * (this is used by the front-end. Each unit has a current UnitAnimationType,
+ * e.g. move, or attack. The position is the physical position on the board.
+ * UnitAnimationSet contains the underlying information about the animation
+ * frames, while ImageCorrection has information for centering the unit on the
+ * tile.
  * 
  * @author Dr. Richard McCreadie
  *
@@ -26,54 +23,52 @@ public class Unit {
 	private static ObjectMapper mapper = new ObjectMapper(); // Jackson Java Object Serializer, is used to read java
 																// objects from a file
 	protected int id;
+	protected String name;
 	protected UnitAnimationType animation;
 	protected Position position;
 	protected UnitAnimationSet animations;
 	protected ImageCorrection correction;
-
-	// New attributes
-	protected boolean stunned; // A stunned unit cannot move or attack in one turn (only AI)
-	protected boolean hasMoved; // A unit can move only once per turn and cannot move after attacking
-	protected boolean hasAttacked; // A unit can attack only once per turn
-	protected boolean hasProvoke; // Some units has provoke ability
 	protected int health;
+	protected int maxHealth;
 	protected int attack;
+	protected boolean stunned;
+	protected boolean hasMoved;
+	protected boolean hasAttacked;
+	protected int shieldBuff; // related with the effect of card Horn of the Forsaken
 
 	public Unit() {
 	}
 
 	public Unit(int id, UnitAnimationSet animations, ImageCorrection correction, int health, int attack) {
-		super();
 		this.id = id;
 		this.animation = UnitAnimationType.idle;
-
 		position = new Position(0, 0, 0, 0);
 		this.correction = correction;
 		this.animations = animations;
 		this.health = health;
+		this.maxHealth = health;
 		this.attack = attack;
 		this.stunned = false;
 		this.hasMoved = false;
 		this.hasAttacked = false;
-		this.hasProvoke = false;
+		this.shieldBuff = 0;
 	}
 
 	public Unit(int id, UnitAnimationSet animations, ImageCorrection correction, Tile currentTile, int health,
 			int attack) {
-		super();
 		this.id = id;
 		this.animation = UnitAnimationType.idle;
-
 		position = new Position(currentTile.getXpos(), currentTile.getYpos(), currentTile.getTilex(),
 				currentTile.getTiley());
 		this.correction = correction;
 		this.animations = animations;
 		this.health = health;
+		this.maxHealth = health;
 		this.attack = attack;
 		this.stunned = false;
 		this.hasMoved = false;
 		this.hasAttacked = false;
-		this.hasProvoke = false;
+		this.shieldBuff = 0;
 	}
 
 	public Unit(int id, UnitAnimationType animation, Position position, UnitAnimationSet animations,
@@ -85,16 +80,24 @@ public class Unit {
 		this.animations = animations;
 		this.correction = correction;
 		this.health = health;
+		this.maxHealth = health;
 		this.attack = attack;
 		this.stunned = false;
 		this.hasMoved = false;
 		this.hasAttacked = false;
-		this.hasProvoke = false;
+		this.shieldBuff = 0;
+	}
+
+	public void performAbility(AbilityType type, ActorRef out, GameState gameState) {
+		throw new UnsupportedOperationException();
+	}
+
+	public List<AbilityType> getAbilityTypes() {
+		throw new UnsupportedOperationException();
 	}
 
 	/**
-	 * This command sets the position of the Unit to a specified
-	 * tile.
+	 * This command sets the position of the Unit to a specified tile.
 	 * 
 	 * @param tile
 	 */
@@ -103,19 +106,13 @@ public class Unit {
 		position = new Position(tile.getXpos(), tile.getYpos(), tile.getTilex(), tile.getTiley());
 	}
 
-	// should be override by subclass
-	public void performDeathWatch(ActorRef ref, GameState gameState) {
-		throw new RuntimeException("Not implemented");
-	}
-
-	// should be override by subclass
-	public void performGambit(ActorRef ref, GameState gameState) {
-		throw new RuntimeException("Not implemented");
-	}
-
-	// should be override by subclass
-	public void performDamageWatch(ActorRef ref, GameState gameState, Unit damagedUnit) {
-		throw new RuntimeException("Not implemented");
+	public boolean hasProvokeAbility() {
+		for (AbilityType type : getAbilityTypes()) {
+			if (type == AbilityType.PROVOKE) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public int getId() {
@@ -191,6 +188,14 @@ public class Unit {
 		this.health = health;
 	}
 
+	public int getMaxHealth() {
+		return maxHealth;
+	}
+
+	public void setMaxHealth(int maxHealth) {
+		this.maxHealth = maxHealth;
+	}
+
 	public int getAttack() {
 		return attack;
 	}
@@ -199,40 +204,65 @@ public class Unit {
 		this.attack = attack;
 	}
 
-	public boolean getHasProvoke() {
-		return hasProvoke;
+	public void incrAttack() {
+		attack++;
 	}
 
-	public void setHasProvoke(boolean hasProvoke) {
-		this.hasProvoke = hasProvoke;
+	public void incrHealth() {
+		health++;
+		if (health > maxHealth) {
+			maxHealth = health;
+		}
+	}
+
+	public void healSelf(int healPoint) {
+		if (health + healPoint > maxHealth) {
+			health = maxHealth;
+		} else {
+			health += healPoint;
+		}
+	}
+
+	public int getShieldBuff() {
+		return shieldBuff;
+	}
+
+	public void setShieldBuff(int artifactRobustness) {
+		this.shieldBuff = artifactRobustness;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	// New method for unit movement
-	public void unitMove(ActorRef out, GameState gameState, Tile positionTile) {
+	public void unitMove(ActorRef out, GameState gameState, Tile destination) {
 		if (this.hasMoved) {
-			throw new RuntimeException("Cannot move: unit has already moved");
+			throw new IllegalStateException("Cannot move: unit has already moved");
 		}
 		if (this.hasAttacked) {
-			throw new RuntimeException("Cannot move: unit has already moved");
+			throw new IllegalStateException("Cannot move: unit has already attacked");
 		}
 		if (this.stunned) {
-			throw new RuntimeException("Cannot move: unit is stunned");
+			throw new IllegalStateException("Cannot move: unit is stunned");
 		}
 		if (gameState.isUnitProvoked(this)) {
-			throw new RuntimeException("Cannot move: unit is currently provoked");
+			throw new IllegalStateException("Cannot move: unit is provoked");
 		}
 		// Check if the move is valid based on game rules
 		List<Tile> accessibleTiles = gameState.getTilesUnitCanMoveTo(this);
-		if (!accessibleTiles.contains(positionTile)) {
-			throw new RuntimeException("Cannot move: target tile is out of range");
+		if (!accessibleTiles.contains(destination)) {
+			throw new IllegalStateException("Cannot move: target tile out of range");
 		}
-		this.setPositionByTile(positionTile);
-		this.hasMoved = true; // Prevent further movement this turn
 		boolean yfirst = false;
-		int unitX = this.position.getTilex();
-		int unitY = this.position.getTiley();
-		int targetX = positionTile.getTilex();
-		int targetY = positionTile.getTiley();
+		int unitX = position.getTilex();
+		int unitY = position.getTiley();
+		int targetX = destination.getTilex();
+		int targetY = destination.getTiley();
 		if (unitY != targetY) {
 			if (unitX == targetX) {
 				yfirst = true;
@@ -248,34 +278,55 @@ public class Unit {
 				}
 			}
 		}
-		BasicCommands.moveUnitToTile(out, this, positionTile, yfirst);
+		hasMoved = true;
+		gameState.adjustUnitPosition(this, destination);
+		BasicCommands.moveUnitToTile(out, this, destination, yfirst);
 	}
 
-	// New method for unit attack, considering attack range and movement
-	// restrictions
-	public void unitAttack(ActorRef out, GameState gameState, Unit targetUnit) {
-		if (this.hasAttacked) {
-			throw new RuntimeException("Cannot attack: unit has already attacked");
+	public void performAttack(ActorRef out, GameState gameState, Unit attacked) {
+		if (!gameState.canPerformAttack(this, attacked)) {
+			throw new IllegalStateException("cannot perform attack");
 		}
-		if (this.stunned) {
-			throw new RuntimeException("Cannot attack: unit is stunned");
-		}
-		if (gameState.isUnitProvoked(this) && !targetUnit.getHasProvoke()) {
-			throw new RuntimeException("Cannot attack: unit is provoked and can only attack provoke unit");
-		}
-		if (!GameState.unitsAdjacent(this, targetUnit)) {
-			throw new RuntimeException("Cannot attack: target unit is out of range");
+		if (!GameState.unitsAdjacent(this, attacked)) {
+			throw new IllegalStateException("Cannot attack: target unit is out of range");
 		}
 		this.hasAttacked = true;
-		GameState.displayUnitAttack(out, this, targetUnit);
-		int newHealth = targetUnit.getHealth() - this.attack;
-		targetUnit.setHealth(Math.max(newHealth, 0)); // Ensure health does not go below 0
-		GameState.updateUnitHealth(out, targetUnit);
-		gameState.triggerDamageEvents(out, targetUnit);
-		if (targetUnit.getHealth() <= 0) {
-			GameState.displayUnitDeath(out, targetUnit);
-			gameState.removeUnit(out, targetUnit);
-			gameState.triggerDamageEvents(out, targetUnit);
+		GameState.playUnitAnimation(out, this, UnitAnimationType.attack);
+		GameState.playUnitAnimation(out, attacked, UnitAnimationType.hit);
+		boolean damageDone = gameState.dealDamangeToUnit(out, attacked, this.attack);
+		if (damageDone && getShieldBuff() > 0) {
+			Tile tile = gameState.getUnitTile(this);
+			int gameMode = gameState.isUserUnit(this) ? GameState.USER_MODE : GameState.AI_MODE;
+			gameState.summonWraithlingOnRandomlySelectedUnoccupiedAdjacentTile(out, tile, gameMode);
 		}
+		GameState.playUnitAnimation(out, this, UnitAnimationType.idle);
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Unit other = (Unit) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "Unit [id=" + id + ", name=" + name + "]";
+	}
+
 }

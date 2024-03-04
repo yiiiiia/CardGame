@@ -17,9 +17,7 @@
 			"dies, trigger the following effect): This unit",
 			"gains +1 attack and +1 health permanently."
 		],
-		"cardTextures": [
-			"assets/game/extra/cards/neutral_unit_h.png"
-		],
+		"cardTextures": ["assets/game/extra/cards/neutral_unit_h.png"],
 		"attack": 3,
 		"health": 2
 	},

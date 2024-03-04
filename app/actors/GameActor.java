@@ -3,12 +3,11 @@ package actors;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import akka.actor.AbstractActor;
+import akka.actor.AbstractActor.Receive;
 import akka.actor.ActorRef;
 import events.CardClicked;
 import events.EndTurnClicked;
@@ -25,21 +24,25 @@ import utils.ImageListForPreLoad;
 
 /**
  * The game actor is an Akka Actor that receives events from the user front-end
- * UI (e.g. when
- * the user clicks on the board) via a websocket connection. When an event
- * arrives, the
- * processMessage() method is called, which can be used to react to the event.
- * The Game actor
- * also includes an ActorRef object which can be used to issue commands to the
- * UI to change
- * what the user sees. The GameActor is created when the user browser creates a
- * websocket
- * connection to back-end services (on load of the game web page).
+ * UI (e.g. when the user clicks on the board) via a websocket connection. When
+ * an event arrives, the processMessage() method is called, which can be used to
+ * react to the event. The Game actor also includes an ActorRef object which can
+ * be used to issue commands to the UI to change what the user sees. The
+ * GameActor is created when the user browser creates a websocket connection to
+ * back-end services (on load of the game web page).
  * 
  * @author Dr. Richard McCreadie
  *
  */
 public class GameActor extends AbstractActor {
+	public static final String INITIALIZE_EVENT = "initalize";
+	public static final String HEARTBEAT_EVENT = "heartbeat";
+	public static final String UNIT_MOVING_EVENT = "unitMoving";
+	public static final String UNIT_STOPPED_EVENT = "unitstopped";
+	public static final String TILE_CLICK_EVENT = "tileclicked";
+	public static final String CARD_CLICK_EVENT = "cardclicked";
+	public static final String END_TURN_EVENT = "endturnclicked";
+	public static final String OTHER_CLICK_EVENT = "otherclicked";
 
 	private ObjectMapper mapper = new ObjectMapper(); // Jackson Java Object Serializer, is used to turn java objects to
 														// Strings
@@ -49,8 +52,7 @@ public class GameActor extends AbstractActor {
 
 	/**
 	 * Constructor for the GameActor. This is called by the GameController when the
-	 * websocket
-	 * connection to the front-end is established.
+	 * websocket connection to the front-end is established.
 	 * 
 	 * @param out
 	 */
@@ -61,14 +63,14 @@ public class GameActor extends AbstractActor {
 
 		// create class instances to respond to the various events that we might recieve
 		eventProcessors = new HashMap<String, EventProcessor>();
-		eventProcessors.put("initalize", new Initalize());
-		eventProcessors.put("heartbeat", new Heartbeat());
-		eventProcessors.put("unitMoving", new UnitMoving());
-		eventProcessors.put("unitstopped", new UnitStopped());
-		eventProcessors.put("tileclicked", new TileClicked());
-		eventProcessors.put("cardclicked", new CardClicked());
-		eventProcessors.put("endturnclicked", new EndTurnClicked());
-		eventProcessors.put("otherclicked", new OtherClicked());
+		eventProcessors.put(INITIALIZE_EVENT, new Initalize());
+		eventProcessors.put(HEARTBEAT_EVENT, new Heartbeat());
+		eventProcessors.put(UNIT_MOVING_EVENT, new UnitMoving());
+		eventProcessors.put(UNIT_STOPPED_EVENT, new UnitStopped());
+		eventProcessors.put(TILE_CLICK_EVENT, new TileClicked());
+		eventProcessors.put(CARD_CLICK_EVENT, new CardClicked());
+		eventProcessors.put(END_TURN_EVENT, new EndTurnClicked());
+		eventProcessors.put(OTHER_CLICK_EVENT, new OtherClicked());
 
 		// Initalize a new game state object
 		gameState = new GameState();
@@ -88,22 +90,20 @@ public class GameActor extends AbstractActor {
 
 	/**
 	 * This method simply farms out the processing of the json messages from the
-	 * front-end to the
-	 * processMessage method
+	 * front-end to the processMessage method
 	 * 
 	 * @return
 	 */
 	public Receive createReceive() {
-		return receiveBuilder()
-				.match(JsonNode.class, message -> {
-					System.out.println(message);
-					processMessage(message.get("messagetype").asText(), message);
-				}).build();
+		return receiveBuilder().match(JsonNode.class, message -> {
+			System.out.println(message);
+			processMessage(message.get("messagetype").asText(), message);
+		}).build();
 	}
 
 	/**
-	 * This looks up an event processor for the specified message type.
-	 * Note that this processing is asynchronous.
+	 * This looks up an event processor for the specified message type. Note that
+	 * this processing is asynchronous.
 	 * 
 	 * @param messageType
 	 * @param message
@@ -116,13 +116,18 @@ public class GameActor extends AbstractActor {
 		if (processor == null) {
 			// Unknown event type received
 			System.err.println("GameActor: Recieved unknown event type " + messageType);
+		} else if (messageType.equals(HEARTBEAT_EVENT) || messageType.equals(UNIT_MOVING_EVENT)
+				|| messageType.equals(UNIT_STOPPED_EVENT)) {
+			processor.processEvent(out, gameState, message);
 		} else {
-			if (gameState.isGameEnd()) {
-				System.err.println("Ignore incoming events: game is end.");
-			} else if (gameState.getPlayerMode() == GameState.AI_MODE) {
+			if (gameState.isGameOver()) {
+				System.err.println("Ignore incoming events: game is over");
+			} else if (gameState.getGameMode() == GameState.AI_MODE) {
 				System.err.println("Ignore incoming events: game is in AI mode");
 			} else if (gameState.hasMovingUnit()) {
 				System.err.println("Ignore incoming events: has unit moving");
+			} else if (gameState.getDelegatedCard() != null) {
+				gameState.getDelegatedCard().delegateEventProcess(out, gameState, messageType, message);
 			} else {
 				processor.processEvent(out, gameState, message); // process the event
 			}

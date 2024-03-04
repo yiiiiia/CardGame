@@ -1,16 +1,28 @@
 package structures.basic.card;
 
+import java.util.List;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
 import structures.basic.Card;
-import structures.basic.unit.ShadowDancer;
+import structures.basic.Tile;
+import structures.basic.Unit;
+import structures.basic.unit.Shadowdancer;
 
 public class ShadowDancerCard extends Card {
-    public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
-        ShadowDancer shadowDancerUnit=new ShadowDancer();
-        shadowDancerUnit.setPositionByTile(gameState.getTileByPos(tilex,tiley));
-        BasicCommands.drawUnit(out, shadowDancerUnit, gameState.getTileByPos(tilex,tiley));
-        gameState.getUserPlayer().getAllUnits().put(gameState.getTileByPos(tilex,tiley),shadowDancerUnit);
-    }
+
+	public static final String CARD_NAME = "Shadowdancer";
+
+	@Override
+	public void highlightTiles(ActorRef out, GameState gameState) {
+		List<Tile> tiles = gameState.getTilesForSummon(GameState.USER_MODE);
+		for (Tile tile : tiles) {
+			BasicCommands.drawTile(out, tile, Tile.TILE_WHITE_MODE);
+		}
+	}
+
+	@Override
+	public Class<? extends Unit> getSummonedCreatureClass() {
+		return Shadowdancer.class;
+	}
 }

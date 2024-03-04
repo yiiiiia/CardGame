@@ -1,33 +1,38 @@
 package structures.basic.unit;
 
+import java.util.List;
+import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
+import structures.basic.AbilityType;
 import structures.basic.Unit;
-import utils.BasicObjectBuilders;
 
 public class ShadowWatcher extends Unit {
-    
-    public static final int initialHealth = 2;
-    public static final int initialAttack = 3;
+	public ShadowWatcher() {
+		name = "ShadowWatcher";
+		health = 2;
+		maxHealth = 2;
+		attack = 3;
+	}
 
-    protected int health;
-    protected int attack;
+	public void performDeathWatch(ActorRef out, GameState gameState) {
+		// whenever a unit, friendly or enemy dies
+		incrHealth();
+		incrAttack();
+		BasicCommands.setUnitHealth(out, this, health);
+		BasicCommands.setUnitAttack(out, this, attack);
+	}
 
-    public ShadowWatcher() {
-        super();
-        health = 2;
-        attack = 3;
-    }
+	@Override
+	public void performAbility(AbilityType type, ActorRef out, GameState gameState) {
+		if (type != AbilityType.DEATH_WATCH) {
+			return;
+		}
+		performDeathWatch(out, gameState);
+	}
 
-    public void performDeathWatch(ActorRef out, GameState gameState) {
-        //whenever a unit, friendly or enemy dies
-        this.setHealth(health + 1);
-        this.setAttack(attack + 1);
-        BasicCommands.setUnitHealth(out, this, health + 1);
-        BasicCommands.setUnitAttack(out, this, attack + 1);
-    }
-
-    public static ShadowWatcher getInstance(String configpaths) {
-        return (ShadowWatcher)BasicObjectBuilders.loadUnit(configpaths, 5, ShadowWatcher.class);
-    }
+	@Override
+	public List<AbilityType> getAbilityTypes() {
+		return List.of(AbilityType.DEATH_WATCH);
+	}
 }

@@ -3,16 +3,14 @@ package structures.basic;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A basic representation of a tile on the game board. Tiles have both a pixel
- * position
- * and a grid position. Tiles also have a width and height in pixels and a
- * series of urls
- * that point to the different renderable textures that a tile might have.
+ * position and a grid position. Tiles also have a width and height in pixels
+ * and a series of urls that point to the different renderable textures that a
+ * tile might have.
  * 
  * @author Dr. Richard McCreadie
  *
@@ -129,9 +127,12 @@ public class Tile {
 		this.unit = null;
 	}
 
+	public boolean isOccupied() {
+		return unit != null;
+	}
+
 	/**
-	 * Loads a tile from a configuration file
-	 * parameters.
+	 * Loads a tile from a configuration file parameters.
 	 * 
 	 * @param configFile
 	 * @return
@@ -170,5 +171,10 @@ public class Tile {
 		if (tiley != other.tiley)
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "Tile [xpos=" + xpos + ", ypos=" + ypos + "]";
 	}
 }
