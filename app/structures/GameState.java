@@ -5,11 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
-import structures.basic.AI;
 import structures.basic.AbilityType;
 import structures.basic.Card;
 import structures.basic.EffectAnimation;
@@ -55,7 +52,7 @@ public class GameState {
 	private Card activeCard;
 	private Unit userAvatar;
 	private Unit aiAvatar;
-	private int activateCardPos=-1;
+	private int activateCardPos = -1;
 	// areas that ai units will be provoked
 	private Set<Tile> userProvokeAreas = new HashSet<>();
 	// areas that user units will be provoked
@@ -66,15 +63,14 @@ public class GameState {
 		return gameInitialised;
 	}
 
-	public int getActivateCardPos()
-    {
-    	return this.activateCardPos;
-    }
-    
-    public void setActivateCardPos(int a)
-    {
-    	this.activateCardPos=a;
-    }
+	public int getActivateCardPos() {
+		return this.activateCardPos;
+	}
+
+	public void setActivateCardPos(int a) {
+		this.activateCardPos = a;
+	}
+
 	public void setGameInitialised(boolean gameInitialised) {
 		this.gameInitialised = gameInitialised;
 	}
@@ -269,15 +265,14 @@ public class GameState {
 	}
 
 	public List<Tile> getAdjacentUnoccupiedTiles(Tile tile) {
+		List<Tile> result = new ArrayList<>();
 		List<Tile> adjacentTiles = getAdjacentTiles(tile);
-		for(Tile cur:adjacentTiles)
-		{
-			if(cur.isOccupied())
-			{
-				adjacentTiles.remove(cur);
+		for (Tile cur : adjacentTiles) {
+			if (!cur.isOccupied()) {
+				result.add(cur);
 			}
 		}
-		return adjacentTiles;
+		return result;
 	}
 
 	public Tile getUnitTile(Unit unit) {
@@ -579,6 +574,8 @@ public class GameState {
 		}
 		playEffectAnimation(out, summonEffectPath, tile);
 		BasicCommands.drawUnit(out, unit, tile);
+		BasicCommands.setUnitHealth(out, unit, unit.getHealth());
+		BasicCommands.setUnitAttack(out, unit, unit.getAttack());
 		if (unit.hasProvokeAbility()) {
 			updateProvokeAreas();
 		}
