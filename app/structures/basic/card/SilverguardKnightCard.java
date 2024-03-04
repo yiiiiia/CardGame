@@ -1,16 +1,28 @@
 package structures.basic.card;
 
+import java.util.List;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
 import structures.basic.Card;
+import structures.basic.Tile;
+import structures.basic.Unit;
 import structures.basic.unit.SilverguardKnight;
 
 public class SilverguardKnightCard extends Card {
-    public void summonUnit (ActorRef out, GameState gameState, int tilex, int tiley){
-        SilverguardKnight silverguardKnightUnit=new SilverguardKnight();
-        silverguardKnightUnit.setPositionByTile(gameState.getTileByPos(tilex,tiley));
-        BasicCommands.drawUnit(out, silverguardKnightUnit, gameState.getTileByPos(tilex,tiley));
-        gameState.getAiPlayer().getAllUnits().put(gameState.getTileByPos(tilex,tiley),silverguardKnightUnit);
-    }
+
+	public static final String CARD_NAME = "Silverguard Knight";
+
+	@Override
+	public void highlightTiles(ActorRef out, GameState gameState) {
+		List<Tile> tiles = gameState.getTilesForSummon(GameState.AI_MODE);
+		for (Tile tile : tiles) {
+			BasicCommands.drawTile(out, tile, Tile.TILE_WHITE_MODE);
+		}
+	}
+
+	@Override
+	public Class<? extends Unit> getSummonedCreatureClass() {
+		return SilverguardKnight.class;
+	}
 }

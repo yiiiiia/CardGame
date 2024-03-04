@@ -18,9 +18,7 @@
 			"effect): Summon a Wraithling directly behind",
 			"this unit."
 		],
-		"cardTextures": [
-			"assets/game/extra/cards/neutral_unit_h.png"
-		],
+		"cardTextures": ["assets/game/extra/cards/neutral_unit_h.png"],
 		"attack": 3,
 		"health": 1
 	},

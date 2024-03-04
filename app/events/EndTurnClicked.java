@@ -1,46 +1,55 @@
 package events;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
 import structures.basic.Card;
-
-import java.util.*;
-
-import org.apache.commons.lang3.RandomStringUtils;
+import structures.basic.Player;
+import structures.basic.Unit;
 
 /**
- * Indicates that the user has clicked an object on the game canvas, in this case
- * the end-turn button.
+ * Indicates that the user has clicked an object on the game canvas, in this
+ * case the end-turn button.
  * 
- * { 
- *   messageType = “endTurnClicked”
- * }
+ * { messageType = “endTurnClicked” }
  * 
  * @author Dr. Richard McCreadie
  *
  */
-public class EndTurnClicked implements EventProcessor{
-
+public class EndTurnClicked implements EventProcessor {
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
-		//ignorePlayerAction
-		gameState.setIgnoreEvent(true); //from GameState class
+		// clearMana
+		Player user = gameState.getUserPlayer();
+		user.setMana(0); // from Player class
+		BasicCommands.setPlayer1Mana(out, user);
+		// clear stun status
+		clearUserUnitStatus(gameState);
+		// clear hand cards
+		clearHandCards(out);
+		// draw a new card
+		user.drawOneNewCard();
+		// display new cards
+		for (int i = 0; i < user.getHandCards().size(); i++) {
+			Card card = user.getHandCardByPos(i);
+			BasicCommands.drawCard(out, card, i + 1, Card.CARD_NORMAL_MODE);
+		}
+		gameState.setGameMode(GameState.AI_MODE);
+		gameState.getAiPlayer().playAiLogic(out, gameState);
+	}
 
-		//clearMana
-		gameState.getUserPlayer().setMana(0); //from Player class
-		BasicCommands.setPlayer1Mana(out, gameState.getUserPlayer());
-		
-		//drawCard
-		Random random = new Random();
-		int r = random.nextInt(gameState.getUserPlayer().getCardRemain().size());
-		
-		gameState.getUserPlayer().addHandCard(gameState.getUserPlayer().getCardRemain().get(r)); //from Player class
-		
-		//setAIAsActivePlayer
-		gameState.setPlayerMode(1);
-		//gameState.setAIAsActivePlayer(); 
+	private void clearUserUnitStatus(GameState gameState) {
+		for (Unit u : gameState.getUserUnits()) {
+			u.setStunned(false);
+			u.setHasMoved(false);
+			u.setHasAttacked(false);
+		}
+	}
+
+	private void clearHandCards(ActorRef out) {
+		for (int i = 0; i < Player.MAX_HAND_CARD_NUM; ++i) {
+			BasicCommands.deleteCard(out, i + 1);
+		}
 	}
 }

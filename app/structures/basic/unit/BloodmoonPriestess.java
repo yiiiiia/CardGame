@@ -1,49 +1,40 @@
 package structures.basic.unit;
 
 import java.util.List;
-import java.util.Random;
-
-import commands.BasicCommands;
+import akka.actor.ActorRef;
 import structures.GameState;
+import structures.basic.AbilityType;
 import structures.basic.Tile;
 import structures.basic.Unit;
 import utils.BasicObjectBuilders;
-import utils.StaticConfFiles;
 
 public class BloodmoonPriestess extends Unit {
-    
-    public static final int initialHealth = 3;
-    public static final int initialAttack = 3;
+	public BloodmoonPriestess() {
+		name = "BloodmoonPriestess";
+		health = 3;
+		maxHealth = 3;
+		attack = 3;
+	}
 
-    protected int health;
-    protected int attack;
+	public void performDeathWatch(ActorRef out, GameState gameState) {
+		Tile tile = gameState.getUnitTile(this);
+		gameState.summonWraithlingOnRandomlySelectedUnoccupiedAdjacentTile(out, tile, GameState.USER_MODE);
+	}
 
-    public BloodmoonPriestess() {
-        super();
-        health = 3;
-        attack = 3;
-    }
+	public static BloodmoonPriestess getInstance(String configpaths) {
+		return (BloodmoonPriestess) BasicObjectBuilders.loadUnit(configpaths, 7, BloodmoonPriestess.class);
+	}
 
-    public void performDeathWatch(ActorRef out, GameState gameState) {
-        //whenever a unit, friendly or enemy dies
-        Random r = new Random();
-        List<Tile> emptyTiles = gameState.getAllTiles();
-        for(Tile tile: emptyTiles) {
-            if(tile.getUnit()!=null) {
-                emptyTiles.remove(tile);
-            }
-        }
-        if (emptyTiles.size() > 0) {
-            int randomTile = r.nextInt(emptyTiles.size());
-            BasicCommands.playEffectAnimation(out, "f1_wraithsummon", emptyTiles.get(randomTile));
-            Wraithling wraithling = (Wraithling)BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 1, Wraithling.class);
-            wraithling.setPositionByTile(emptyTiles.get(randomTile));
-            BasicCommands.drawUnit(out, wraithling, emptyTiles.get(randomTile));
-            gameState.getPlayerUnits().put(emptyTiles.get(randomTile), wraithling);
-        }
-    }
+	@Override
+	public void performAbility(AbilityType type, ActorRef out, GameState gameState) {
+		if (type != AbilityType.DEATH_WATCH) {
+			return;
+		}
+		performDeathWatch(out, gameState);
+	}
 
-    public static BloodmoonPriestess getInstance(String configpaths) {
-        return (BloodmoonPriestess)BasicObjectBuilders.loadUnit(configpaths, 7, BloodmoonPriestess.class);
-    }
+	@Override
+	public List<AbilityType> getAbilityTypes() {
+		return List.of(AbilityType.DEATH_WATCH);
+	}
 }

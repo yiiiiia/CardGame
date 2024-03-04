@@ -13,9 +13,7 @@
 	},
 	"bigCard": {
 		"rulesTextRows": [],
-		"cardTextures": [
-			"assets/game/extra/cards/neutral_unit_h.png"
-		],
+		"cardTextures": ["assets/game/extra/cards/neutral_unit_h.png"],
 		"attack": 4,
 		"health": 2
 	},

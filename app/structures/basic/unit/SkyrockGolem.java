@@ -1,24 +1,28 @@
 package structures.basic.unit;
 
+import java.util.Collections;
+import java.util.List;
+import akka.actor.ActorRef;
+import structures.GameState;
+import structures.basic.AbilityType;
 import structures.basic.Unit;
-import utils.BasicObjectBuilders;
 
 public class SkyrockGolem extends Unit {
-    
-    public static final int initialHealth = 2;
-    public static final int initialAttack = 4;
 
-    protected int health;
-    protected int attack;
+	public SkyrockGolem() {
+		name = "SkyrockGolem";
+		health = 2;
+		maxHealth = 2;
+		attack = 4;
+	}
 
-    public SkyrockGolem() {
-        super();
-        health = 2;
-        attack = 4;
-        
-    }
+	@Override
+	public void performAbility(AbilityType type, ActorRef out, GameState gameState) {
+		return;
+	}
 
-    public SkyrockGolem getInstance(String configpaths) {
-        return (SkyrockGolem)BasicObjectBuilders.loadUnit(configpaths, 12, SkyrockGolem.class);
-    }
+	@Override
+	public List<AbilityType> getAbilityTypes() {
+		return Collections.emptyList();
+	}
 }

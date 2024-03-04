@@ -17,9 +17,7 @@
 			"enemy dies, trigger the following effect):",
 			"This unit gains +1 attack permanently."
 		],
-		"cardTextures": [
-			"assets/game/extra/cards/neutral_unit_h.png"
-		],
+		"cardTextures": ["assets/game/extra/cards/neutral_unit_h.png"],
 		"attack": 0,
 		"health": 1
 	},
