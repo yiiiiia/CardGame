@@ -78,6 +78,10 @@ public class Player {
 		return new ArrayList<>(tileAndUnits.values());
 	}
 
+	public Map<Tile,Unit> getAllUnitsAndTile()
+	{
+		return this.tileAndUnits;
+	}
 	public List<Tile> getAllTiles() {
 		return new ArrayList<>(tileAndUnits.keySet());
 	}

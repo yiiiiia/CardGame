@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
+import structures.basic.AI;
 import structures.basic.AbilityType;
 import structures.basic.Card;
 import structures.basic.EffectAnimation;
@@ -54,6 +55,7 @@ public class GameState {
 	private Card activeCard;
 	private Unit userAvatar;
 	private Unit aiAvatar;
+	private int activateCardPos=-1;
 	// areas that ai units will be provoked
 	private Set<Tile> userProvokeAreas = new HashSet<>();
 	// areas that user units will be provoked
@@ -64,6 +66,15 @@ public class GameState {
 		return gameInitialised;
 	}
 
+	public int getActivateCardPos()
+    {
+    	return this.activateCardPos;
+    }
+    
+    public void setActivateCardPos(int a)
+    {
+    	this.activateCardPos=a;
+    }
 	public void setGameInitialised(boolean gameInitialised) {
 		this.gameInitialised = gameInitialised;
 	}
@@ -259,8 +270,14 @@ public class GameState {
 
 	public List<Tile> getAdjacentUnoccupiedTiles(Tile tile) {
 		List<Tile> adjacentTiles = getAdjacentTiles(tile);
-		var predTileFree = Predicate.not(Tile::isOccupied);
-		return adjacentTiles.stream().filter(predTileFree).collect(Collectors.toList());
+		for(Tile cur:adjacentTiles)
+		{
+			if(cur.isOccupied())
+			{
+				adjacentTiles.remove(cur);
+			}
+		}
+		return adjacentTiles;
 	}
 
 	public Tile getUnitTile(Unit unit) {
