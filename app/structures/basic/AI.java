@@ -88,13 +88,13 @@ public class AI extends Player {
 				String curname = cur.getCardname();
 				if (this.getMana() >= cur.getManacost()) {
 					switch (curname) {
-					case "SundropElixir":
+					case "Sundrop Elixir":
 						useSundrop(cur, gameState, out);// Optimize the timing of use later
 						break;
-					case "TrueStrike":
+					case "Truestrike":
 						useTrueStrike(cur, gameState, out);
 						break;
-					case "BeamShockCard":
+					case "Beamshock":
 						Tile tile = this.havaAdUnit(gameState);
 						if (tile != null) {
 							useStun(cur, tile, gameState, out);
@@ -277,7 +277,7 @@ public class AI extends Player {
 						aiUnit.unitMove(out, gameState,
 								gameState.getTileByPos(cur.getTilex(), cur.getTiley() + Integer.signum(distancey) * 2));
 					}
-					break;
+					
 				}
 				// Attack after moving
 				else {
