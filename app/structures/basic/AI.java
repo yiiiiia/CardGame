@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.Action;
@@ -24,10 +23,10 @@ public class AI extends Player {
 	public void playAiLogic(ActorRef out, GameState gameState) {
 		BasicCommands.addPlayer1Notification(out, "In Ai mode now, sleep 2 seconds", 2);
 		BasicCommands.sleep(2 * 1000);
-
-		if (gameState.getTurn() > 1) {
-			this.setMana(gameState.getTurn+1);
-		}
+        //后续加蓝量
+		/*
+		 * if (gameState.getTurn() > 1) { this.setMana(gameState.getTurn()+1); }
+		 */
 		BasicCommands.setPlayer2Mana(out, this);
 		BasicCommands.setPlayer2Health(out, this);
 		this.useSpellCard(gameState, out);
