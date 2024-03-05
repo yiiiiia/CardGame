@@ -4,8 +4,10 @@ import java.util.List;
 import akka.actor.ActorRef;
 import structures.GameState;
 import structures.basic.AbilityType;
+import structures.basic.Tile;
 import structures.basic.Unit;
 import utils.BasicObjectBuilders;
+import utils.StaticConfFiles;
 
 public class Shadowdancer extends Unit {
 
@@ -20,6 +22,8 @@ public class Shadowdancer extends Unit {
 		Unit aiAvatar = gameState.getAiAvatar();
 		Unit userAvatar = gameState.getUserAvatar();
 		gameState.dealDamangeToUnit(out, aiAvatar, 1);
+		Tile tile = gameState.getUnitTile(userAvatar);
+		GameState.playEffectAnimation(out, StaticConfFiles.f1_buff, tile);
 		gameState.healUnit(out, userAvatar, 1);
 	}
 

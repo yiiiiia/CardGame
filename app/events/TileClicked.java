@@ -11,6 +11,7 @@ import structures.GameState;
 import structures.basic.Card;
 import structures.basic.Tile;
 import structures.basic.Unit;
+import structures.basic.card.WraithlingSwarmCard;
 
 /**
  * Indicates that the user has clicked an object on the game canvas, in this
@@ -124,7 +125,19 @@ public class TileClicked implements EventProcessor {
 		Card activeCard = gameState.getActiveCard();
 		gameState.redrawAllTiles(out);
 		gameState.clearActiveCard(out);
-		if (activeCard.getIsCreature()) {
+		if (activeCard.getCardname().equals(WraithlingSwarmCard.CARD_NAME)) {
+			// Wraithling Swarm is special in that it is a spell card, but summons creatures
+			// on any vacant tile
+			if (tileClicked.isOccupied()) {
+				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: occupied tile!", 5);
+				return;
+			}
+			if (activeCard.getManacost() > gameState.getUserPlayer().getMana()) {
+				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: not enough mana!", 5);
+				return;
+			}
+			activeCard.castSpell(out, gameState, tileClicked);
+		} else if (activeCard.getIsCreature()) {
 			if (tileClicked.isOccupied()) {
 				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: occupied tile!", 5);
 				return;

@@ -34,6 +34,7 @@ public class Unit {
 	protected boolean stunned;
 	protected boolean hasMoved;
 	protected boolean hasAttacked;
+	protected boolean newlySpawned;
 	protected int shieldBuff; // related with the effect of card Horn of the Forsaken
 
 	public Unit() {
@@ -237,6 +238,14 @@ public class Unit {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public boolean isNewlySpawned() {
+		return newlySpawned;
+	}
+
+	public void setNewlySpawned(boolean newlySpawned) {
+		this.newlySpawned = newlySpawned;
 	}
 
 	// New method for unit movement

@@ -5,7 +5,9 @@ import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
 import structures.basic.AbilityType;
+import structures.basic.Tile;
 import structures.basic.Unit;
+import utils.StaticConfFiles;
 
 public class BadOmen extends Unit {
 
@@ -17,6 +19,8 @@ public class BadOmen extends Unit {
 	}
 
 	public void performDeathWatch(ActorRef out, GameState gameState) {
+		Tile tile = gameState.getUnitTile(this);
+		GameState.playEffectAnimation(out, StaticConfFiles.f1_buff, tile);
 		incrAttack();
 		BasicCommands.setUnitAttack(out, this, attack);
 	}

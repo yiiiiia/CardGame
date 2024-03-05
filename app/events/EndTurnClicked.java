@@ -41,6 +41,7 @@ public class EndTurnClicked implements EventProcessor {
 
 	private void clearUserUnitStatus(GameState gameState) {
 		for (Unit u : gameState.getUserUnits()) {
+			u.setNewlySpawned(false);
 			u.setStunned(false);
 			u.setHasMoved(false);
 			u.setHasAttacked(false);

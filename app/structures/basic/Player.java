@@ -78,10 +78,10 @@ public class Player {
 		return new ArrayList<>(tileAndUnits.values());
 	}
 
-	public Map<Tile,Unit> getAllUnitsAndTile()
-	{
+	public Map<Tile, Unit> getAllUnitsAndTile() {
 		return this.tileAndUnits;
 	}
+
 	public List<Tile> getAllTiles() {
 		return new ArrayList<>(tileAndUnits.keySet());
 	}
@@ -131,11 +131,11 @@ public class Player {
 		return newCard;
 	}
 
-	public void removeHandCard(Card card) {
+	public int removeHandCard(Card card) {
 		for (int i = 0; i < MAX_HAND_CARD_NUM; i++) {
 			if (handCards[i] == card) {
 				handCards[i] = null;
-				return;
+				return i;
 			}
 		}
 		throw new IllegalStateException("try remove non-existing card: " + card);

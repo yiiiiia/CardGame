@@ -15,6 +15,7 @@ import structures.basic.Position;
 import structures.basic.Tile;
 import structures.basic.Unit;
 import structures.basic.UnitAnimationType;
+import structures.basic.unit.SaberspineTiger;
 import structures.basic.unit.Wraithling;
 import utils.BasicObjectBuilders;
 import utils.StaticConfFiles;
@@ -238,8 +239,8 @@ public class GameState {
 	}
 
 	public void deleteUserCard(ActorRef out, Card card) {
-		userPlayer.removeHandCard(card);
-		BasicCommands.deleteCard(out, AI_MODE);
+		int pos = userPlayer.removeHandCard(card);
+		BasicCommands.deleteCard(out, pos + 1);
 	}
 
 	public Tile getTileByPos(int tilex, int tiley) {
@@ -444,49 +445,6 @@ public class GameState {
 		}
 	}
 
-	public boolean isUnitProvoked(Unit unit) {
-		Tile tile = getUnitTile(unit);
-		if (isUserUnit(unit)) {
-			return aiProvokeAreas.contains(tile);
-		}
-		if (isAiUnit(unit)) {
-			return userProvokeAreas.contains(tile);
-		}
-		throw new IllegalStateException("Orphan unit:" + unit);
-	}
-
-	public boolean canUnitMove(Unit unit) {
-		if (unit.getHasMoved()) {
-			return false;
-		}
-		if (unit.getHasAttacked()) {
-			return false;
-		}
-		if (unit.isStunned()) {
-			return false;
-		}
-		if (isUnitProvoked(unit)) {
-			return false;
-		}
-		return true;
-	}
-
-	public String reasonUnitCannotMove(Unit unit) {
-		if (unit.getHasMoved()) {
-			return "unit has already moved in this turn";
-		}
-		if (unit.getHasAttacked()) {
-			return "unit has attacked and forbiden to move";
-		}
-		if (unit.isStunned()) {
-			return "unit is stunned";
-		}
-		if (isUnitProvoked(unit)) {
-			return "unit is provoked";
-		}
-		throw new IllegalStateException("no reason why unit cannot move");
-	}
-
 	public void adjustUnitPosition(Unit unit, Tile destination) {
 		Player player = null;
 		if (isUserUnit(unit)) {
@@ -503,7 +461,59 @@ public class GameState {
 		}
 	}
 
+	public boolean isUnitProvoked(Unit unit) {
+		Tile tile = getUnitTile(unit);
+		if (isUserUnit(unit)) {
+			return aiProvokeAreas.contains(tile);
+		}
+		if (isAiUnit(unit)) {
+			return userProvokeAreas.contains(tile);
+		}
+		throw new IllegalStateException("Orphan unit:" + unit);
+	}
+
+	public boolean canUnitMove(Unit unit) {
+		if (unit.isNewlySpawned()) {
+			return false;
+		}
+		if (unit.getHasMoved()) {
+			return false;
+		}
+		if (unit.getHasAttacked()) {
+			return false;
+		}
+		if (unit.isStunned()) {
+			return false;
+		}
+		if (isUnitProvoked(unit)) {
+			return false;
+		}
+		return true;
+	}
+
+	public String reasonUnitCannotMove(Unit unit) {
+		if (unit.isNewlySpawned()) {
+			return "unit is just spawned";
+		}
+		if (unit.getHasMoved()) {
+			return "unit has already moved in this turn";
+		}
+		if (unit.getHasAttacked()) {
+			return "unit has attacked and forbiden to move";
+		}
+		if (unit.isStunned()) {
+			return "unit is stunned";
+		}
+		if (isUnitProvoked(unit)) {
+			return "unit is provoked";
+		}
+		throw new IllegalStateException("no reason why unit cannot move");
+	}
+
 	public boolean canPerformAttack(Unit attacker, Unit attacked) {
+		if (attacker.isNewlySpawned()) {
+			return false;
+		}
 		if (attacker.getHasAttacked()) {
 			return false;
 		}
@@ -517,6 +527,9 @@ public class GameState {
 	}
 
 	public String reasonCannotPerformAttack(Unit attacker, Unit attacked) {
+		if (attacker.isNewlySpawned()) {
+			return "unit is just spawned";
+		}
 		if (attacker.getHasAttacked()) {
 			return "attacker has already attacked in this turn";
 		}
@@ -561,6 +574,9 @@ public class GameState {
 			throw new IllegalStateException("cannot summon unit on the occupied tile: " + tile);
 		}
 		Unit unit = BasicObjectBuilders.loadUnit(configPath, genUnitId(), unitClass);
+		if (unitClass != SaberspineTiger.class) {
+			unit.setNewlySpawned(true);
+		}
 		if (mode == USER_MODE) {
 			userPlayer.putUnitOnTile(tile, unit);
 		} else if (mode == AI_MODE) {
