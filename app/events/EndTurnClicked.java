@@ -24,17 +24,17 @@ public class EndTurnClicked implements EventProcessor {
 		Player user = gameState.getUserPlayer();
 		user.setMana(0); // from Player class
 		BasicCommands.setPlayer1Mana(out, user);
-		// clear stun status
-		clearUserUnitStatus(gameState);
-		// clear hand cards
-		clearHandCards(out);
 		// draw a new card
 		user.drawOneNewCard();
-		// display new cards
+		for (int i = 0; i < Player.MAX_HAND_CARD_NUM; ++i) {
+			BasicCommands.deleteCard(out, i + 1);
+		}
 		for (int i = 0; i < user.getHandCards().size(); i++) {
 			Card card = user.getHandCardByPos(i);
 			BasicCommands.drawCard(out, card, i + 1, Card.CARD_NORMAL_MODE);
 		}
+		// clear stun status
+		clearUserUnitStatus(gameState);
 		gameState.setGameMode(GameState.AI_MODE);
 		gameState.getAiPlayer().playAiLogic(out, gameState);
 	}
@@ -45,12 +45,6 @@ public class EndTurnClicked implements EventProcessor {
 			u.setStunned(false);
 			u.setHasMoved(false);
 			u.setHasAttacked(false);
-		}
-	}
-
-	private void clearHandCards(ActorRef out) {
-		for (int i = 0; i < Player.MAX_HAND_CARD_NUM; ++i) {
-			BasicCommands.deleteCard(out, i + 1);
 		}
 	}
 }

@@ -32,9 +32,16 @@ public class AI extends Player {
 		this.useCreatureCard(gameState, out);
 		this.moveOrAttack(gameState, out);
 		BasicCommands.addPlayer1Notification(out, "Ai mode is over", 2);
-		gameState.setGameMode(GameState.USER_MODE);
-
-		// TODO incorporate with jiangdong's code
+		if (gameState.isGameOver()) {
+			gameState.setGameMode(GameState.END_GAME_MODE);
+		} else {
+			gameState.setGameMode(GameState.USER_MODE);
+			// reset uesr mana
+			gameState.addTurn();
+			Player user = gameState.getUserPlayer();
+			user.setMana(gameState.getTurn() + 1);
+			BasicCommands.setPlayer1Mana(out, gameState.getUserPlayer());
+		}
 	}
 
 	// ai action
@@ -203,7 +210,7 @@ public class AI extends Player {
 				}
 				Tile tile = placeableArea(gameState);
 				if (tile != null) {
-					cur.summonUnitOnTile(out, gameState, tile, gameState.AI_MODE);
+					cur.summonUnitOnTile(out, gameState, tile, GameState.AI_MODE);
 
 				}
 
@@ -249,7 +256,7 @@ public class AI extends Player {
 			List<Tile> tilesAccessible = gameState.getTilesUnitCanMoveTo(aiUnit);
 
 			// The first branch, adjacent units can attack
-			if (gameState.unitsAdjacent(aiUnit, userUnit)) {
+			if (GameState.unitsAdjacent(aiUnit, userUnit)) {
 				// user unit and ai unit are adjacent
 
 				this.performAttackAndCounterAttack(out, gameState, aiUnit, userUnit);
@@ -258,7 +265,7 @@ public class AI extends Player {
 			else {
 				Tile targetTile = null;
 				for (Tile tile : tilesAccessible) {
-					if (gameState.tilesAdjacent(tile, getClosestTile(cur, gameState))) {
+					if (GameState.tilesAdjacent(tile, getClosestTile(cur, gameState))) {
 						targetTile = tile;
 						break;
 					}
@@ -378,10 +385,10 @@ public class AI extends Player {
 		if (!gameState.canPerformAttack(u1, u2)) {
 			throw new IllegalStateException("cannot perform attack!");
 		}
-		u1.performAttack(out, gameState, u2);
+		u1.performAttack(out, gameState, u2, false);
 		if (u2.getHealth() > 0 && gameState.canPerformAttack(u2, u1)) {
 			// perform counter attack
-			u2.performAttack(out, gameState, u1);
+			u2.performAttack(out, gameState, u1, true);
 		}
 	}
 
