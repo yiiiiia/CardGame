@@ -292,23 +292,25 @@ public class Unit {
 		BasicCommands.moveUnitToTile(out, this, destination, yfirst);
 	}
 
-	public void performAttack(ActorRef out, GameState gameState, Unit attacked) {
+	public void performAttack(ActorRef out, GameState gameState, Unit attacked, boolean isCounterAttack) {
 		if (!gameState.canPerformAttack(this, attacked)) {
 			throw new IllegalStateException("cannot perform attack");
 		}
 		if (!GameState.unitsAdjacent(this, attacked)) {
 			throw new IllegalStateException("Cannot attack: target unit is out of range");
 		}
-		this.hasAttacked = true;
+		if (!isCounterAttack) {
+			this.hasAttacked = true;
+		}
 		GameState.playUnitAnimation(out, this, UnitAnimationType.attack);
 		GameState.playUnitAnimation(out, attacked, UnitAnimationType.hit);
+		GameState.playUnitAnimation(out, this, UnitAnimationType.idle);
 		boolean damageDone = gameState.dealDamangeToUnit(out, attacked, this.attack);
 		if (damageDone && getShieldBuff() > 0) {
 			Tile tile = gameState.getUnitTile(this);
 			int gameMode = gameState.isUserUnit(this) ? GameState.USER_MODE : GameState.AI_MODE;
 			gameState.summonWraithlingOnRandomlySelectedUnoccupiedAdjacentTile(out, tile, gameMode);
 		}
-		GameState.playUnitAnimation(out, this, UnitAnimationType.idle);
 	}
 
 	@Override

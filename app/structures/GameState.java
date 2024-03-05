@@ -42,7 +42,7 @@ public class GameState {
 	private boolean gameOver = false;
 	private boolean hasMovingUnit = false;
 	private int gameMode; // 0 - human player; 1 - ai
-	private int turn; // Number of turns
+	private int turn = 0; // Number of turns
 
 	// Collections to track game elements
 	private Tile[][] gameTiles;
@@ -192,6 +192,10 @@ public class GameState {
 
 	public void clearActiveUnit() {
 		this.activeUnit = null;
+	}
+
+	public void addTurn() {
+		turn++;
 	}
 
 	public void initGameTiles() {

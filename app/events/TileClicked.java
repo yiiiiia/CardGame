@@ -194,10 +194,10 @@ public class TileClicked implements EventProcessor {
 		if (!gameState.canPerformAttack(attacker, attacked)) {
 			throw new IllegalStateException("cannot perform attack!");
 		}
-		attacker.performAttack(out, gameState, attacked);
+		attacker.performAttack(out, gameState, attacked, false);
 		if (attacked.getHealth() > 0 && gameState.canPerformAttack(attacked, attacker)) {
 			// perform counter attack
-			attacked.performAttack(out, gameState, attacker);
+			attacked.performAttack(out, gameState, attacker, true);
 		}
 	}
 }
