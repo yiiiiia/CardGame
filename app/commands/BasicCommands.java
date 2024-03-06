@@ -82,7 +82,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(5);
+				sleep(50);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
