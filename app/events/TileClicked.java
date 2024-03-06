@@ -77,7 +77,9 @@ public class TileClicked implements EventProcessor {
 			gameState.clearActiveUnit();
 			if (gameState.isUserUnit(unitOnTile)) {
 				gameState.setActiveUnit(unitOnTile);
-				hightlightTilesUnitCanMoveAndUnitsCanAttack(out, gameState, unitOnTile);
+				if (gameState.canUnitMove(unitOnTile)) {
+					hightlightTilesUnitCanMoveAndUnitsCanAttack(out, gameState, unitOnTile);
+				}
 				return;
 			}
 			// unitOnTile is ai unit

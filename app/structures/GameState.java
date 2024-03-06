@@ -599,7 +599,7 @@ public class GameState {
 		if (unit.hasProvokeAbility()) {
 			updateProvokeAreas();
 		}
-		triggerGambitAbilities(out, mode);
+		triggerGambitAbilities(out, mode, unit);
 	}
 
 	public void summonWraithlingOnRandomlySelectedUnoccupiedAdjacentTile(ActorRef out, Tile tile, int mode) {
@@ -689,7 +689,7 @@ public class GameState {
 		}
 	}
 
-	public void triggerGambitAbilities(ActorRef out, int mode) {
+	public void triggerGambitAbilities(ActorRef out, int mode, Unit toExclude) {
 		List<Unit> units = null;
 		if (mode == USER_MODE) {
 			units = getUserUnits();
@@ -699,6 +699,9 @@ public class GameState {
 			throw new IllegalArgumentException("Invalid game mode: " + mode);
 		}
 		for (Unit unit : units) {
+			if (unit == toExclude) {
+				continue;
+			}
 			unit.performAbility(AbilityType.OPENING_GAMBIT, out, this);
 		}
 	}
