@@ -594,6 +594,7 @@ public class GameState {
 		}
 		playEffectAnimation(out, summonEffectPath, tile);
 		BasicCommands.drawUnit(out, unit, tile);
+		BasicCommands.sleep(200);
 		BasicCommands.setUnitHealth(out, unit, unit.getHealth());
 		BasicCommands.setUnitAttack(out, unit, unit.getAttack());
 		if (unit.hasProvokeAbility()) {
