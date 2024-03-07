@@ -293,7 +293,7 @@ public class Unit {
 	}
 
 	public void doAttack(ActorRef out, GameState gameState, Unit attacked, boolean isCounterAttack) {
-		if (!isCounterAttack && !gameState.unitCanAttack(this, attacked)) {
+		if (!gameState.unitCanAttack(this, attacked) && !isCounterAttack) {
 			throw new IllegalStateException("cannot perform attack");
 		}
 		if (!GameState.unitsAdjacent(this, attacked)) {

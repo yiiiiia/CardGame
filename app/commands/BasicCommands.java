@@ -53,7 +53,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(20);
+				sleep(10);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -82,7 +82,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(50);
+				sleep(10);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -402,7 +402,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(100);
+				sleep(50);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -425,7 +425,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(100);
+				sleep(50);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
