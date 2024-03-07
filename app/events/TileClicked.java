@@ -42,18 +42,26 @@ public class TileClicked implements EventProcessor {
 			return;
 		}
 		if (tileClicked.isOccupied() && gameState.isUserUnit(tileClicked.getUnit())) {
+			boolean hasEffect = false;
 			Unit userUnit = tileClicked.getUnit();
 			gameState.setActiveUnit(userUnit);
 			if (gameState.unitCanMove(userUnit)) {
 				hightlightTilesUnitCanMoveAndUnitsCanAttack(out, gameState, userUnit);
+				hasEffect = true;
 			}
 			for (Tile tile : gameState.getAdjacentTiles(tileClicked)) {
 				if (tile.isOccupied() && gameState.isAiUnit(tile.getUnit())) {
 					Unit aiUnit = tile.getUnit();
 					if (gameState.unitCanAttack(userUnit, aiUnit)) {
+						hasEffect = true;
 						BasicCommands.drawTile(out, tile, Tile.TILE_RED_MODE);
 					}
 				}
+			}
+			if (!hasEffect) {
+				String reason = gameState.whyUnitCannotMove(userUnit);
+				BasicCommands.addPlayer1Notification(out, "Unit cannot move and there's no target to attack: " + reason,
+						3);
 			}
 		}
 	}
@@ -64,14 +72,14 @@ public class TileClicked implements EventProcessor {
 			gameState.redrawAllTiles(out);
 			gameState.clearActiveUnit();
 			if (!gameState.unitCanMove(activeUnit)) {
-				BasicCommands.addPlayer1Notification(out, "Unit cannot move!", 5);
+				BasicCommands.addPlayer1Notification(out, "Unit cannot move!", 3);
 				return;
 			}
 			List<Tile> accessibleTiles = gameState.getTilesUnitCanMoveTo(activeUnit);
 			if (accessibleTiles.contains(tileClicked)) {
 				activeUnit.move(out, gameState, tileClicked);
 			} else {
-				BasicCommands.addPlayer1Notification(out, "Unit can not move: out of range!", 5);
+				BasicCommands.addPlayer1Notification(out, "Unit can not move: out of range!", 3);
 			}
 		} else {
 			Unit unitOnTile = tileClicked.getUnit();
@@ -84,6 +92,9 @@ public class TileClicked implements EventProcessor {
 				gameState.setActiveUnit(unitOnTile);
 				if (gameState.unitCanMove(unitOnTile)) {
 					hightlightTilesUnitCanMoveAndUnitsCanAttack(out, gameState, unitOnTile);
+				} else {
+					String reason = gameState.whyUnitCannotMove(unitOnTile);
+					BasicCommands.addPlayer1Notification(out, "Cannot move: " + reason, 3);
 				}
 				return;
 			}
@@ -91,7 +102,7 @@ public class TileClicked implements EventProcessor {
 			if (GameState.unitsAdjacent(activeUnit, unitOnTile)) {
 				if (!gameState.unitCanAttack(activeUnit, unitOnTile)) {
 					String reason = gameState.whyUnitCannotAttack(activeUnit, unitOnTile);
-					BasicCommands.addPlayer1Notification(out, "Cannot attack: " + reason, 5);
+					BasicCommands.addPlayer1Notification(out, "Cannot attack: " + reason, 3);
 					return;
 				}
 				gameState.performAttackAndCounterAttack(out, activeUnit, unitOnTile);
@@ -99,7 +110,7 @@ public class TileClicked implements EventProcessor {
 			}
 			if (!gameState.unitCanMove(activeUnit)) {
 				BasicCommands.addPlayer1Notification(out, "Cannot attack: unit cannot move and target is not adjacnet!",
-						5);
+						3);
 				return;
 			}
 			// user unit and ai unit are NOT adjacent
@@ -108,7 +119,7 @@ public class TileClicked implements EventProcessor {
 			// + attack
 			Tile targetTile = gameState.findAttackPath(activeUnit, tileClicked, GameState.USER_MODE);
 			if (targetTile == null) {
-				BasicCommands.addPlayer1Notification(out, "Cannot attack: target is out of range!", 5);
+				BasicCommands.addPlayer1Notification(out, "Cannot attack: target is out of range!", 3);
 				return;
 			}
 			Action action = new Action() {
@@ -130,26 +141,26 @@ public class TileClicked implements EventProcessor {
 			// Wraithling Swarm is special in that it is a spell card, but summons creatures
 			// on any vacant tile
 			if (tileClicked.isOccupied()) {
-				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: occupied tile!", 5);
+				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: occupied tile!", 3);
 				return;
 			}
 			if (activeCard.getManacost() > gameState.getUserPlayer().getMana()) {
-				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: not enough mana!", 5);
+				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: not enough mana!", 3);
 				return;
 			}
 			activeCard.castSpell(out, gameState, tileClicked);
 		} else if (activeCard.getIsCreature()) {
 			if (tileClicked.isOccupied()) {
-				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: occupied tile!", 5);
+				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: occupied tile!", 3);
 				return;
 			}
 			List<Tile> tilesForSummon = gameState.getTilesForSummon(GameState.USER_MODE);
 			if (!tilesForSummon.contains(tileClicked)) {
-				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: tile out of range!", 5);
+				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: tile out of range!", 3);
 				return;
 			}
 			if (activeCard.getManacost() > gameState.getUserPlayer().getMana()) {
-				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: not enough mana!", 5);
+				BasicCommands.addPlayer1Notification(out, "Cannot summon creature: not enough mana!", 3);
 				return;
 			}
 			activeCard.summonUnitOnTile(out, gameState, tileClicked, GameState.USER_MODE);
@@ -158,11 +169,11 @@ public class TileClicked implements EventProcessor {
 			}
 		} else {
 			if (!tileClicked.isOccupied()) {
-				BasicCommands.addPlayer1Notification(out, "Cannot cast spell: no unit on tile!", 5);
+				BasicCommands.addPlayer1Notification(out, "Cannot cast spell: no unit on tile!", 3);
 				return;
 			}
 			if (activeCard.getManacost() > gameState.getUserPlayer().getMana()) {
-				BasicCommands.addPlayer1Notification(out, "Cannot cast spell: not enough mana!", 5);
+				BasicCommands.addPlayer1Notification(out, "Cannot cast spell: not enough mana!", 3);
 				return;
 			}
 			activeCard.castSpell(out, gameState, tileClicked);
