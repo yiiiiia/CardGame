@@ -100,6 +100,18 @@ public class GameState {
 		this.gameMode = playerMode;
 	}
 
+	public boolean isInAIMode() {
+		return gameMode == AI_MODE;
+	}
+
+	public void setGameToAIMode() {
+		gameMode = AI_MODE;
+	}
+
+	public void setGameToUserMode() {
+		gameMode = USER_MODE;
+	}
+
 	public int getTurn() {
 		return turn;
 	}
@@ -208,6 +220,13 @@ public class GameState {
 		}
 	}
 
+	public void redrawAllTiles(ActorRef out) {
+		List<Tile> tiles = getGameTiles();
+		for (Tile tile : tiles) {
+			BasicCommands.drawTile(out, tile, Tile.TILE_NORMAL_MODE);
+		}
+	}
+
 	public List<Tile> getGameTiles() {
 		List<Tile> tiles = new ArrayList<>();
 		if (gameTiles != null && gameTiles.length != 0) {
@@ -260,9 +279,9 @@ public class GameState {
 		int startY = tile.getTiley() - 1;
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
-				Tile nearyBy = getTileByPos(startX + i, startY + j);
-				if (nearyBy != null) {
-					result.add(nearyBy);
+				Tile tileNearby = getTileByPos(startX + i, startY + j);
+				if (tileNearby != null) {
+					result.add(tileNearby);
 				}
 			}
 		}
@@ -288,76 +307,74 @@ public class GameState {
 	}
 
 	public List<Tile> getTilesUnitCanMoveTo(Unit unit) {
-		List<Tile> accessibleTiles = new ArrayList<>();
-		Tile currentTile = getUnitTile(unit);
-		int currentX = currentTile.getTilex();
-		int currentY = currentTile.getTiley();
+		List<Tile> result = new ArrayList<>();
+		Tile curTile = getUnitTile(unit);
+		int curX = curTile.getTilex();
+		int curY = curTile.getTiley();
 		for (Tile targetTile : getGameTiles()) {
 			if (targetTile.isOccupied()) {
 				continue;
 			}
 			int tileX = targetTile.getTilex();
 			int tileY = targetTile.getTiley();
-			int diffX = Math.abs(tileX - currentX);
-			int diffY = Math.abs(tileY - currentY);
+			int diffX = Math.abs(tileX - curX);
+			int diffY = Math.abs(tileY - curY);
 			// Determine if the target Tile is within moving range
-			boolean inRange = (diffX <= 2 && tileY == currentY) || (diffY <= 2 && tileX == currentX)
+			boolean inRange = (diffX <= 2 && tileY == curY) || (diffY <= 2 && tileX == curX)
 					|| (diffX == 1 && diffY == 1);
 			if (!inRange) {
 				continue;
 			}
-			if (!isPathBlocked(currentTile, targetTile)) {
-				accessibleTiles.add(targetTile);
+			if (!isPathBlocked(curTile, targetTile)) {
+				result.add(targetTile);
 			}
 		}
-		return accessibleTiles;
+		return result;
 	}
 
-	// Check that the path from start to end is not blocked
-	private boolean isPathBlocked(Tile departure, Tile destination) {
-		// Calculate the difference between the starting point and the end point
-		int deltaX = destination.getTilex() - departure.getTilex();
-		int deltaY = destination.getTiley() - departure.getTiley();
-		// Determining the direction of movement
-		int stepX = Integer.signum(deltaX);
-		int stepY = Integer.signum(deltaY);
-		// Handling of cardinal paths
-		if (deltaX == 0 || deltaY == 0) {
-			return checkCardinalPathBlocked(departure, destination, stepX, stepY);
-		} else { // For diagonal paths
-			return checkDiagonalPathBlocked(departure, destination, stepX, stepY);
+	// Check that there's a path from start to end
+	private boolean isPathBlocked(Tile startTile, Tile endTile) {
+		int startX = startTile.getTilex();
+		int startY = startTile.getTiley();
+		int endX = endTile.getTilex();
+		int endY = endTile.getTiley();
+		if (startX == endX) {
+			int direction = Integer.signum(endY - startY);
+			for (int y = startY + direction; y != endY; y += direction) {
+				if (getTileByPos(startX, y).isOccupied()) {
+					return true;
+				}
+			}
+			return false;
 		}
-	}
-
-	private boolean checkCardinalPathBlocked(Tile departure, Tile destination, int stepX, int stepY) {
-		int currentX = departure.getTilex();
-		int currentY = departure.getTiley();
-		while (currentX != destination.getTilex() || currentY != destination.getTiley()) {
-			currentX += stepX;
-			currentY += stepY;
-			// Check if the current Tile is blocked
-			Tile tile = getTileByPos(currentX, currentY);
-			if (tile.isOccupied()) {
-				return true;
+		if (startY == endY) {
+			int direction = Integer.signum(endX - startX);
+			for (int x = startX + direction; x != endX; x += direction) {
+				if (getTileByPos(x, startY).isOccupied()) {
+					return true;
+				}
 			}
+			return false;
 		}
-		return false;
-	}
-
-	private boolean checkDiagonalPathBlocked(Tile startTile, Tile endTile, int stepX, int stepY) {
-		int currentX = startTile.getTilex();
-		int currentY = startTile.getTiley();
-		while (currentX != endTile.getTilex() && currentY != endTile.getTiley()) {
-			Tile tile = getTileByPos(currentX + stepX, currentY);
-			if (tile.isOccupied()) {
-				return true;
-			}
-			tile = getTileByPos(currentX, currentY + stepY);
-			if (tile.isOccupied()) {
-				return true;
-			}
-			currentX += stepX;
-			currentY += stepY;
+		if (endY > startY && endX > startX) {
+			Tile t1 = getTileByPos(startX + 1, startY);
+			Tile t2 = getTileByPos(startX, startY + 1);
+			return t1.isOccupied() && t2.isOccupied();
+		}
+		if (endY < startY && endX > startX) {
+			Tile t1 = getTileByPos(startX + 1, startY);
+			Tile t2 = getTileByPos(startX, startY - 1);
+			return t1.isOccupied() && t2.isOccupied();
+		}
+		if (endY > startY && endX < startX) {
+			Tile t1 = getTileByPos(startX - 1, startY);
+			Tile t2 = getTileByPos(startX, startY + 1);
+			return t1.isOccupied() && t2.isOccupied();
+		}
+		if (endY < startY && endX < startX) {
+			Tile t1 = getTileByPos(startX - 1, startY);
+			Tile t2 = getTileByPos(startX, startY - 1);
+			return t1.isOccupied() && t2.isOccupied();
 		}
 		return false;
 	}
@@ -385,9 +402,9 @@ public class GameState {
 	public List<Tile> getTilesForSummon(int mode) {
 		List<Tile> unitTiles;
 		if (mode == USER_MODE) {
-			unitTiles = getUserUnitTiles();
+			unitTiles = getAllUserTiles();
 		} else if (mode == AI_MODE) {
-			unitTiles = getAiUnitTiles();
+			unitTiles = getAllAITiles();
 		} else {
 			throw new IllegalArgumentException("Invlaid mode: " + mode);
 		}
@@ -399,26 +416,26 @@ public class GameState {
 		return new ArrayList<>(tileSet);
 	}
 
-	public List<Unit> getUserUnits() {
-		return userPlayer.getAllUnits();
+	public List<Unit> getAllUserUnits() {
+		return userPlayer.getOwnUnits();
 	}
 
-	public List<Tile> getUserUnitTiles() {
+	public List<Tile> getAllUserTiles() {
 		return userPlayer.getAllTiles();
 	}
 
-	public List<Unit> getAiUnits() {
-		return aiPlayer.getAllUnits();
+	public List<Unit> getAllAIUnits() {
+		return aiPlayer.getOwnUnits();
 	}
 
-	public List<Tile> getAiUnitTiles() {
+	public List<Tile> getAllAITiles() {
 		return aiPlayer.getAllTiles();
 	}
 
 	public List<Unit> getAllUnits() {
 		List<Unit> result = new ArrayList<>();
-		result.addAll(getUserUnits());
-		result.addAll(getAiUnits());
+		result.addAll(getAllUserUnits());
+		result.addAll(getAllAIUnits());
 		return result;
 	}
 
@@ -430,17 +447,21 @@ public class GameState {
 		return aiPlayer.hasUnit(unit);
 	}
 
+	public Set<Tile> getAiProvokeAreas() {
+		return aiProvokeAreas;
+	}
+
 	public void updateProvokeAreas() {
 		userProvokeAreas.clear();
 		aiProvokeAreas.clear();
-		for (Unit unit : userPlayer.getAllUnits()) {
+		for (Unit unit : userPlayer.getOwnUnits()) {
 			if (unit.hasProvokeAbility()) {
 				Tile tile = getUnitTile(unit);
 				List<Tile> adjacentTiles = getAdjacentTiles(tile);
 				userProvokeAreas.addAll(adjacentTiles);
 			}
 		}
-		for (Unit unit : aiPlayer.getAllUnits()) {
+		for (Unit unit : aiPlayer.getOwnUnits()) {
 			if (unit.hasProvokeAbility()) {
 				Tile tile = getUnitTile(unit);
 				List<Tile> adjacentTiles = getAdjacentTiles(tile);
@@ -465,7 +486,7 @@ public class GameState {
 		}
 	}
 
-	public boolean isUnitProvoked(Unit unit) {
+	public boolean unitIsProvoked(Unit unit) {
 		Tile tile = getUnitTile(unit);
 		if (isUserUnit(unit)) {
 			return aiProvokeAreas.contains(tile);
@@ -476,7 +497,7 @@ public class GameState {
 		throw new IllegalStateException("Orphan unit:" + unit);
 	}
 
-	public boolean canUnitMove(Unit unit) {
+	public boolean unitCanMove(Unit unit) {
 		if (unit.isNewlySpawned()) {
 			return false;
 		}
@@ -489,13 +510,13 @@ public class GameState {
 		if (unit.isStunned()) {
 			return false;
 		}
-		if (isUnitProvoked(unit)) {
+		if (unitIsProvoked(unit)) {
 			return false;
 		}
 		return true;
 	}
 
-	public String reasonUnitCannotMove(Unit unit) {
+	public String whyUnitCannotMove(Unit unit) {
 		if (unit.isNewlySpawned()) {
 			return "unit is just spawned";
 		}
@@ -508,13 +529,13 @@ public class GameState {
 		if (unit.isStunned()) {
 			return "unit is stunned";
 		}
-		if (isUnitProvoked(unit)) {
+		if (unitIsProvoked(unit)) {
 			return "unit is provoked";
 		}
 		throw new IllegalStateException("no reason why unit cannot move");
 	}
 
-	public boolean canPerformAttack(Unit attacker, Unit attacked) {
+	public boolean unitCanAttack(Unit attacker, Unit attacked) {
 		if (attacker.isNewlySpawned()) {
 			return false;
 		}
@@ -524,13 +545,13 @@ public class GameState {
 		if (attacker.isStunned()) {
 			return false;
 		}
-		if (attacked != null && isUnitProvoked(attacker) && !attacked.hasProvokeAbility()) {
+		if (attacked != null && unitIsProvoked(attacker) && !attacked.hasProvokeAbility()) {
 			return false;
 		}
 		return true;
 	}
 
-	public String reasonCannotPerformAttack(Unit attacker, Unit attacked) {
+	public String whyUnitCannotAttack(Unit attacker, Unit attacked) {
 		if (attacker.isNewlySpawned()) {
 			return "unit is just spawned";
 		}
@@ -540,17 +561,10 @@ public class GameState {
 		if (attacker.isStunned()) {
 			return "attacker is stunned";
 		}
-		if (attacked != null && isUnitProvoked(attacker) && !attacked.hasProvokeAbility()) {
+		if (attacked != null && unitIsProvoked(attacker) && !attacked.hasProvokeAbility()) {
 			return "attacker is under provoked effect, can only atttack enemy with provoke ability";
 		}
 		throw new IllegalStateException("no reason why attack cannot be performed!");
-	}
-
-	public void redrawAllTiles(ActorRef out) {
-		List<Tile> tiles = getGameTiles();
-		for (Tile tile : tiles) {
-			BasicCommands.drawTile(out, tile, Tile.TILE_NORMAL_MODE);
-		}
 	}
 
 	public List<Tile> getTilesCreaturesToPlace(ActorRef out, Tile tile, int tileStyle) {
@@ -578,7 +592,7 @@ public class GameState {
 			throw new IllegalStateException("cannot summon unit on the occupied tile: " + tile);
 		}
 		Unit unit = BasicObjectBuilders.loadUnit(configPath, genUnitId(), unitClass);
-		if (unitClass != SaberspineTiger.class) {
+		if (unitClass != SaberspineTiger.class) { // SaberspineTiger has Rush ability
 			unit.setNewlySpawned(true);
 		}
 		if (mode == USER_MODE) {
@@ -602,6 +616,10 @@ public class GameState {
 		triggerGambitAbilities(out, mode, unit);
 	}
 
+	public void summonWraithling(ActorRef out, Tile tile, int mode) {
+		summonUnit(out, tile, Wraithling.class, StaticConfFiles.wraithling, mode, true);
+	}
+
 	public void summonWraithlingOnRandomlySelectedUnoccupiedAdjacentTile(ActorRef out, Tile tile, int mode) {
 		List<Tile> freeTiles = getAdjacentUnoccupiedTiles(tile);
 		if (!freeTiles.isEmpty()) {
@@ -609,10 +627,6 @@ public class GameState {
 			Tile targetTile = freeTiles.get(n);
 			summonWraithling(out, targetTile, mode);
 		}
-	}
-
-	public void summonWraithling(ActorRef out, Tile tile, int mode) {
-		summonUnit(out, tile, Wraithling.class, StaticConfFiles.wraithling, mode, true);
 	}
 
 	public void removeUnit(ActorRef out, Unit unit) {
@@ -692,9 +706,9 @@ public class GameState {
 	public void triggerGambitAbilities(ActorRef out, int mode, Unit toExclude) {
 		List<Unit> units = null;
 		if (mode == USER_MODE) {
-			units = getUserUnits();
+			units = getAllUserUnits();
 		} else if (mode == AI_MODE) {
-			units = getAiUnits();
+			units = getAllAIUnits();
 		} else {
 			throw new IllegalArgumentException("Invalid game mode: " + mode);
 		}
@@ -707,8 +721,59 @@ public class GameState {
 	}
 
 	public void triggerZealAbility(ActorRef out) {
-		for (Unit u : getAiUnits()) {
+		for (Unit u : getAllAIUnits()) {
 			u.performAbility(AbilityType.ZEAL, out, this);
+		}
+	}
+
+	public Tile findAttackPath(Unit attacker, Tile targetTile, int mode) {
+		List<Tile> tilesAccessible = getTilesUnitCanMoveTo(attacker);
+		if (tilesAccessible.isEmpty()) {
+			return null;
+		}
+		List<Tile> candidates = new ArrayList<>();
+		for (Tile t : tilesAccessible) {
+			if (tilesAdjacent(t, targetTile)) {
+				if (mode == USER_MODE) {
+					if (aiProvokeAreas.contains(t) && !targetTile.getUnit().hasProvokeAbility()) {
+						continue;
+					}
+				} else {
+					if (userProvokeAreas.contains(t) && !targetTile.getUnit().hasProvokeAbility()) {
+						continue;
+					}
+				}
+				candidates.add(t);
+			}
+		}
+		return findTileClosestToUnit(attacker, candidates);
+	}
+
+	public Tile findTileClosestToUnit(Unit unit, List<Tile> candidateTiles) {
+		return findTileClosestToTile(getUnitTile(unit), candidateTiles);
+	}
+
+	public Tile findTileClosestToTile(Tile tile, List<Tile> candidateTiles) {
+		Tile result = null;
+		int minDistance = Integer.MAX_VALUE;
+		for (Tile t : candidateTiles) {
+			int distance = distanceBetweenTiles(tile, t);
+			if (distance < minDistance) {
+				result = t;
+				minDistance = distance;
+			}
+		}
+		return result;
+	}
+
+	public void performAttackAndCounterAttack(ActorRef out, Unit attacker, Unit attacked) {
+		if (!unitCanAttack(attacker, attacked)) {
+			throw new IllegalStateException("cannot perform attack!");
+		}
+		attacker.doAttack(out, this, attacked, false);
+		if (attacked.getHealth() > 0) {
+			// perform counter attack
+			attacked.doAttack(out, this, attacker, true);
 		}
 	}
 
@@ -758,5 +823,71 @@ public class GameState {
 
 	public static boolean isValidPosition(int tileX, int tileY) {
 		return tileX >= 0 && tileX < COLS && tileY >= 0 && tileY < ROWS;
+	}
+
+	public static int distanceBetweenTiles(Tile t1, Tile t2) {
+		return Math.abs(t1.getTilex() - t2.getTilex()) + Math.abs(t1.getTiley() - t2.getTiley());
+	}
+
+	public Tile needAdjustPosition(Tile userUnitTile, Tile aiUnitTile) {
+		if (!isBlockingOtherAiUnits(userUnitTile, aiUnitTile)) {
+			return null;
+		}
+		if (userUnitTile.getTilex() == aiUnitTile.getTilex()) {
+			Tile temp = getTileByPos(aiUnitTile.getTilex() + 1, userUnitTile.getTiley());
+			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)) {
+				System.out.println("1: " + temp);
+				return temp;
+			}
+			temp = getTileByPos(aiUnitTile.getTilex() - 1, userUnitTile.getTiley());
+			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)) {
+				System.out.println("2: " + temp);
+				return temp;
+			}
+		}
+		if (userUnitTile.getTiley() == aiUnitTile.getTiley()) {
+			Tile temp = getTileByPos(userUnitTile.getTilex(), aiUnitTile.getTiley() + 1);
+			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)) {
+				System.out.println("3: " + temp);
+				return temp;
+			}
+			temp = getTileByPos(userUnitTile.getTilex(), aiUnitTile.getTiley() - 1);
+			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)) {
+				System.out.println("4: " + temp);
+				return temp;
+			}
+		}
+		return null;
+	}
+
+	private boolean isBlockingOtherAiUnits(Tile userUnitTile, Tile aiUnitTile) {
+		if (!GameState.tilesAdjacent(userUnitTile, aiUnitTile)) {
+			return false;
+		}
+		int ux = userUnitTile.getTilex();
+		int uy = userUnitTile.getTiley();
+		int ax = aiUnitTile.getTilex();
+		int ay = aiUnitTile.getTiley();
+		if (ux != ax && uy != ay) {
+			return false;
+		}
+		if (ux == ax) {
+			int direction = ay - uy;
+			for (int y = ay + direction; y >= 0 && y < GameState.ROWS; y += direction) {
+				Tile temp = getTileByPos(ax, y);
+				if (temp != null && temp.isOccupied() && isAiUnit(temp.getUnit())) {
+					return true;
+				}
+			}
+			return false;
+		}
+		int direction = ax - ux;
+		for (int x = ax + direction; x >= 0 && x < GameState.COLS; x += direction) {
+			Tile temp = getTileByPos(x, ay);
+			if (temp != null && temp.isOccupied() && isAiUnit(temp.getUnit())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

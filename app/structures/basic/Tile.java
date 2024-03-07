@@ -175,6 +175,6 @@ public class Tile {
 
 	@Override
 	public String toString() {
-		return "Tile [xpos=" + xpos + ", ypos=" + ypos + "]";
+		return "Tile [tilex=" + tilex + ", tiley=" + tiley + "]";
 	}
 }

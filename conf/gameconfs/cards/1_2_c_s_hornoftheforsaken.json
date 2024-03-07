@@ -37,5 +37,6 @@
 		"health": -1
 	},
 	"isCreature": false,
+	"spellCastType": 1,
 	"unitConfig": null
 }

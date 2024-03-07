@@ -13,7 +13,7 @@ public class TrueStrikeCard extends Card {
 	public static final String CARD_NAME = "Truestrike";
 
 	public void highlightTiles(ActorRef out, GameState gameState) {
-		List<Unit> units = gameState.getUserUnits();
+		List<Unit> units = gameState.getAllUserUnits();
 		for (Unit unit : units) {
 			Tile tile = gameState.getUnitTile(unit);
 			BasicCommands.drawTile(out, tile, Tile.TILE_RED_MODE);
@@ -24,15 +24,13 @@ public class TrueStrikeCard extends Card {
 	public void castSpell(ActorRef out, GameState gameState, Tile tile) {
 		Unit unitOnTile = tile.getUnit();
 		if (unitOnTile == null) {
-			BasicCommands.addPlayer1Notification(out, String.format("Cannot use card %s on empty tile", CARD_NAME), 5);
-			return;
+			throw new IllegalStateException("Cannot use TrueStrikeCard on empty tile!");
 		}
 		if (gameState.isAiUnit(unitOnTile)) {
-			BasicCommands.addPlayer1Notification(out,
-					String.format("Card %s can only be used on enemy units", CARD_NAME), 5);
-			return;
+			throw new IllegalStateException("Cannot use TrueStrikeCard on ai unit!");
 		}
 		gameState.deductManaFromPlayer(out, manacost, GameState.AI_MODE);
 		gameState.dealDamangeToUnit(out, unitOnTile, 2);
+		setUsed(true);
 	}
 }

@@ -6,7 +6,6 @@ import structures.GameState;
 import structures.basic.AbilityType;
 import structures.basic.Tile;
 import structures.basic.Unit;
-import utils.BasicObjectBuilders;
 import utils.StaticConfFiles;
 
 public class Shadowdancer extends Unit {
@@ -25,10 +24,6 @@ public class Shadowdancer extends Unit {
 		Tile tile = gameState.getUnitTile(userAvatar);
 		GameState.playEffectAnimation(out, StaticConfFiles.f1_buff, tile);
 		gameState.healUnit(out, userAvatar, 1);
-	}
-
-	public static Shadowdancer getInstance(String configpaths) {
-		return (Shadowdancer) BasicObjectBuilders.loadUnit(configpaths, 8, Shadowdancer.class);
 	}
 
 	@Override

@@ -13,7 +13,7 @@ public class BeamShockCard extends Card {
 	public static final String CARD_NAME = "Beamshock";
 
 	public void highlightTiles(ActorRef out, GameState gameState) {
-		List<Unit> units = gameState.getUserUnits();
+		List<Unit> units = gameState.getAllUserUnits();
 		for (Unit unit : units) {
 			if (unit == gameState.getUserAvatar()) {
 				// skip user avatar
@@ -28,15 +28,13 @@ public class BeamShockCard extends Card {
 	public void castSpell(ActorRef out, GameState gameState, Tile tile) {
 		Unit unitOnTile = tile.getUnit();
 		if (unitOnTile == null) {
-			BasicCommands.addPlayer1Notification(out, String.format("Cannot use card %s on empty tile", CARD_NAME), 5);
-			return;
+			throw new IllegalStateException("Cannot use BeamShockCard on empty tile!");
 		}
-		if (gameState.isAiUnit(unitOnTile) || unitOnTile == gameState.getUserAvatar()) {
-			BasicCommands.addPlayer1Notification(out,
-					String.format("Card %s can only be used on user non-avatar units", CARD_NAME), 5);
-			return;
+		if (gameState.isAiUnit(unitOnTile)) {
+			throw new IllegalStateException("Cannot use BeamShockCard on ai unit!");
 		}
 		gameState.deductManaFromPlayer(out, manacost, GameState.AI_MODE);
 		unitOnTile.setStunned(true);
+		setUsed(true);
 	}
 }

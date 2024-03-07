@@ -22,18 +22,23 @@ public class HornOfTheForsakenCard extends Card {
 	@Override
 	public void castSpell(ActorRef out, GameState gameState, Tile tile) {
 		if (manacost > gameState.getUserPlayer().getMana()) {
-			BasicCommands.addPlayer1Notification(out, String.format("Not enough mana to use card %s", CARD_NAME), 5);
+			BasicCommands.addPlayer1Notification(out, String.format("Not enough mana to use card %s", CARD_NAME), 3);
 			return;
 		}
 		Unit unitOnTile = tile.getUnit();
 		if (unitOnTile == null) {
 			BasicCommands.addPlayer1Notification(out, String.format("Cannot use this card %s on empty tile", CARD_NAME),
-					5);
+					3);
+			return;
+		}
+		if (unitOnTile.getShieldBuff() > 0) {
+			BasicCommands.addPlayer1Notification(out, String.format("The card effect is currently in use", CARD_NAME),
+					3);
 			return;
 		}
 		if (unitOnTile != gameState.getUserAvatar()) {
 			BasicCommands.addPlayer1Notification(out,
-					String.format("Card %s can only be used on user avatar", CARD_NAME), 5);
+					String.format("Card %s can only be used on user avatar", CARD_NAME), 3);
 			return;
 		}
 		gameState.deductManaFromPlayer(out, manacost, GameState.USER_MODE);

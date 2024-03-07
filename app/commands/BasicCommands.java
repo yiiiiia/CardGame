@@ -53,7 +53,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(5);
+				sleep(20);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -107,8 +107,11 @@ public class BasicCommands {
 			returnMessage.put("attack", attack);
 			if (altTell != null)
 				altTell.tell(returnMessage);
-			else
+			else {
 				out.tell(returnMessage, out);
+				sleep(10);
+			}
+			;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -132,8 +135,11 @@ public class BasicCommands {
 			returnMessage.put("health", health);
 			if (altTell != null)
 				altTell.tell(returnMessage);
-			else
+			else {
 				out.tell(returnMessage, out);
+				sleep(10);
+			}
+			;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -265,7 +271,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(5);
+				sleep(10);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -288,8 +294,10 @@ public class BasicCommands {
 			returnMessage.put("player", mapper.readTree(mapper.writeValueAsString(player)));
 			if (altTell != null)
 				altTell.tell(returnMessage);
-			else
+			else {
 				out.tell(returnMessage, out);
+				sleep(10);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -311,8 +319,10 @@ public class BasicCommands {
 			returnMessage.put("player", mapper.readTree(mapper.writeValueAsString(player)));
 			if (altTell != null)
 				altTell.tell(returnMessage);
-			else
+			else {
 				out.tell(returnMessage, out);
+				sleep(10);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -334,8 +344,10 @@ public class BasicCommands {
 			returnMessage.put("player", mapper.readTree(mapper.writeValueAsString(player)));
 			if (altTell != null)
 				altTell.tell(returnMessage);
-			else
+			else {
 				out.tell(returnMessage, out);
+				sleep(10);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -357,8 +369,10 @@ public class BasicCommands {
 			returnMessage.put("player", mapper.readTree(mapper.writeValueAsString(player)));
 			if (altTell != null)
 				altTell.tell(returnMessage);
-			else
+			else {
 				out.tell(returnMessage, out);
+				sleep(10);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -388,7 +402,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(5);
+				sleep(100);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -411,7 +425,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(5);
+				sleep(100);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

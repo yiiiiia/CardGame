@@ -116,21 +116,25 @@ public class GameActor extends AbstractActor {
 		if (processor == null) {
 			// Unknown event type received
 			System.err.println("GameActor: Recieved unknown event type " + messageType);
-		} else if (messageType.equals(HEARTBEAT_EVENT) || messageType.equals(UNIT_MOVING_EVENT)
+			return;
+		}
+		if (gameState.getDelegatedCard() != null) {
+			gameState.getDelegatedCard().delegateEventProcess(out, gameState, messageType, message);
+			return;
+		}
+		if (messageType.equals(HEARTBEAT_EVENT) || messageType.equals(UNIT_MOVING_EVENT)
 				|| messageType.equals(UNIT_STOPPED_EVENT)) {
 			processor.processEvent(out, gameState, message);
+			return;
+		}
+		if (gameState.isGameOver()) {
+			System.err.println("Ignore incoming events: game is over");
+		} else if (gameState.getGameMode() == GameState.AI_MODE) {
+			System.err.println("Ignore incoming events: game is in AI mode");
+		} else if (gameState.hasMovingUnit()) {
+			System.err.println("Ignore incoming events: has unit moving");
 		} else {
-			if (gameState.isGameOver()) {
-				System.err.println("Ignore incoming events: game is over");
-			} else if (gameState.getGameMode() == GameState.AI_MODE) {
-				System.err.println("Ignore incoming events: game is in AI mode");
-			} else if (gameState.hasMovingUnit()) {
-				System.err.println("Ignore incoming events: has unit moving");
-			} else if (gameState.getDelegatedCard() != null) {
-				gameState.getDelegatedCard().delegateEventProcess(out, gameState, messageType, message);
-			} else {
-				processor.processEvent(out, gameState, message); // process the event
-			}
+			processor.processEvent(out, gameState, message); // process the event
 		}
 	}
 

@@ -4,6 +4,7 @@ import java.util.List;
 import akka.actor.ActorRef;
 import structures.GameState;
 import structures.basic.AbilityType;
+import structures.basic.Tile;
 import structures.basic.Unit;
 
 public class YoungFlamewing extends Unit {
@@ -29,6 +30,21 @@ public class YoungFlamewing extends Unit {
 	}
 
 	private void performFlying(ActorRef out, GameState gameState) {
-		// TODO integrate with AI logic
+		Unit userAvatar = gameState.getUserAvatar();
+		if (GameState.unitsAdjacent(this, userAvatar)) {
+			// already adjacent to user avatar, check to see if it has blocked other units
+			Tile tileAdjustTo = gameState.needAdjustPosition(gameState.getUnitTile(userAvatar),
+					gameState.getUnitTile(this));
+			if (tileAdjustTo != null) {
+				move(out, gameState, tileAdjustTo);
+			}
+			return;
+		}
+		Tile userAvatarTile = gameState.getUnitTile(userAvatar);
+		List<Tile> tiles = gameState.getAdjacentUnoccupiedTiles(userAvatarTile);
+		if (!tiles.isEmpty()) {
+			Tile target = gameState.findTileClosestToUnit(this, tiles);
+			move(out, gameState, target);
+		}
 	}
 }

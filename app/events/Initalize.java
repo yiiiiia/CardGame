@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
-import structures.basic.AI;
+import structures.basic.AiPlayer;
 import structures.basic.Card;
 import structures.basic.Player;
 import structures.basic.Tile;
@@ -54,19 +54,18 @@ public class Initalize implements EventProcessor {
 
 	private void playersInitialization(ActorRef out, GameState gameState) {
 		Player user = new Player(INITIAL_HEALTH, INITIAL_MANA);
-		AI ai = new AI(INITIAL_HEALTH, INITIAL_MANA);
+		AiPlayer ai = new AiPlayer(INITIAL_HEALTH, INITIAL_MANA);
 		gameState.setUserPlayer(user);
 		gameState.setAiPlayer(ai);
 		BasicCommands.setPlayer1Mana(out, user);
 		BasicCommands.setPlayer1Health(out, user);
 		BasicCommands.setPlayer2Health(out, ai);
+		BasicCommands.setPlayer2Mana(out, ai);
 	}
 
 	private void boardInitialization(ActorRef out, GameState gameState) {
 		gameState.initGameTiles();
-		for (Tile gameTile : gameState.getGameTiles()) {
-			BasicCommands.drawTile(out, gameTile, Tile.TILE_NORMAL_MODE);
-		}
+		gameState.redrawAllTiles(out);
 	}
 
 	private void avatarsInitialization(ActorRef out, GameState gameState) {
@@ -102,16 +101,16 @@ public class Initalize implements EventProcessor {
 
 	private void cardsInitialization(ActorRef out, GameState gameState) {
 		// draw three cards for human, and show them
+		Player user = gameState.getUserPlayer();
 		for (int i = 0; i < 3; i++) {
-			Player user = gameState.getUserPlayer();
 			int n = GameState.nextRandInt(user.getDeckCards().size());
 			Card card = user.getDeckCards().remove(n);
 			user.putCardAtPos(card, i);
 			BasicCommands.drawCard(out, card, i + 1, Card.CARD_NORMAL_MODE);
 		}
 		// draw three cards for ai
+		Player ai = gameState.getAiPlayer();
 		for (int i = 0; i < 3; i++) {
-			Player ai = gameState.getAiPlayer();
 			int n = GameState.nextRandInt(ai.getDeckCards().size());
 			Card card = ai.getDeckCards().remove(n);
 			ai.putCardAtPos(card, i);
