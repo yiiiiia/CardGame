@@ -17,6 +17,7 @@ import structures.basic.Unit;
 import structures.basic.UnitAnimationType;
 import structures.basic.unit.SaberspineTiger;
 import structures.basic.unit.Wraithling;
+import structures.basic.unit.YoungFlamewing;
 import utils.BasicObjectBuilders;
 import utils.StaticConfFiles;
 
@@ -307,6 +308,11 @@ public class GameState {
 	}
 
 	public List<Tile> getTilesUnitCanMoveTo(Unit unit) {
+		if (unit.getClass() == YoungFlamewing.class) {
+			YoungFlamewing yf = (YoungFlamewing) unit;
+			return yf.getTilesUnitCanMoveTo(this);
+		}
+
 		List<Tile> result = new ArrayList<>();
 		Tile curTile = getUnitTile(unit);
 		int curX = curTile.getTilex();
@@ -451,6 +457,10 @@ public class GameState {
 		return aiProvokeAreas;
 	}
 
+	public Set<Tile> getUserProvokeAreas() {
+		return userProvokeAreas;
+	}
+
 	public void updateProvokeAreas() {
 		userProvokeAreas.clear();
 		aiProvokeAreas.clear();
@@ -470,7 +480,7 @@ public class GameState {
 		}
 	}
 
-	public void adjustUnitPosition(Unit unit, Tile destination) {
+	public void updateUnitPosition(Unit unit, Tile destination) {
 		Player player = null;
 		if (isUserUnit(unit)) {
 			player = userPlayer;
@@ -771,8 +781,8 @@ public class GameState {
 			throw new IllegalStateException("cannot perform attack!");
 		}
 		attacker.doAttack(out, this, attacked, false);
-		if (attacked.getHealth() > 0) {
-			// perform counter attack
+		if (attacked.getHealth() > 0 && !attacked.isStunned()) {
+			// perform counter attack, if the attacked is alive and not stunned
 			attacked.doAttack(out, this, attacker, true);
 		}
 	}

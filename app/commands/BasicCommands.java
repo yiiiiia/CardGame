@@ -82,7 +82,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(10);
+				sleep(100);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -402,7 +402,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(50);
+				sleep(100);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -262,7 +262,6 @@ public class Unit {
 		if (gameState.unitIsProvoked(this)) {
 			throw new IllegalStateException("Cannot move: unit is provoked");
 		}
-		// Check if the move is valid based on game rules
 		List<Tile> accessibleTiles = gameState.getTilesUnitCanMoveTo(this);
 		if (!accessibleTiles.contains(destination)) {
 			throw new IllegalStateException("Cannot move: target tile out of range: " + destination);
@@ -288,7 +287,7 @@ public class Unit {
 			}
 		}
 		hasMoved = true;
-		gameState.adjustUnitPosition(this, destination);
+		gameState.updateUnitPosition(this, destination);
 		BasicCommands.moveUnitToTile(out, this, destination, yfirst);
 	}
 
