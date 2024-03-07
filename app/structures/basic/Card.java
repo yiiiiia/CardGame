@@ -19,6 +19,8 @@ import structures.GameState;
 public class Card {
 	public static final int CARD_NORMAL_MODE = 0;
 	public static final int CARD_ACTIVE_MODE = 1;
+	public static final int CAST_TO_ALLY = 1;
+	public static final int CAST_TO_ENEMY = 2;
 
 	protected int id;
 	protected String cardname;
@@ -27,6 +29,7 @@ public class Card {
 	protected BigCard bigCard;
 	protected boolean isCreature;
 	protected String unitConfig;
+	protected int spellCastType;
 	protected boolean used;
 
 	public Card() {
@@ -107,6 +110,15 @@ public class Card {
 		this.used = used;
 	}
 
+	public int getSpellCastType() {
+		return spellCastType;
+	}
+
+	public void setSpellCastType(int spellCastType) {
+		this.spellCastType = spellCastType;
+	}
+
+	// ----------------------------------------------------------------------------------
 	public void highlightTiles(ActorRef out, GameState gameState) {
 		throw new UnsupportedOperationException("Unimplemented method!");
 	}

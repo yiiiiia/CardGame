@@ -13,7 +13,7 @@ public class SundropElixirCard extends Card {
 	public static final String CARD_NAME = "Sundrop Elixir";
 
 	public void highlightTiles(ActorRef out, GameState gameState) {
-		List<Unit> units = gameState.getAiUnits();
+		List<Unit> units = gameState.getAllAIUnits();
 		// highlight the allied units
 		for (Unit unit : units) {
 			Tile tile = gameState.getUnitTile(unit);
@@ -25,16 +25,14 @@ public class SundropElixirCard extends Card {
 	public void castSpell(ActorRef out, GameState gameState, Tile tile) {
 		Unit unitOnTile = tile.getUnit();
 		if (unitOnTile == null) {
-			BasicCommands.addPlayer1Notification(out, String.format("Cannot use card %s on empty tile", CARD_NAME), 5);
-			return;
+			throw new IllegalStateException("can not use SundropElixirCard on empty tile");
 		}
 		if (!gameState.isAiUnit(unitOnTile)) {
-			BasicCommands.addPlayer1Notification(out,
-					String.format("Card %s can only be used on ally units", CARD_NAME), 5);
-			return;
+			throw new IllegalStateException("can only use SundropElixirCard on AI unit");
 		}
 		gameState.deductManaFromPlayer(out, manacost, GameState.AI_MODE);
 		unitOnTile.healSelf(4);
 		BasicCommands.setUnitHealth(out, unitOnTile, unitOnTile.getHealth());
+		setUsed(true);
 	}
 }

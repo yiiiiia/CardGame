@@ -249,7 +249,7 @@ public class Unit {
 	}
 
 	// New method for unit movement
-	public void unitMove(ActorRef out, GameState gameState, Tile destination) {
+	public void move(ActorRef out, GameState gameState, Tile destination) {
 		if (this.hasMoved) {
 			throw new IllegalStateException("Cannot move: unit has already moved");
 		}
@@ -259,13 +259,13 @@ public class Unit {
 		if (this.stunned) {
 			throw new IllegalStateException("Cannot move: unit is stunned");
 		}
-		if (gameState.isUnitProvoked(this)) {
+		if (gameState.unitIsProvoked(this)) {
 			throw new IllegalStateException("Cannot move: unit is provoked");
 		}
 		// Check if the move is valid based on game rules
 		List<Tile> accessibleTiles = gameState.getTilesUnitCanMoveTo(this);
 		if (!accessibleTiles.contains(destination)) {
-			throw new IllegalStateException("Cannot move: target tile out of range");
+			throw new IllegalStateException("Cannot move: target tile out of range: " + destination);
 		}
 		boolean yfirst = false;
 		int unitX = position.getTilex();
@@ -292,8 +292,8 @@ public class Unit {
 		BasicCommands.moveUnitToTile(out, this, destination, yfirst);
 	}
 
-	public void performAttack(ActorRef out, GameState gameState, Unit attacked, boolean isCounterAttack) {
-		if (!gameState.canPerformAttack(this, attacked)) {
+	public void doAttack(ActorRef out, GameState gameState, Unit attacked, boolean isCounterAttack) {
+		if (!isCounterAttack && !gameState.unitCanAttack(this, attacked)) {
 			throw new IllegalStateException("cannot perform attack");
 		}
 		if (!GameState.unitsAdjacent(this, attacked)) {
@@ -305,7 +305,8 @@ public class Unit {
 		GameState.playUnitAnimation(out, this, UnitAnimationType.attack);
 		GameState.playUnitAnimation(out, attacked, UnitAnimationType.hit);
 		GameState.playUnitAnimation(out, this, UnitAnimationType.idle);
-		boolean damageDone = gameState.dealDamangeToUnit(out, attacked, this.attack);
+		GameState.playUnitAnimation(out, attacked, UnitAnimationType.idle);
+		boolean damageDone = gameState.dealDamangeToUnit(out, attacked, getAttack());
 		if (damageDone && getShieldBuff() > 0) {
 			Tile tile = gameState.getUnitTile(this);
 			int gameMode = gameState.isUserUnit(this) ? GameState.USER_MODE : GameState.AI_MODE;
@@ -337,7 +338,7 @@ public class Unit {
 
 	@Override
 	public String toString() {
-		return "Unit [id=" + id + ", name=" + name + "]";
+		return "Unit [id=" + id + ", name=" + name + ", health=" + health + ", maxHealth=" + maxHealth + ", attack="
+				+ attack + ", shieldBuff=" + shieldBuff + "]";
 	}
-
 }

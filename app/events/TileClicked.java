@@ -42,14 +42,19 @@ public class TileClicked implements EventProcessor {
 			return;
 		}
 		if (tileClicked.isOccupied() && gameState.isUserUnit(tileClicked.getUnit())) {
-			Unit unit = tileClicked.getUnit();
-			if (!gameState.canUnitMove(unit)) {
-				String reason = gameState.reasonUnitCannotMove(unit);
-				BasicCommands.addPlayer1Notification(out, "Cannot move: " + reason, 5);
-				return;
+			Unit userUnit = tileClicked.getUnit();
+			gameState.setActiveUnit(userUnit);
+			if (gameState.unitCanMove(userUnit)) {
+				hightlightTilesUnitCanMoveAndUnitsCanAttack(out, gameState, userUnit);
 			}
-			gameState.setActiveUnit(unit);
-			hightlightTilesUnitCanMoveAndUnitsCanAttack(out, gameState, unit);
+			for (Tile tile : gameState.getAdjacentTiles(tileClicked)) {
+				if (tile.isOccupied() && gameState.isAiUnit(tile.getUnit())) {
+					Unit aiUnit = tile.getUnit();
+					if (gameState.unitCanAttack(userUnit, aiUnit)) {
+						BasicCommands.drawTile(out, tile, Tile.TILE_RED_MODE);
+					}
+				}
+			}
 		}
 	}
 
@@ -58,13 +63,13 @@ public class TileClicked implements EventProcessor {
 		if (!tileClicked.isOccupied()) {
 			gameState.redrawAllTiles(out);
 			gameState.clearActiveUnit();
-			if (!gameState.canUnitMove(activeUnit)) {
+			if (!gameState.unitCanMove(activeUnit)) {
 				BasicCommands.addPlayer1Notification(out, "Unit cannot move!", 5);
 				return;
 			}
 			List<Tile> accessibleTiles = gameState.getTilesUnitCanMoveTo(activeUnit);
 			if (accessibleTiles.contains(tileClicked)) {
-				activeUnit.unitMove(out, gameState, tileClicked);
+				activeUnit.move(out, gameState, tileClicked);
 			} else {
 				BasicCommands.addPlayer1Notification(out, "Unit can not move: out of range!", 5);
 			}
@@ -77,37 +82,31 @@ public class TileClicked implements EventProcessor {
 			gameState.clearActiveUnit();
 			if (gameState.isUserUnit(unitOnTile)) {
 				gameState.setActiveUnit(unitOnTile);
-				if (gameState.canUnitMove(unitOnTile)) {
+				if (gameState.unitCanMove(unitOnTile)) {
 					hightlightTilesUnitCanMoveAndUnitsCanAttack(out, gameState, unitOnTile);
 				}
 				return;
 			}
 			// unitOnTile is ai unit
-			if (!gameState.canPerformAttack(activeUnit, unitOnTile)) {
-				String reason = gameState.reasonCannotPerformAttack(activeUnit, unitOnTile);
-				BasicCommands.addPlayer1Notification(out, "Cannot attack: " + reason, 5);
-				return;
-			}
 			if (GameState.unitsAdjacent(activeUnit, unitOnTile)) {
-				performAttackAndCounterAttack(out, gameState, activeUnit, unitOnTile);
+				if (!gameState.unitCanAttack(activeUnit, unitOnTile)) {
+					String reason = gameState.whyUnitCannotAttack(activeUnit, unitOnTile);
+					BasicCommands.addPlayer1Notification(out, "Cannot attack: " + reason, 5);
+					return;
+				}
+				gameState.performAttackAndCounterAttack(out, activeUnit, unitOnTile);
 				return;
 			}
-			if (!gameState.canUnitMove(activeUnit)) {
+			if (!gameState.unitCanMove(activeUnit)) {
 				BasicCommands.addPlayer1Notification(out, "Cannot attack: unit cannot move and target is not adjacnet!",
 						5);
 				return;
 			}
 			// user unit and ai unit are NOT adjacent
-			// try to find a tile that is both accessible to the user unit
-			// and adjacent to the ai unit, so that the user unit can perform move + attack
-			Tile targetTile = null;
-			List<Tile> tilesAccessible = gameState.getTilesUnitCanMoveTo(activeUnit);
-			for (Tile tile : tilesAccessible) {
-				if (GameState.tilesAdjacent(tile, tileClicked)) {
-					targetTile = tile;
-					break;
-				}
-			}
+			// try to find a tile with the minimum distance that is both accessible to the
+			// user unit and adjacent to the ai unit, so that the user unit can perform move
+			// + attack
+			Tile targetTile = gameState.findAttackPath(activeUnit, tileClicked, GameState.USER_MODE);
 			if (targetTile == null) {
 				BasicCommands.addPlayer1Notification(out, "Cannot attack: target is out of range!", 5);
 				return;
@@ -115,11 +114,11 @@ public class TileClicked implements EventProcessor {
 			Action action = new Action() {
 				@Override
 				public void doAction(ActorRef out, GameState gameState) {
-					performAttackAndCounterAttack(out, gameState, activeUnit, unitOnTile);
+					gameState.performAttackAndCounterAttack(out, activeUnit, unitOnTile);
 				}
 			};
 			gameState.setPendingAction(action);
-			activeUnit.unitMove(out, gameState, targetTile);
+			activeUnit.move(out, gameState, targetTile);
 		}
 	}
 
@@ -176,10 +175,14 @@ public class TileClicked implements EventProcessor {
 	private void hightlightTilesUnitCanMoveAndUnitsCanAttack(ActorRef out, GameState gameState, Unit unit) {
 		List<Tile> tilesCanMove = gameState.getTilesUnitCanMoveTo(unit);
 		Set<Tile> tilesCanAttack = new HashSet<>();
-		List<Tile> aiUnitTiles = gameState.getAiUnitTiles();
+		List<Tile> aiUnitTiles = gameState.getAllAITiles();
 		for (Tile aiTile : aiUnitTiles) {
 			for (Tile tileAccessible : tilesCanMove) {
 				if (GameState.tilesAdjacent(aiTile, tileAccessible)) {
+					if (gameState.getAiProvokeAreas().contains(tileAccessible)
+							&& !aiTile.getUnit().hasProvokeAbility()) {
+						continue;
+					}
 					tilesCanAttack.add(aiTile);
 				}
 			}
@@ -189,17 +192,6 @@ public class TileClicked implements EventProcessor {
 		}
 		for (Tile t : tilesCanAttack) {
 			BasicCommands.drawTile(out, t, Tile.TILE_RED_MODE);
-		}
-	}
-
-	private void performAttackAndCounterAttack(ActorRef out, GameState gameState, Unit attacker, Unit attacked) {
-		if (!gameState.canPerformAttack(attacker, attacked)) {
-			throw new IllegalStateException("cannot perform attack!");
-		}
-		attacker.performAttack(out, gameState, attacked, false);
-		if (attacked.getHealth() > 0 && gameState.canPerformAttack(attacked, attacker)) {
-			// perform counter attack
-			attacked.performAttack(out, gameState, attacker, true);
 		}
 	}
 }

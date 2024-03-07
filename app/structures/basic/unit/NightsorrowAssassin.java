@@ -18,8 +18,9 @@ public class NightsorrowAssassin extends Unit {
 	}
 
 	public void performGambit(ActorRef out, GameState gameState) {
-		for (Unit enemy : gameState.getAiUnits()) {
-			if (GameState.unitsAdjacent(this, enemy) && enemy.getHealth() < enemy.getMaxHealth()) {
+		for (Unit enemy : gameState.getAllAIUnits()) {
+			if (GameState.unitsAdjacent(this, enemy) && enemy.getHealth() < enemy.getMaxHealth()
+					&& enemy != gameState.getUserAvatar()) {
 				GameState.playUnitAnimation(out, enemy, UnitAnimationType.death);
 				gameState.removeUnit(out, enemy);
 			}

@@ -41,6 +41,7 @@ public class WraithlingSwarmCard extends Card {
 			BasicCommands.addPlayer1Notification(out, "Cannot summon Wraithlings on occupied tile!", 5);
 			return;
 		}
+		gameState.redrawAllTiles(out);
 		gameState.summonWraithling(out, tile, GameState.USER_MODE);
 		remainingWraithling--;
 		if (gameState.getDelegatedCard() == null) {
@@ -50,7 +51,9 @@ public class WraithlingSwarmCard extends Card {
 		if (remainingWraithling > 0) {
 			highlightTiles(out, gameState);
 		} else {
-			setUsed(true); // mark card used
+			setUsed(true);
+			gameState.deleteUserCard(out, this);
+			gameState.clearDelegateCard();
 			gameState.clearActiveCard(out);
 		}
 	}

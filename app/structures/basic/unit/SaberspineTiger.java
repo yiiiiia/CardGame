@@ -29,6 +29,7 @@ public class SaberspineTiger extends Unit {
 	}
 
 	private void performRush(ActorRef out, GameState gameState) {
-		// TODO integrated with AI logic
+		// already handled in GameState.summonUnit(ActorRef out, Tile tile, Class<?
+		// extends Unit> unitClass, String configPath, int mode, boolean isWraithling)
 	}
 }

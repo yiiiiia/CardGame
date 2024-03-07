@@ -15,7 +15,7 @@ public class DarkTerminusCard extends Card {
 
 	@Override
 	public void highlightTiles(ActorRef out, GameState gameState) {
-		List<Unit> enemyUnits = gameState.getAiUnits();
+		List<Unit> enemyUnits = gameState.getAllAIUnits();
 		for (Unit enemy : enemyUnits) {
 			if (enemy == gameState.getAiAvatar()) {
 				// need to be excluded
@@ -29,8 +29,16 @@ public class DarkTerminusCard extends Card {
 	@Override
 	public void castSpell(ActorRef out, GameState gameState, Tile tile) {
 		Unit enemy = tile.getUnit();
-		if (enemy == null || enemy == gameState.getAiAvatar()) {
-			BasicCommands.addPlayer1Notification(out, "Can only use this card on enemy creature!", 5);
+		if (enemy == null) {
+			BasicCommands.addPlayer1Notification(out, "Cannot use this card on empty tile!", 5);
+			return;
+		}
+		if (gameState.isUserUnit(enemy)) {
+			BasicCommands.addPlayer1Notification(out, "Cannot use this card on ally unit!", 5);
+			return;
+		}
+		if (enemy == gameState.getAiAvatar()) {
+			BasicCommands.addPlayer1Notification(out, "Can not only use this card on enemy avatar!", 5);
 			return;
 		}
 		gameState.deductManaFromPlayer(out, manacost, GameState.USER_MODE);
@@ -39,5 +47,6 @@ public class DarkTerminusCard extends Card {
 		BasicCommands.sleep(500);
 		// summon wraithling on the tile
 		gameState.summonWraithling(out, tile, GameState.USER_MODE);
+		setUsed(true);
 	}
 }

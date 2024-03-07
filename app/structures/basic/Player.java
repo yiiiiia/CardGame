@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import akka.actor.ActorRef;
+import commands.BasicCommands;
 import structures.GameState;
 
 /**
@@ -16,6 +17,7 @@ import structures.GameState;
  */
 public class Player {
 	public static final int MAX_HAND_CARD_NUM = 6;
+	public static final int MAX_MANA = 9;
 
 	protected int health;
 	protected int mana;
@@ -40,6 +42,49 @@ public class Player {
 		this.tileAndUnits = new HashMap<>();
 		this.deckCards = new ArrayList<>();
 		this.handCards = new Card[MAX_HAND_CARD_NUM];
+	}
+
+	public void playAI(ActorRef out, GameState gameState) {
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	public void resumeAI(ActorRef out, GameState gameState) {
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	public void resetStatus(ActorRef out, GameState gameState) {
+		boolean isUserPlayer = this == gameState.getUserPlayer();
+		setMana(0);
+		if (isUserPlayer) {
+			BasicCommands.setPlayer1Mana(out, this);
+		} else {
+			BasicCommands.setPlayer2Mana(out, this);
+		}
+		BasicCommands.sleep(50);
+
+		drawOneNewCard();
+		if (isUserPlayer) {
+			for (int i = 0; i < Player.MAX_HAND_CARD_NUM; ++i) {
+				BasicCommands.deleteCard(out, i + 1);
+			}
+			for (int i = 0; i < getHandCards().size(); i++) {
+				Card card = getHandCardByPos(i);
+				BasicCommands.drawCard(out, card, i + 1, Card.CARD_NORMAL_MODE);
+			}
+		}
+		for (Unit u : getOwnUnits()) {
+			u.setNewlySpawned(false);
+			u.setStunned(false);
+			u.setHasMoved(false);
+			u.setHasAttacked(false);
+		}
+	}
+
+	public void refreshManaByTurnNum(int turnNum) {
+		if (mana == MAX_MANA) {
+			return;
+		}
+		setMana(Math.min(MAX_MANA, turnNum + 1));
 	}
 
 	public int getHealth() {
@@ -70,11 +115,7 @@ public class Player {
 		this.deckCards = deckCards;
 	}
 
-	public void playAiLogic(ActorRef out, GameState gameState) {
-		throw new UnsupportedOperationException("not implemented");
-	}
-
-	public List<Unit> getAllUnits() {
+	public List<Unit> getOwnUnits() {
 		return new ArrayList<>(tileAndUnits.values());
 	}
 

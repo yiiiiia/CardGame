@@ -20,7 +20,8 @@ public class AI extends Player {
 		super(health, mana);
 	}
 
-	public void playAiLogic(ActorRef out, GameState gameState) {
+	@Override
+	public void playAI(ActorRef out, GameState gameState) {
 		BasicCommands.addPlayer1Notification(out, "Start Ai Mode", 3);
 		// 后续加蓝量
 		/*
@@ -276,14 +277,13 @@ public class AI extends Player {
 					int distancex = getClosestTile(cur, gameState).getTilex() - cur.getTilex();
 					int distancey = getClosestTile(cur, gameState).getTiley() - cur.getTiley();
 					if (Math.abs(distancex) > Math.abs(distancey)) {
-						aiUnit.unitMove(out, gameState,
+						aiUnit.move(out, gameState,
 								gameState.getTileByPos(cur.getTilex() + Integer.signum(distancex) * 2, cur.getTiley()));
 					} else if (Math.abs(distancex) == Math.abs(distancey)) {
-						aiUnit.unitMove(out, gameState,
-								gameState.getTileByPos(cur.getTilex() + Integer.signum(distancex),
-										cur.getTiley() + Integer.signum(distancey)));
+						aiUnit.move(out, gameState, gameState.getTileByPos(cur.getTilex() + Integer.signum(distancex),
+								cur.getTiley() + Integer.signum(distancey)));
 					} else {
-						aiUnit.unitMove(out, gameState,
+						aiUnit.move(out, gameState,
 								gameState.getTileByPos(cur.getTilex(), cur.getTiley() + Integer.signum(distancey) * 2));
 					}
 
@@ -298,7 +298,7 @@ public class AI extends Player {
 						}
 					};
 					gameState.setPendingAction(action);
-					aiUnit.unitMove(out, gameState, targetTile);
+					aiUnit.move(out, gameState, targetTile);
 				}
 			}
 		}
@@ -382,13 +382,13 @@ public class AI extends Player {
 	}
 
 	private void performAttackAndCounterAttack(ActorRef out, GameState gameState, Unit u1, Unit u2) {
-		if (!gameState.canPerformAttack(u1, u2)) {
+		if (!gameState.unitCanAttack(u1, u2)) {
 			throw new IllegalStateException("cannot perform attack!");
 		}
-		u1.performAttack(out, gameState, u2, false);
-		if (u2.getHealth() > 0 && gameState.canPerformAttack(u2, u1)) {
+		u1.doAttack(out, gameState, u2, false);
+		if (u2.getHealth() > 0 && gameState.unitCanAttack(u2, u1)) {
 			// perform counter attack
-			u2.performAttack(out, gameState, u1, true);
+			u2.doAttack(out, gameState, u1, true);
 		}
 	}
 
