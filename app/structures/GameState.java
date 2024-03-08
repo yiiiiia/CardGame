@@ -194,6 +194,9 @@ public class GameState {
 	}
 
 	public void clearActiveCard(ActorRef out) {
+		if (activeCard == null) {
+			return;
+		}
 		int pos = userPlayer.getHandCardPosition(activeCard);
 		if (pos == -1) {
 			throw new IllegalStateException("can't find active card position: " + activeCard);
@@ -821,13 +824,13 @@ public class GameState {
 
 	public static void playUnitAnimation(ActorRef out, Unit unit, UnitAnimationType animationType) {
 		int n = BasicCommands.playUnitAnimation(out, unit, animationType);
-		BasicCommands.sleep(n);
+		BasicCommands.sleep(n + 100);
 	}
 
 	public static void playEffectAnimation(ActorRef out, String effectConfigPath, Tile tile) {
 		EffectAnimation effect = BasicObjectBuilders.loadEffect(effectConfigPath);
 		int n = BasicCommands.playEffectAnimation(out, effect, tile);
-		BasicCommands.sleep(n);
+		BasicCommands.sleep(n + 10);
 	}
 
 	public static boolean unitsAdjacent(Unit u1, Unit u2) {

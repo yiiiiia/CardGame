@@ -254,13 +254,13 @@ public class Unit {
 			this.hasAttacked = true;
 		}
 		GameState.playUnitAnimation(out, this, UnitAnimationType.attack);
-		GameState.playUnitAnimation(out, attacked, UnitAnimationType.hit);
+		GameState.playUnitAnimation(out, this, UnitAnimationType.idle);
 		if (attacked.getShieldBuff() > 0) {
 			BasicCommands.addPlayer1Notification(out,
 					"User avatar is under buff protection: robutness " + attacked.getShieldBuff(), 3);
 			BasicCommands.sleep(500);
 		}
-		GameState.playUnitAnimation(out, this, UnitAnimationType.idle);
+		GameState.playUnitAnimation(out, attacked, UnitAnimationType.hit);
 		GameState.playUnitAnimation(out, attacked, UnitAnimationType.idle);
 		boolean damageDone = gameState.dealDamangeToUnit(out, attacked, getAttack());
 		if (damageDone && getShieldBuff() > 0) {
