@@ -61,7 +61,6 @@ public class Player {
 			BasicCommands.setPlayer2Mana(out, this);
 		}
 		BasicCommands.sleep(50);
-
 		drawOneNewCard();
 		if (isUserPlayer) {
 			for (int i = 0; i < getHandCards().size(); i++) {

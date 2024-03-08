@@ -194,6 +194,9 @@ public class GameState {
 	}
 
 	public void clearActiveCard(ActorRef out) {
+		if (activeCard == null) {
+			return;
+		}
 		int pos = userPlayer.getHandCardPosition(activeCard);
 		if (pos == -1) {
 			throw new IllegalStateException("can't find active card position: " + activeCard);

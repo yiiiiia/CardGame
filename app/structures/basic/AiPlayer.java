@@ -46,11 +46,9 @@ public class AiPlayer extends Player {
 		resetStatus(out, gameState);
 		gameState.addTurn();
 		gameState.getUserPlayer().refreshManaByTurnNum(gameState.getTurn());
-		this.refreshManaByTurnNum(gameState.getTurn());
 		BasicCommands.setPlayer1Mana(out, gameState.getUserPlayer());
-		BasicCommands.setPlayer2Mana(out, this);
 		gameState.setGameMode(GameState.USER_MODE);
-		BasicCommands.addPlayer1Notification(out, "Back to user mode", 2);
+		BasicCommands.addPlayer1Notification(out, "Back to user mode", 3);
 	}
 
 	private void playGameLogic(ActorRef out, GameState gameState) {
