@@ -22,31 +22,34 @@ public class DarkTerminusCard extends Card {
 				continue;
 			}
 			Tile tile = gameState.getUnitTile(enemy);
-			BasicCommands.drawTile(out, tile, Tile.TILE_RED_MODE);
+			gameState.drawAndRecordHighlightedTile(out, tile, Tile.TILE_RED_MODE);
 		}
+	}
+
+	public String canCastSpellOnUnit(GameState gameState, Unit unit) {
+		if (gameState.isUserUnit(unit) || unit == gameState.getAiAvatar()) {
+			return "This card can only be used on AI unit that are summoned";
+		}
+		return "";
 	}
 
 	@Override
 	public void castSpell(ActorRef out, GameState gameState, Tile tile) {
-		Unit enemy = tile.getUnit();
-		if (enemy == null) {
-			BasicCommands.addPlayer1Notification(out, "Cannot use this card on empty tile!", 5);
-			return;
+		Unit unit = tile.getUnit();
+		if (unit == null) {
+			throw new IllegalStateException("cannot use card ont empty tile: " + cardname);
 		}
-		if (gameState.isUserUnit(enemy)) {
-			BasicCommands.addPlayer1Notification(out, "Cannot use this card on ally unit!", 5);
-			return;
+		if (gameState.isUserUnit(unit)) {
+			throw new IllegalStateException("cannot use card ont user unit: " + cardname);
 		}
-		if (enemy == gameState.getAiAvatar()) {
-			BasicCommands.addPlayer1Notification(out, "Can not only use this card on enemy avatar!", 5);
-			return;
+		if (unit == gameState.getAiAvatar()) {
+			throw new IllegalStateException("cannot use card ont ai avatar: " + cardname);
 		}
 		gameState.deductManaFromPlayer(out, manacost, GameState.USER_MODE);
 		GameState.playEffectAnimation(out, StaticConfFiles.f1_inmolation, tile);
-		gameState.dealDamangeToUnit(out, enemy, enemy.getHealth());
+		gameState.dealDamangeToUnit(out, unit, unit.getHealth());
 		BasicCommands.sleep(500);
 		// summon wraithling on the tile
 		gameState.summonWraithling(out, tile, GameState.USER_MODE);
-		setUsed(true);
 	}
 }

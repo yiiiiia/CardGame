@@ -64,12 +64,12 @@ public class Player {
 
 		drawOneNewCard();
 		if (isUserPlayer) {
-			for (int i = 0; i < Player.MAX_HAND_CARD_NUM; ++i) {
-				BasicCommands.deleteCard(out, i + 1);
-			}
 			for (int i = 0; i < getHandCards().size(); i++) {
 				Card card = getHandCardByPos(i);
 				BasicCommands.drawCard(out, card, i + 1, Card.CARD_NORMAL_MODE);
+			}
+			for (int i = getHandCards().size(); i < MAX_HAND_CARD_NUM; i++) {
+				BasicCommands.deleteCard(out, i + 1);
 			}
 		}
 		for (Unit u : getOwnUnits()) {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
@@ -68,7 +69,7 @@ public class AiPlayer extends Player {
 		}
 		Unit aiAvatar = gameState.getAiAvatar();
 		Unit userAvatar = gameState.getUserAvatar();
-		List<Tile> tiles = gameState.getTilesUnitCanMoveTo(aiAvatar);
+		Set<Tile> tiles = gameState.getTilesUnitCanMoveTo(aiAvatar);
 		if (tiles.isEmpty()) {
 			return;
 		}
@@ -106,13 +107,11 @@ public class AiPlayer extends Player {
 			// card that summon creatures
 			if (card.getIsCreature()) {
 				// 1. get all tiles that a creature can stand on
-				List<Tile> tiles = gameState.getTilesForSummon(GameState.AI_MODE);
+				Set<Tile> tiles = gameState.getTilesForSummon(GameState.AI_MODE);
 				Tile target = gameState.findTileClosestToUnit(gameState.getUserAvatar(), tiles);
 				BasicCommands.addPlayer1Notification(out, "Ai use card: " + card.getCardname(), 3);
 				card.summonUnitOnTile(out, gameState, target, GameState.AI_MODE);
-				if (card.isUsed()) {
-					removeHandCard(card);
-				}
+				removeHandCard(card);
 			} else {
 				tryUseSpellCards(out, gameState, card);
 			}
@@ -143,10 +142,7 @@ public class AiPlayer extends Player {
 					Tile tile = gameState.getUnitTile(unit);
 					BasicCommands.addPlayer1Notification(out, "Ai use card: " + card.getCardname(), 3);
 					card.castSpell(out, gameState, tile);
-					if (card.isUsed()) {
-						removeHandCard(card);
-						break;
-					}
+					removeHandCard(card);
 				}
 			} else {
 				String errmsg = String.format("Unit health is larger than its max health: %s", unit.toString());
@@ -160,19 +156,15 @@ public class AiPlayer extends Player {
 		Tile tile = gameState.getUnitTile(userAvatar);
 		BasicCommands.addPlayer1Notification(out, "Ai use card: " + card.getCardname(), 3);
 		card.castSpell(out, gameState, tile);
-		if (card.isUsed()) {
-			removeHandCard(card);
-		}
+		removeHandCard(card);
 	}
 
 	private void tryUseBeamShock(ActorRef out, GameState gameState, Card card) {
-		List<Tile> tiles = gameState.getAllUserTiles();
+		Set<Tile> tiles = gameState.getAllUserTiles();
 		Tile target = gameState.findTileClosestToUnit(gameState.getAiAvatar(), tiles);
 		BasicCommands.addPlayer1Notification(out, "Ai use card: " + card.getCardname(), 3);
 		card.castSpell(out, gameState, target);
-		if (card.isUsed()) {
-			removeHandCard(card);
-		}
+		removeHandCard(card);
 	}
 
 	private void tryMoveCreatures(ActorRef out, GameState gameState) {
@@ -191,11 +183,11 @@ public class AiPlayer extends Player {
 					}
 					continue;
 				}
-				List<Tile> tilesCurUnitCanMove = gameState.getTilesUnitCanMoveTo(aiUnit);
+				Set<Tile> tilesCurUnitCanMove = gameState.getTilesUnitCanMoveTo(aiUnit);
 				if (tilesCurUnitCanMove.isEmpty()) {
 					continue;
 				}
-				List<Tile> userTiles = gameState.getAllUserTiles();
+				Set<Tile> userTiles = gameState.getAllUserTiles();
 				Tile aiUnitTile = gameState.getUnitTile(aiUnit);
 				List<Tile> nearbyUserUnitTiles = new ArrayList<>();
 				for (Tile userTile : userTiles) {
@@ -207,7 +199,7 @@ public class AiPlayer extends Player {
 					// already has user units nearby
 					for (Tile nearbyUserTile : nearbyUserUnitTiles) {
 						Tile adjstToTile = gameState.needAdjustPosition(nearbyUserTile, aiUnitTile);
-						if (adjstToTile != null) {
+						if (adjstToTile != null && tilesCurUnitCanMove.contains(adjstToTile)) {
 							BasicCommands.addPlayer1Notification(out, "Move AI creatures", 3);
 							aiUnit.move(out, gameState, adjstToTile);
 							setSuspension();
@@ -231,18 +223,15 @@ public class AiPlayer extends Player {
 	}
 
 	private void tryAttack(ActorRef out, GameState gameState) {
-		System.out.println("Try perform attack");
 		if (suspension) {
 			return;
 		}
 		for (Unit aiUnit : this.getOwnUnits()) {
 			if (!gameState.unitCanAttack(aiUnit, null)) {
-				System.out.println("Unit: " + aiUnit + " cannot attack");
 				continue;
 			}
 			Tile aiUnitTile = gameState.getUnitTile(aiUnit);
 			List<Unit> adjacentUserUnits = findAdjacentUserUnits(gameState, aiUnitTile);
-			System.out.println("adjacent user units number:" + adjacentUserUnits.size());
 			sortUserUnits(adjacentUserUnits, gameState);
 			for (Unit userUnit : adjacentUserUnits) {
 				if (gameState.unitCanAttack(aiUnit, userUnit)) {
@@ -250,9 +239,6 @@ public class AiPlayer extends Player {
 					if (gameState.isGameOver()) {
 						return;
 					}
-				} else {
-					String str = gameState.whyUnitCannotAttack(aiUnit, userUnit);
-					System.out.println("Reason cannot attack:" + str);
 				}
 			}
 		}

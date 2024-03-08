@@ -25,7 +25,6 @@ public class UnitStopped implements EventProcessor {
 		}
 		gameState.setHasMovingUnit(false);
 		if (gameState.isInAIMode()) {
-			System.out.println("Resume AI");
 			gameState.getAiPlayer().resumeAI(out, gameState);
 		}
 	}

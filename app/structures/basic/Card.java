@@ -1,9 +1,8 @@
 package structures.basic;
 
-import java.util.List;
+import java.util.Set;
 import com.fasterxml.jackson.databind.JsonNode;
 import akka.actor.ActorRef;
-import commands.BasicCommands;
 import structures.GameState;
 
 /**
@@ -29,8 +28,6 @@ public class Card {
 	protected BigCard bigCard;
 	protected boolean isCreature;
 	protected String unitConfig;
-	protected int spellCastType;
-	protected boolean used;
 
 	public Card() {
 	};
@@ -102,22 +99,6 @@ public class Card {
 		this.isCreature = isCreature;
 	}
 
-	public boolean isUsed() {
-		return used;
-	}
-
-	public void setUsed(boolean used) {
-		this.used = used;
-	}
-
-	public int getSpellCastType() {
-		return spellCastType;
-	}
-
-	public void setSpellCastType(int spellCastType) {
-		this.spellCastType = spellCastType;
-	}
-
 	// ----------------------------------------------------------------------------------
 	public void highlightTiles(ActorRef out, GameState gameState) {
 		throw new UnsupportedOperationException("Unimplemented method!");
@@ -127,8 +108,18 @@ public class Card {
 		throw new UnsupportedOperationException("Unimplemented method!");
 	}
 
+	public String canCastSpellOnUnit(GameState gameState, Unit unit) {
+		throw new UnsupportedOperationException("Unimplemented method!");
+	}
+
 	protected Class<? extends Unit> getSummonedCreatureClass() {
 		throw new UnsupportedOperationException("Unimplemented method!");
+	}
+
+	protected void highlightTilesAsCreatureCard(ActorRef out, GameState gameState, int gameMode) {
+		for (Tile tile : gameState.getTilesForSummon(gameMode)) {
+			gameState.drawAndRecordHighlightedTile(out, tile, Tile.TILE_WHITE_MODE);
+		}
 	}
 
 	// Method solely designed for car Wraithling Swarm,
@@ -138,37 +129,27 @@ public class Card {
 	}
 
 	public void summonUnitOnTile(ActorRef out, GameState gameState, Tile tile, int mode) {
-		if (mode == GameState.USER_MODE) {
-			if (manacost > gameState.getUserPlayer().getMana()) {
-				BasicCommands.addPlayer1Notification(out, "Not enough mana", 3);
-				return;
-			}
-		} else if (mode == GameState.AI_MODE) {
-			if (manacost > gameState.getAiPlayer().getMana()) {
-				BasicCommands.addPlayer1Notification(out, "FOR AI: Not enough mana", 3);
-				return;
-			}
-		} else {
-			throw new IllegalArgumentException("Invalid mode: " + mode);
-		}
-		if (!isCreature) {
-			throw new IllegalStateException("Card cannot summon unit!");
+		if (mode != GameState.USER_MODE && mode != GameState.AI_MODE) {
+			throw new IllegalArgumentException("Invalid game mode: " + mode);
 		}
 		if (tile == null) {
-			throw new IllegalArgumentException("Tile is null");
+			throw new IllegalArgumentException("tile is null");
+		}
+		if (mode == GameState.USER_MODE && manacost > gameState.getUserPlayer().getMana()) {
+			throw new IllegalStateException("cannot use card due to lack of mana: " + this);
+		} else if (mode == GameState.AI_MODE && manacost > gameState.getAiPlayer().getMana()) {
+			throw new IllegalStateException("cannot use card due to lack of mana: " + this);
 		}
 		if (tile.isOccupied()) {
 			throw new IllegalStateException("cannot summon unit on occupied tile!");
 		}
-		List<Tile> tilesCanSummon = gameState.getTilesForSummon(mode);
+		Set<Tile> tilesCanSummon = gameState.getTilesForSummon(mode);
 		if (!tilesCanSummon.contains(tile)) {
-			BasicCommands.addPlayer1Notification(out, "Cannot summon creature, tile out of range", 5);
-			return;
+			throw new IllegalStateException("Cannot summon creature, tile out of range");
 		}
 		Class<? extends Unit> clz = getSummonedCreatureClass();
 		gameState.summonUnit(out, tile, clz, unitConfig, mode, false);
 		gameState.deductManaFromPlayer(out, manacost, mode);
-		setUsed(true); // mark card used
 	}
 
 	@Override

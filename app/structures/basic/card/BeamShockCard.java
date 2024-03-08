@@ -2,11 +2,12 @@ package structures.basic.card;
 
 import java.util.List;
 import akka.actor.ActorRef;
-import commands.BasicCommands;
 import structures.GameState;
 import structures.basic.Card;
 import structures.basic.Tile;
 import structures.basic.Unit;
+import structures.basic.UnitAnimationType;
+import utils.StaticConfFiles;
 
 public class BeamShockCard extends Card {
 
@@ -20,7 +21,7 @@ public class BeamShockCard extends Card {
 				continue;
 			}
 			Tile tile = gameState.getUnitTile(unit);
-			BasicCommands.drawTile(out, tile, Tile.TILE_RED_MODE);
+			gameState.drawAndRecordHighlightedTile(out, tile, Tile.TILE_RED_MODE);
 		}
 	}
 
@@ -34,7 +35,8 @@ public class BeamShockCard extends Card {
 			throw new IllegalStateException("Cannot use BeamShockCard on ai unit!");
 		}
 		gameState.deductManaFromPlayer(out, manacost, GameState.AI_MODE);
+		GameState.playEffectAnimation(out, StaticConfFiles.f1_soulshatter, tile);
+		GameState.playUnitAnimation(out, unitOnTile, UnitAnimationType.hit);
 		unitOnTile.setStunned(true);
-		setUsed(true);
 	}
 }

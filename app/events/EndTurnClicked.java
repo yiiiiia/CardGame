@@ -17,6 +17,9 @@ import structures.GameState;
 public class EndTurnClicked implements EventProcessor {
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
+		gameState.clearActiveCard(out);
+		gameState.clearActiveUnit();
+		gameState.clearHighlightedTiles(out);
 		BasicCommands.addPlayer1Notification(out, "Start AI mode", 2);
 		gameState.setGameMode(GameState.AI_MODE);
 		gameState.getUserPlayer().resetStatus(out, gameState);

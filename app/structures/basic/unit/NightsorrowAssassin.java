@@ -7,6 +7,7 @@ import structures.basic.AbilityType;
 import structures.basic.Unit;
 import structures.basic.UnitAnimationType;
 import utils.BasicObjectBuilders;
+import utils.StaticConfFiles;
 
 public class NightsorrowAssassin extends Unit {
 
@@ -21,6 +22,7 @@ public class NightsorrowAssassin extends Unit {
 		for (Unit enemy : gameState.getAllAIUnits()) {
 			if (GameState.unitsAdjacent(this, enemy) && enemy.getHealth() < enemy.getMaxHealth()
 					&& enemy != gameState.getAiAvatar()) {
+				GameState.playEffectAnimation(out, StaticConfFiles.f1_martyrdom, gameState.getUnitTile(enemy));
 				GameState.playUnitAnimation(out, enemy, UnitAnimationType.death);
 				gameState.removeUnit(out, enemy);
 			}

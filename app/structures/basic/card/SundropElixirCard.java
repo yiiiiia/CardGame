@@ -17,7 +17,7 @@ public class SundropElixirCard extends Card {
 		// highlight the allied units
 		for (Unit unit : units) {
 			Tile tile = gameState.getUnitTile(unit);
-			BasicCommands.drawTile(out, tile, Tile.TILE_WHITE_MODE);
+			gameState.drawAndRecordHighlightedTile(out, tile, Tile.TILE_WHITE_MODE);
 		}
 	}
 
@@ -33,6 +33,5 @@ public class SundropElixirCard extends Card {
 		gameState.deductManaFromPlayer(out, manacost, GameState.AI_MODE);
 		unitOnTile.healSelf(4);
 		BasicCommands.setUnitHealth(out, unitOnTile, unitOnTile.getHealth());
-		setUsed(true);
 	}
 }

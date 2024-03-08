@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.Action;
@@ -254,7 +255,7 @@ public class AI extends Player {
 		for (Tile cur : this.getAllUnitsAndTile().keySet()) {
 			Unit aiUnit = this.getUnitByTile(cur);
 			Unit userUnit = gameState.getUserPlayer().getAllUnitsAndTile().get(getClosestTile(cur, gameState));
-			List<Tile> tilesAccessible = gameState.getTilesUnitCanMoveTo(aiUnit);
+			Set<Tile> tilesAccessible = gameState.getTilesUnitCanMoveTo(aiUnit);
 
 			// The first branch, adjacent units can attack
 			if (GameState.unitsAdjacent(aiUnit, userUnit)) {

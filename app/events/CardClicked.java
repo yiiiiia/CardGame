@@ -44,21 +44,24 @@ public class CardClicked implements EventProcessor {
 		int pos = handPosition - 1;
 		Player user = gameState.getUserPlayer();
 		Card cardClicked = user.getHandCardByPos(pos);
-		if (gameState.getActiveUnit() != null) {
-			gameState.clearActiveUnit();
-			gameState.redrawAllTiles(out);
-		}
 		if (cardClicked.getManacost() > user.getMana()) {
-			BasicCommands.addPlayer1Notification(out, "Not enough mana", 5);
+			BasicCommands.addPlayer1Notification(out, "Cannot use this card: not enough mana", 3);
 			return;
 		}
 		if (gameState.getActiveCard() != null) {
-			if (cardClicked == gameState.getActiveCard()) {
+			Card activeCard = gameState.getActiveCard();
+			if (activeCard == cardClicked) {
 				return;
-			} else {
-				gameState.clearActiveCard(out);
-				gameState.redrawAllTiles(out);
 			}
+			gameState.clearActiveCard(out);
+			gameState.clearHighlightedTiles(out);
+			gameState.setActiveCard(out, cardClicked, handPosition);
+			cardClicked.highlightTiles(out, gameState);
+			return;
+		}
+		if (gameState.getActiveUnit() != null) {
+			gameState.clearActiveUnit();
+			gameState.clearHighlightedTiles(out);
 		}
 		gameState.setActiveCard(out, cardClicked, handPosition);
 		cardClicked.highlightTiles(out, gameState);
