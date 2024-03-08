@@ -338,7 +338,8 @@ public class GameState {
 			if (!inRange) {
 				continue;
 			}
-			if (!isPathBlocked(curTile, targetTile)) {
+			int mode = isUserUnit(unit) ? USER_MODE : AI_MODE;
+			if (!isPathBlocked(curTile, targetTile, mode)) {
 				result.add(targetTile);
 			}
 		}
@@ -346,7 +347,7 @@ public class GameState {
 	}
 
 	// Check that there's a path from start to end
-	private boolean isPathBlocked(Tile startTile, Tile endTile) {
+	private boolean isPathBlocked(Tile startTile, Tile endTile, int mode) {
 		int startX = startTile.getTilex();
 		int startY = startTile.getTiley();
 		int endX = endTile.getTilex();
@@ -354,8 +355,9 @@ public class GameState {
 		if (startX == endX) {
 			int direction = Integer.signum(endY - startY);
 			for (int y = startY + direction; y != endY; y += direction) {
-				if (getTileByPos(startX, y).isOccupied()) {
-					return true;
+				Unit blocker = getTileByPos(startX, y).getUnit();
+				if (blocker != null) {
+					return mode == USER_MODE && isAiUnit(blocker) || mode == AI_MODE && isUserUnit(blocker);
 				}
 			}
 			return false;
@@ -363,31 +365,33 @@ public class GameState {
 		if (startY == endY) {
 			int direction = Integer.signum(endX - startX);
 			for (int x = startX + direction; x != endX; x += direction) {
-				if (getTileByPos(x, startY).isOccupied()) {
-					return true;
+				Unit blocker = getTileByPos(x, startY).getUnit();
+				if (blocker != null) {
+					return mode == USER_MODE && isAiUnit(blocker) || mode == AI_MODE && isUserUnit(blocker);
 				}
 			}
 			return false;
 		}
+		Tile t1 = null, t2 = null;
 		if (endY > startY && endX > startX) {
-			Tile t1 = getTileByPos(startX + 1, startY);
-			Tile t2 = getTileByPos(startX, startY + 1);
-			return t1.isOccupied() && t2.isOccupied();
+			t1 = getTileByPos(startX + 1, startY);
+			t2 = getTileByPos(startX, startY + 1);
+		} else if (endY < startY && endX > startX) {
+			t1 = getTileByPos(startX + 1, startY);
+			t2 = getTileByPos(startX, startY - 1);
+		} else if (endY > startY && endX < startX) {
+			t1 = getTileByPos(startX - 1, startY);
+			t2 = getTileByPos(startX, startY + 1);
+		} else {
+			t1 = getTileByPos(startX - 1, startY);
+			t2 = getTileByPos(startX, startY - 1);
 		}
-		if (endY < startY && endX > startX) {
-			Tile t1 = getTileByPos(startX + 1, startY);
-			Tile t2 = getTileByPos(startX, startY - 1);
-			return t1.isOccupied() && t2.isOccupied();
-		}
-		if (endY > startY && endX < startX) {
-			Tile t1 = getTileByPos(startX - 1, startY);
-			Tile t2 = getTileByPos(startX, startY + 1);
-			return t1.isOccupied() && t2.isOccupied();
-		}
-		if (endY < startY && endX < startX) {
-			Tile t1 = getTileByPos(startX - 1, startY);
-			Tile t2 = getTileByPos(startX, startY - 1);
-			return t1.isOccupied() && t2.isOccupied();
+		if (t1.getUnit() != null && t2.getUnit() != null) {
+			if (mode == USER_MODE) {
+				return isAiUnit(t1.getUnit()) && isAiUnit(t2.getUnit());
+			} else {
+				return isUserUnit(t1.getUnit()) && isUserUnit(t2.getUnit());
+			}
 		}
 		return false;
 	}
