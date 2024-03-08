@@ -59,38 +59,35 @@ public class Initalize implements EventProcessor {
 		gameState.setAiPlayer(ai);
 		BasicCommands.setPlayer1Mana(out, user);
 		BasicCommands.setPlayer1Health(out, user);
-		BasicCommands.setPlayer2Health(out, ai);
 		BasicCommands.setPlayer2Mana(out, ai);
+		BasicCommands.setPlayer2Health(out, ai);
 	}
 
 	private void boardInitialization(ActorRef out, GameState gameState) {
 		gameState.initGameTiles();
-		gameState.redrawAllTiles(out);
+		for (Tile t : gameState.getGameTiles()) {
+			BasicCommands.drawTile(out, t, Tile.TILE_NORMAL_MODE);
+		}
 	}
 
 	private void avatarsInitialization(ActorRef out, GameState gameState) {
-		// create human avatar
+		// user avatar
 		Unit userAvatar = BasicObjectBuilders.loadUnit(StaticConfFiles.humanAvatar, GameState.genUnitId(),
 				PlayerAvatar.class);
 		gameState.setUserAvatar(userAvatar);
-		// place human avatar
 		Tile userTile = gameState.getTileByPos(1, 2);
 		gameState.getUserPlayer().putUnitOnTile(userTile, userAvatar);
-		BasicCommands.drawUnit(out, userAvatar, userTile);
-		BasicCommands.sleep(200);
-
-		// create ai avatar
+		// ai avatar
 		Unit aiAvatar = BasicObjectBuilders.loadUnit(StaticConfFiles.aiAvatar, GameState.genUnitId(), AIAvatar.class);
 		gameState.setAiAvatar(aiAvatar);
-		// place ai avatar
 		Tile aiTile = gameState.getTileByPos(7, 2);
 		gameState.getAiPlayer().putUnitOnTile(aiTile, aiAvatar);
-		BasicCommands.drawUnit(out, aiAvatar, aiTile);
-		BasicCommands.sleep(200);
 
+		BasicCommands.drawUnit(out, userAvatar, userTile);
 		BasicCommands.setUnitHealth(out, userAvatar, INITIAL_HEALTH);
-		BasicCommands.setUnitHealth(out, aiAvatar, INITIAL_HEALTH);
 		BasicCommands.setUnitAttack(out, userAvatar, INITIAL_ATTACK);
+		BasicCommands.drawUnit(out, aiAvatar, aiTile);
+		BasicCommands.setUnitHealth(out, aiAvatar, INITIAL_HEALTH);
 		BasicCommands.setUnitAttack(out, aiAvatar, INITIAL_ATTACK);
 	}
 

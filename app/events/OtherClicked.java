@@ -16,9 +16,5 @@ import structures.GameState;
 public class OtherClicked implements EventProcessor {
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
-		if (gameState.getActiveCard() != null) {
-			gameState.redrawAllTiles(out);
-			gameState.clearActiveCard(out);
-		}
 	}
 }

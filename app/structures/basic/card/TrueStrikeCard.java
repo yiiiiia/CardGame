@@ -7,6 +7,7 @@ import structures.GameState;
 import structures.basic.Card;
 import structures.basic.Tile;
 import structures.basic.Unit;
+import utils.StaticConfFiles;
 
 public class TrueStrikeCard extends Card {
 
@@ -16,7 +17,7 @@ public class TrueStrikeCard extends Card {
 		List<Unit> units = gameState.getAllUserUnits();
 		for (Unit unit : units) {
 			Tile tile = gameState.getUnitTile(unit);
-			BasicCommands.drawTile(out, tile, Tile.TILE_RED_MODE);
+			gameState.drawAndRecordHighlightedTile(out, tile, Tile.TILE_RED_MODE);
 		}
 	}
 
@@ -30,7 +31,8 @@ public class TrueStrikeCard extends Card {
 			throw new IllegalStateException("Cannot use TrueStrikeCard on ai unit!");
 		}
 		gameState.deductManaFromPlayer(out, manacost, GameState.AI_MODE);
+		GameState.playEffectAnimation(out, StaticConfFiles.f1_inmolation, tile);
+		BasicCommands.sleep(250);
 		gameState.dealDamangeToUnit(out, unitOnTile, 2);
-		setUsed(true);
 	}
 }

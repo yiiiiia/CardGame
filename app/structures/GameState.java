@@ -54,23 +54,22 @@ public class GameState {
 	private Card activeCard;
 	private Unit userAvatar;
 	private Unit aiAvatar;
-	private int activateCardPos = -1;
-	// areas that ai units will be provoked
-	private Set<Tile> userProvokeAreas = new HashSet<>();
-	// areas that user units will be provoked
-	private Set<Tile> aiProvokeAreas = new HashSet<>();
 	private Card delegatedCard; // delegated card to hand click event
+	// areas that ai units will be provoked
+	private Set<Tile> userProvokeAreas;
+	// areas that user units will be provoked
+	private Set<Tile> aiProvokeAreas;
+	// tiles that are highlighted in the game currently
+	Set<Tile> highlightedTiles;
+
+	public GameState() {
+		userProvokeAreas = new HashSet<>();
+		aiProvokeAreas = new HashSet<>();
+		highlightedTiles = new HashSet<>();
+	}
 
 	public boolean isGameInitialised() {
 		return gameInitialised;
-	}
-
-	public int getActivateCardPos() {
-		return this.activateCardPos;
-	}
-
-	public void setActivateCardPos(int a) {
-		this.activateCardPos = a;
 	}
 
 	public void setGameInitialised(boolean gameInitialised) {
@@ -221,11 +220,19 @@ public class GameState {
 		}
 	}
 
-	public void redrawAllTiles(ActorRef out) {
-		List<Tile> tiles = getGameTiles();
-		for (Tile tile : tiles) {
+	public void drawAndRecordHighlightedTile(ActorRef out, Tile tile, int tileMode) {
+		if (tileMode == Tile.TILE_NORMAL_MODE) {
+			throw new IllegalStateException("this method cannot be used to draw normal tile");
+		}
+		BasicCommands.drawTile(out, tile, tileMode);
+		highlightedTiles.add(tile);
+	}
+
+	public void clearHighlightedTiles(ActorRef out) {
+		for (Tile tile : highlightedTiles) {
 			BasicCommands.drawTile(out, tile, Tile.TILE_NORMAL_MODE);
 		}
+		highlightedTiles.clear();
 	}
 
 	public List<Tile> getGameTiles() {
@@ -289,8 +296,8 @@ public class GameState {
 		return result;
 	}
 
-	public List<Tile> getAdjacentUnoccupiedTiles(Tile tile) {
-		List<Tile> result = new ArrayList<>();
+	public Set<Tile> getAdjacentUnoccupiedTiles(Tile tile) {
+		Set<Tile> result = new HashSet<>();
 		List<Tile> adjacentTiles = getAdjacentTiles(tile);
 		for (Tile cur : adjacentTiles) {
 			if (!cur.isOccupied()) {
@@ -307,13 +314,13 @@ public class GameState {
 		return getTileByPos(posX, posY);
 	}
 
-	public List<Tile> getTilesUnitCanMoveTo(Unit unit) {
+	public Set<Tile> getTilesUnitCanMoveTo(Unit unit) {
 		if (unit.getClass() == YoungFlamewing.class) {
 			YoungFlamewing yf = (YoungFlamewing) unit;
 			return yf.getTilesUnitCanMoveTo(this);
 		}
 
-		List<Tile> result = new ArrayList<>();
+		Set<Tile> result = new HashSet<>();
 		Tile curTile = getUnitTile(unit);
 		int curX = curTile.getTilex();
 		int curY = curTile.getTiley();
@@ -388,7 +395,7 @@ public class GameState {
 	public List<Tile> getTilesWithEnemyUnitsInRange(Unit unit, int mode) {
 		Tile unitOnTile = getUnitTile(unit);
 		Set<Tile> tileSet = new HashSet<>();
-		List<Tile> accessibleTiles = getTilesUnitCanMoveTo(unit);
+		Set<Tile> accessibleTiles = getTilesUnitCanMoveTo(unit);
 		accessibleTiles.add(unitOnTile);
 		for (Tile t : accessibleTiles) {
 			List<Tile> tilesNearby = getAdjacentTiles(t);
@@ -405,37 +412,36 @@ public class GameState {
 		return new ArrayList<>(tileSet);
 	}
 
-	public List<Tile> getTilesForSummon(int mode) {
-		List<Tile> unitTiles;
+	public Set<Tile> getTilesForSummon(int mode) {
+		Set<Tile> tiles;
 		if (mode == USER_MODE) {
-			unitTiles = getAllUserTiles();
+			tiles = getAllUserTiles();
 		} else if (mode == AI_MODE) {
-			unitTiles = getAllAITiles();
+			tiles = getAllAITiles();
 		} else {
 			throw new IllegalArgumentException("Invlaid mode: " + mode);
 		}
-		Set<Tile> tileSet = new HashSet<>();
-		for (Tile tile : unitTiles) {
-			List<Tile> freeAdjacentTiles = getAdjacentUnoccupiedTiles(tile);
-			tileSet.addAll(freeAdjacentTiles);
+		Set<Tile> result = new HashSet<>();
+		for (Tile tile : tiles) {
+			result.addAll(getAdjacentUnoccupiedTiles(tile));
 		}
-		return new ArrayList<>(tileSet);
+		return result;
 	}
 
 	public List<Unit> getAllUserUnits() {
 		return userPlayer.getOwnUnits();
 	}
 
-	public List<Tile> getAllUserTiles() {
-		return userPlayer.getAllTiles();
+	public Set<Tile> getAllUserTiles() {
+		return new HashSet<Tile>(userPlayer.getAllTiles());
 	}
 
 	public List<Unit> getAllAIUnits() {
 		return aiPlayer.getOwnUnits();
 	}
 
-	public List<Tile> getAllAITiles() {
-		return aiPlayer.getAllTiles();
+	public Set<Tile> getAllAITiles() {
+		return new HashSet<Tile>(aiPlayer.getAllTiles());
 	}
 
 	public List<Unit> getAllUnits() {
@@ -546,6 +552,9 @@ public class GameState {
 	}
 
 	public boolean unitCanAttack(Unit attacker, Unit attacked) {
+		if (attacker.getAttack() == 0) {
+			return false;
+		}
 		if (attacker.isNewlySpawned()) {
 			return false;
 		}
@@ -562,6 +571,9 @@ public class GameState {
 	}
 
 	public String whyUnitCannotAttack(Unit attacker, Unit attacked) {
+		if (attacker.getAttack() == 0) {
+			return "has 0 attack point";
+		}
 		if (attacker.isNewlySpawned()) {
 			return "unit is just spawned";
 		}
@@ -631,10 +643,11 @@ public class GameState {
 	}
 
 	public void summonWraithlingOnRandomlySelectedUnoccupiedAdjacentTile(ActorRef out, Tile tile, int mode) {
-		List<Tile> freeTiles = getAdjacentUnoccupiedTiles(tile);
+		Set<Tile> freeTiles = getAdjacentUnoccupiedTiles(tile);
+		List<Tile> tileList = new ArrayList<>(freeTiles);
 		if (!freeTiles.isEmpty()) {
 			int n = GameState.nextRandInt(freeTiles.size());
-			Tile targetTile = freeTiles.get(n);
+			Tile targetTile = tileList.get(n);
 			summonWraithling(out, targetTile, mode);
 		}
 	}
@@ -672,6 +685,8 @@ public class GameState {
 		if (unit.getShieldBuff() > 0) {
 			int n = unit.getShieldBuff();
 			unit.setShieldBuff(n - 1);
+			BasicCommands.addPlayer1Notification(out, "User avatar robutness now: " + (n - 1), 3);
+			BasicCommands.sleep(500);
 			return false;
 		}
 		playUnitAnimation(out, unit, UnitAnimationType.hit);
@@ -737,11 +752,11 @@ public class GameState {
 	}
 
 	public Tile findAttackPath(Unit attacker, Tile targetTile, int mode) {
-		List<Tile> tilesAccessible = getTilesUnitCanMoveTo(attacker);
+		Set<Tile> tilesAccessible = getTilesUnitCanMoveTo(attacker);
 		if (tilesAccessible.isEmpty()) {
 			return null;
 		}
-		List<Tile> candidates = new ArrayList<>();
+		Set<Tile> candidates = new HashSet<>();
 		for (Tile t : tilesAccessible) {
 			if (tilesAdjacent(t, targetTile)) {
 				if (mode == USER_MODE) {
@@ -759,15 +774,15 @@ public class GameState {
 		return findTileClosestToUnit(attacker, candidates);
 	}
 
-	public Tile findTileClosestToUnit(Unit unit, List<Tile> candidateTiles) {
+	public Tile findTileClosestToUnit(Unit unit, Set<Tile> candidateTiles) {
 		return findTileClosestToTile(getUnitTile(unit), candidateTiles);
 	}
 
-	public Tile findTileClosestToTile(Tile tile, List<Tile> candidateTiles) {
+	public Tile findTileClosestToTile(Tile target, Set<Tile> candidateTiles) {
 		Tile result = null;
 		int minDistance = Integer.MAX_VALUE;
 		for (Tile t : candidateTiles) {
-			int distance = distanceBetweenTiles(tile, t);
+			int distance = distanceBetweenTiles(target, t);
 			if (distance < minDistance) {
 				result = t;
 				minDistance = distance;
@@ -843,27 +858,48 @@ public class GameState {
 		if (!isBlockingOtherAiUnits(userUnitTile, aiUnitTile)) {
 			return null;
 		}
+		Set<Tile> tiles = getTilesUnitCanMoveTo(aiUnitTile.getUnit());
 		if (userUnitTile.getTilex() == aiUnitTile.getTilex()) {
 			Tile temp = getTileByPos(aiUnitTile.getTilex() + 1, userUnitTile.getTiley());
-			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)) {
-				System.out.println("1: " + temp);
+			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)
+					&& tiles.contains(temp)) {
+				return temp;
+			}
+			temp = getTileByPos(aiUnitTile.getTilex() + 1, aiUnitTile.getTiley());
+			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)
+					&& tiles.contains(temp)) {
 				return temp;
 			}
 			temp = getTileByPos(aiUnitTile.getTilex() - 1, userUnitTile.getTiley());
-			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)) {
-				System.out.println("2: " + temp);
+			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)
+					&& tiles.contains(temp)) {
+				return temp;
+			}
+			temp = getTileByPos(aiUnitTile.getTilex() - 1, aiUnitTile.getTiley());
+			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)
+					&& tiles.contains(temp)) {
 				return temp;
 			}
 		}
 		if (userUnitTile.getTiley() == aiUnitTile.getTiley()) {
 			Tile temp = getTileByPos(userUnitTile.getTilex(), aiUnitTile.getTiley() + 1);
-			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)) {
-				System.out.println("3: " + temp);
+			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)
+					&& tiles.contains(temp)) {
+				return temp;
+			}
+			temp = getTileByPos(aiUnitTile.getTilex(), aiUnitTile.getTiley() + 1);
+			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)
+					&& tiles.contains(temp)) {
 				return temp;
 			}
 			temp = getTileByPos(userUnitTile.getTilex(), aiUnitTile.getTiley() - 1);
-			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)) {
-				System.out.println("4: " + temp);
+			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)
+					&& tiles.contains(temp)) {
+				return temp;
+			}
+			temp = getTileByPos(aiUnitTile.getTilex(), aiUnitTile.getTiley() - 1);
+			if (temp != null && !temp.isOccupied() && !isBlockingOtherAiUnits(userUnitTile, temp)
+					&& tiles.contains(temp)) {
 				return temp;
 			}
 		}

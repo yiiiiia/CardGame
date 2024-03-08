@@ -1,7 +1,8 @@
 package structures.basic.unit;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import akka.actor.ActorRef;
 import structures.GameState;
 import structures.basic.AbilityType;
@@ -30,8 +31,8 @@ public class YoungFlamewing extends Unit {
 		return List.of(AbilityType.FLYING);
 	}
 
-	public List<Tile> getTilesUnitCanMoveTo(GameState gameState) {
-		List<Tile> tiles = new ArrayList<>();
+	public Set<Tile> getTilesUnitCanMoveTo(GameState gameState) {
+		Set<Tile> tiles = new HashSet<>();
 		for (Tile t : gameState.getGameTiles()) {
 			if (!t.isOccupied()) {
 				tiles.add(t);
@@ -52,13 +53,14 @@ public class YoungFlamewing extends Unit {
 			return;
 		}
 		Tile userAvatarTile = gameState.getUnitTile(userAvatar);
-		List<Tile> tiles = gameState.getAdjacentUnoccupiedTiles(userAvatarTile);
+		Set<Tile> tiles = gameState.getAdjacentUnoccupiedTiles(userAvatarTile);
 		while (!tiles.isEmpty()) {
 			Tile target = gameState.findTileClosestToUnit(this, tiles);
 			if (gameState.getUserProvokeAreas().contains(target)) {
 				tiles.remove(target);
 			} else {
 				move(out, gameState, target);
+				break;
 			}
 		}
 	}

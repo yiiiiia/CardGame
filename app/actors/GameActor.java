@@ -96,7 +96,6 @@ public class GameActor extends AbstractActor {
 	 */
 	public Receive createReceive() {
 		return receiveBuilder().match(JsonNode.class, message -> {
-			System.out.println(message);
 			processMessage(message.get("messagetype").asText(), message);
 		}).build();
 	}
@@ -128,7 +127,7 @@ public class GameActor extends AbstractActor {
 			return;
 		}
 		if (gameState.isGameOver()) {
-			System.err.println("Ignore incoming events: game is over");
+			System.err.println("ignore incoming events: game is over");
 		} else if (gameState.getGameMode() == GameState.AI_MODE) {
 			System.err.println("Ignore incoming events: game is in AI mode");
 		} else if (gameState.hasMovingUnit()) {

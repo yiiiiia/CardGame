@@ -1,6 +1,7 @@
 package structures.basic;
 
 import java.util.List;
+import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import akka.actor.ActorRef;
@@ -38,55 +39,6 @@ public class Unit {
 	protected int shieldBuff; // related with the effect of card Horn of the Forsaken
 
 	public Unit() {
-	}
-
-	public Unit(int id, UnitAnimationSet animations, ImageCorrection correction, int health, int attack) {
-		this.id = id;
-		this.animation = UnitAnimationType.idle;
-		position = new Position(0, 0, 0, 0);
-		this.correction = correction;
-		this.animations = animations;
-		this.health = health;
-		this.maxHealth = health;
-		this.attack = attack;
-		this.stunned = false;
-		this.hasMoved = false;
-		this.hasAttacked = false;
-		this.shieldBuff = 0;
-	}
-
-	public Unit(int id, UnitAnimationSet animations, ImageCorrection correction, Tile currentTile, int health,
-			int attack) {
-		this.id = id;
-		this.animation = UnitAnimationType.idle;
-		position = new Position(currentTile.getXpos(), currentTile.getYpos(), currentTile.getTilex(),
-				currentTile.getTiley());
-		this.correction = correction;
-		this.animations = animations;
-		this.health = health;
-		this.maxHealth = health;
-		this.attack = attack;
-		this.stunned = false;
-		this.hasMoved = false;
-		this.hasAttacked = false;
-		this.shieldBuff = 0;
-	}
-
-	public Unit(int id, UnitAnimationType animation, Position position, UnitAnimationSet animations,
-			ImageCorrection correction, int health, int attack) {
-		super();
-		this.id = id;
-		this.animation = animation;
-		this.position = position;
-		this.animations = animations;
-		this.correction = correction;
-		this.health = health;
-		this.maxHealth = health;
-		this.attack = attack;
-		this.stunned = false;
-		this.hasMoved = false;
-		this.hasAttacked = false;
-		this.shieldBuff = 0;
 	}
 
 	public void performAbility(AbilityType type, ActorRef out, GameState gameState) {
@@ -262,7 +214,7 @@ public class Unit {
 		if (gameState.unitIsProvoked(this)) {
 			throw new IllegalStateException("Cannot move: unit is provoked");
 		}
-		List<Tile> accessibleTiles = gameState.getTilesUnitCanMoveTo(this);
+		Set<Tile> accessibleTiles = gameState.getTilesUnitCanMoveTo(this);
 		if (!accessibleTiles.contains(destination)) {
 			throw new IllegalStateException("Cannot move: target tile out of range: " + destination);
 		}
@@ -303,6 +255,11 @@ public class Unit {
 		}
 		GameState.playUnitAnimation(out, this, UnitAnimationType.attack);
 		GameState.playUnitAnimation(out, attacked, UnitAnimationType.hit);
+		if (attacked.getShieldBuff() > 0) {
+			BasicCommands.addPlayer1Notification(out,
+					"User avatar is under buff protection: robutness " + attacked.getShieldBuff(), 3);
+			BasicCommands.sleep(500);
+		}
 		GameState.playUnitAnimation(out, this, UnitAnimationType.idle);
 		GameState.playUnitAnimation(out, attacked, UnitAnimationType.idle);
 		boolean damageDone = gameState.dealDamangeToUnit(out, attacked, getAttack());

@@ -21,6 +21,7 @@ public class StaticConfFiles {
 
 	// Effects
 	public final static String f1_inmolation = "conf/gameconfs/effects/f1_inmolation.json";
+	public final static String f1_soulshatter = "conf/gameconfs/effects/f1_soulshatter.json";
 	public final static String f1_buff = "conf/gameconfs/effects/f1_buff.json";
 	public final static String f1_martyrdom = "conf/gameconfs/effects/f1_martyrdom.json";
 	public final static String f1_projectiles = "conf/gameconfs/effects/f1_projectiles.json";
