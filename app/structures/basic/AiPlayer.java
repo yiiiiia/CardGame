@@ -75,7 +75,7 @@ public class AiPlayer extends Player {
 			Tile adjustTo = gameState.needAdjustPosition(gameState.getUnitTile(userAvatar),
 					gameState.getUnitTile(aiAvatar));
 			if (adjustTo != null) {
-				BasicCommands.addPlayer1Notification(out, "Ai avatar move", 2);
+				BasicCommands.addPlayer1Notification(out, "Ai avatar move", 3);
 				aiAvatar.move(out, gameState, adjustTo);
 				setSuspension();
 			}
@@ -87,7 +87,7 @@ public class AiPlayer extends Player {
 		int d1 = GameState.distanceBetweenTiles(userAvatarTile, targetTile);
 		int d2 = GameState.distanceBetweenTiles(userAvatarTile, aiAvatarTile);
 		if (d1 < d2) {
-			BasicCommands.addPlayer1Notification(out, "Ai avatar move", 2);
+			BasicCommands.addPlayer1Notification(out, "Ai avatar move", 3);
 			aiAvatar.move(out, gameState, targetTile);
 			setSuspension();
 		}
