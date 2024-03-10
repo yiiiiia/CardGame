@@ -23,6 +23,7 @@ public class Unit {
 	@JsonIgnore
 	private static ObjectMapper mapper = new ObjectMapper(); // Jackson Java Object Serializer, is used to read java
 																// objects from a file
+
 	protected int id;
 	protected String name;
 	protected UnitAnimationType animation;

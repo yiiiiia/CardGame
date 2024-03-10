@@ -15,7 +15,6 @@ public class SundropElixirCard extends Card {
 
 	public void highlightTiles(ActorRef out, GameState gameState) {
 		List<Unit> units = gameState.getAllAIUnits();
-		// highlight the allied units
 		for (Unit unit : units) {
 			Tile tile = gameState.getUnitTile(unit);
 			gameState.drawAndRecordHighlightedTile(out, tile, Tile.TILE_WHITE_MODE);

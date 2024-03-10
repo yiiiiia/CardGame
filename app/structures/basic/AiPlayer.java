@@ -6,6 +6,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
@@ -15,6 +17,8 @@ import structures.basic.card.TrueStrikeCard;
 import structures.basic.unit.YoungFlamewing;
 
 public class AiPlayer extends Player {
+
+	public static final Logger logger = LoggerFactory.getLogger(AiPlayer.class);
 
 	private boolean suspension;
 
@@ -134,13 +138,14 @@ public class AiPlayer extends Player {
 	}
 
 	private void tryUseSundrop(ActorRef out, GameState gameState, Card card) {
-		List<Unit> allMyUnits = this.getOwnUnits();
+		List<Unit> allMyUnits = getOwnUnits();
 		for (Unit unit : allMyUnits) {
 			if (unit.getHealth() <= unit.getMaxHealth()) {
 				if (unit.getMaxHealth() - unit.getHealth() >= 4) {
 					Tile tile = gameState.getUnitTile(unit);
 					BasicCommands.addPlayer1Notification(out, "Ai use card: " + card.getCardname(), 3);
 					card.castSpell(out, gameState, tile);
+					logger.info("card to be removeed: " + card);
 					removeHandCard(card);
 				}
 			} else {
@@ -169,9 +174,13 @@ public class AiPlayer extends Player {
 				break;
 			}
 		}
-		if (!tiles.isEmpty()) {
+		while (!tiles.isEmpty()) {
 			Tile target = gameState.findTileClosestToUnit(gameState.getAiAvatar(), tiles);
-			BasicCommands.addPlayer1Notification(out, "Ai use card: " + card.getCardname(), 3);
+			if (target.getUnit().isStunned()) {
+				tiles.remove(target);
+				continue;
+			}
+			BasicCommands.addPlayer1Notification(out, "AI use card: " + card.getCardname(), 3);
 			card.castSpell(out, gameState, target);
 			removeHandCard(card);
 		}

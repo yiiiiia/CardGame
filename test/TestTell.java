@@ -9,6 +9,6 @@ public class TestTell implements DummyTell {
 
 	@Override
 	public void tell(ObjectNode message) {
-		logger.info(message.toString());
+		logger.debug(message.toPrettyString());
 	}
 }

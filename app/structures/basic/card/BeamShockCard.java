@@ -34,6 +34,9 @@ public class BeamShockCard extends Card {
 		if (gameState.isAiUnit(unitOnTile)) {
 			throw new IllegalStateException("Cannot use BeamShockCard on ai unit!");
 		}
+		if (unitOnTile.isStunned()) {
+			throw new IllegalStateException("Cannot use BeamShockCard on already stunned unit!");
+		}
 		gameState.deductManaFromPlayer(out, manacost, GameState.AI_MODE);
 		GameState.playEffectAnimation(out, StaticConfFiles.f1_soulshatter, tile);
 		GameState.playUnitAnimation(out, unitOnTile, UnitAnimationType.hit);
