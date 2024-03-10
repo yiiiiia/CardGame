@@ -22,7 +22,7 @@ public class Shadowdancer extends Unit {
 		Unit userAvatar = gameState.getUserAvatar();
 
 		Tile aiTile = gameState.getUnitTile(aiAvatar);
-		GameState.playEffectAnimation(out, StaticConfFiles.f1_martyrdom, aiTile);
+		GameState.playEffectAnimation(out, StaticConfFiles.f1_inmolation, aiTile);
 		gameState.dealDamangeToUnit(out, aiAvatar, 1);
 
 		Tile userTile = gameState.getUnitTile(userAvatar);

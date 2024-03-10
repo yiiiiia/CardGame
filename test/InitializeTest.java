@@ -17,7 +17,7 @@ public class InitializeTest {
 	}
 
 	@Test
-	public void testWraithling() {
+	public void testLoadUnit() {
 		Wraithling wraithling = BasicObjectBuilders.loadUnit(StaticConfFiles.wraithling, 0, Wraithling.class);
 		assertEquals(wraithling.getAttack(), 1);
 		assertEquals(wraithling.getHealth(), 1);
