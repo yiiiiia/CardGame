@@ -210,7 +210,7 @@ public class AiPlayer extends Player {
 				Tile destination = gameState.findTileClosestToTile(userUnitTile, tilesCurUnitCanMove);
 				int d1 = GameState.distanceBetweenTiles(userUnitTile, destination);
 				int d2 = GameState.distanceBetweenTiles(userUnitTile, aiUnitTile);
-				if (d1 < d2) {
+				if (d1 < d2 || GameState.tilesAdjacent(userUnitTile, destination)) {
 					BasicCommands.addPlayer1Notification(out, "Move AI creatures", 3);
 					aiUnit.move(out, gameState, destination);
 					setSuspension();

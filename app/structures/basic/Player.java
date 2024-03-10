@@ -217,7 +217,7 @@ public class Player {
 			Entry<Tile, Unit> entry = iterator.next();
 			Tile tile = entry.getKey();
 			Unit unit = entry.getValue();
-			if (unit.equals(targetUnit)) {
+			if (unit == targetUnit) {
 				tile.clearUnit();
 				iterator.remove();
 				break;
@@ -230,7 +230,7 @@ public class Player {
 			return false;
 		}
 		for (Unit u : tileAndUnits.values()) {
-			if (u.equals(unit)) {
+			if (u == unit) {
 				return true;
 			}
 		}

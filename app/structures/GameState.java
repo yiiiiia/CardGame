@@ -272,6 +272,16 @@ public class GameState {
 		}
 	}
 
+	public Player getPlayerUnitBelongsTo(Unit unit) {
+		if (isUserUnit(unit)) {
+			return userPlayer;
+		}
+		if (isAiUnit(unit)) {
+			return aiPlayer;
+		}
+		throw new IllegalStateException("Orphan unit: " + unit);
+	}
+
 	public void deleteUserCard(ActorRef out, Card card) {
 		int pos = userPlayer.removeHandCard(card);
 		BasicCommands.deleteCard(out, pos + 1);
