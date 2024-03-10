@@ -3,6 +3,7 @@ package structures.basic;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import akka.actor.ActorRef;
@@ -159,10 +160,21 @@ public class AiPlayer extends Player {
 
 	private void tryUseBeamShock(ActorRef out, GameState gameState, Card card) {
 		Set<Tile> tiles = gameState.getAllUserTiles();
-		Tile target = gameState.findTileClosestToUnit(gameState.getAiAvatar(), tiles);
-		BasicCommands.addPlayer1Notification(out, "Ai use card: " + card.getCardname(), 3);
-		card.castSpell(out, gameState, target);
-		removeHandCard(card);
+		Iterator<Tile> iter = tiles.iterator();
+		while (iter.hasNext()) {
+			// exclude user avatar
+			Tile t = iter.next();
+			if (t.getUnit() == gameState.getUserAvatar()) {
+				iter.remove();
+				break;
+			}
+		}
+		if (!tiles.isEmpty()) {
+			Tile target = gameState.findTileClosestToUnit(gameState.getAiAvatar(), tiles);
+			BasicCommands.addPlayer1Notification(out, "Ai use card: " + card.getCardname(), 3);
+			card.castSpell(out, gameState, target);
+			removeHandCard(card);
+		}
 	}
 
 	private void tryMoveCreatures(ActorRef out, GameState gameState) {
