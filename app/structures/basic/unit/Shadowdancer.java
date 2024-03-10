@@ -20,9 +20,13 @@ public class Shadowdancer extends Unit {
 	private void performDeathWatch(ActorRef out, GameState gameState) {
 		Unit aiAvatar = gameState.getAiAvatar();
 		Unit userAvatar = gameState.getUserAvatar();
+
+		Tile aiTile = gameState.getUnitTile(aiAvatar);
+		GameState.playEffectAnimation(out, StaticConfFiles.f1_martyrdom, aiTile);
 		gameState.dealDamangeToUnit(out, aiAvatar, 1);
-		Tile tile = gameState.getUnitTile(userAvatar);
-		GameState.playEffectAnimation(out, StaticConfFiles.f1_buff, tile);
+
+		Tile userTile = gameState.getUnitTile(userAvatar);
+		GameState.playEffectAnimation(out, StaticConfFiles.f1_buff, userTile);
 		gameState.healUnit(out, userAvatar, 1);
 	}
 

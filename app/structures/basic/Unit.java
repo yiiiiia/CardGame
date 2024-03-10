@@ -228,12 +228,14 @@ public class Unit {
 				yfirst = true;
 			} else if (unitX < targetX) {
 				Tile tile = gameState.getTileByPos(unitX + 1, unitY);
-				if (tile.getUnit() != null) {
+				if (tile.isOccupied()
+						&& gameState.getPlayerUnitBelongsTo(this) != gameState.getPlayerUnitBelongsTo(tile.getUnit())) {
 					yfirst = true;
 				}
 			} else {
 				Tile tile = gameState.getTileByPos(unitX - 1, unitY);
-				if (tile.getUnit() != null) {
+				if (tile.isOccupied()
+						&& gameState.getPlayerUnitBelongsTo(this) != gameState.getPlayerUnitBelongsTo(tile.getUnit())) {
 					yfirst = true;
 				}
 			}

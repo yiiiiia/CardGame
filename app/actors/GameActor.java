@@ -96,6 +96,7 @@ public class GameActor extends AbstractActor {
 	 */
 	public Receive createReceive() {
 		return receiveBuilder().match(JsonNode.class, message -> {
+			System.out.println(message);
 			processMessage(message.get("messagetype").asText(), message);
 		}).build();
 	}
