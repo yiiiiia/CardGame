@@ -63,7 +63,7 @@ public class TileClicked implements EventProcessor {
 			}
 			if (!hasEffect) {
 				String reason = gameState.whyUnitCannotMove(userUnit);
-				BasicCommands.addPlayer1Notification(out, "Unit cannot move and there's no target to attack: " + reason,
+				BasicCommands.addPlayer1Notification(out, "Unit cannot move and there's no target to attack:\n" + reason,
 						3);
 			}
 		}
