@@ -7,6 +7,7 @@ import structures.GameState;
 import structures.basic.Card;
 import structures.basic.Tile;
 import structures.basic.Unit;
+import utils.StaticConfFiles;
 
 public class SundropElixirCard extends Card {
 
@@ -31,6 +32,7 @@ public class SundropElixirCard extends Card {
 			throw new IllegalStateException("can only use SundropElixirCard on AI unit");
 		}
 		gameState.deductManaFromPlayer(out, manacost, GameState.AI_MODE);
+		GameState.playEffectAnimation(out, StaticConfFiles.f1_buff, tile);
 		unitOnTile.healSelf(4);
 		BasicCommands.setUnitHealth(out, unitOnTile, unitOnTile.getHealth());
 	}

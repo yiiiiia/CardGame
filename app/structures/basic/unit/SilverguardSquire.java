@@ -7,6 +7,7 @@ import structures.GameState;
 import structures.basic.AbilityType;
 import structures.basic.Tile;
 import structures.basic.Unit;
+import utils.StaticConfFiles;
 
 public class SilverguardSquire extends Unit {
 
@@ -26,6 +27,7 @@ public class SilverguardSquire extends Unit {
 		if (left != null && left.isOccupied()) {
 			Unit leftUnit = left.getUnit();
 			if (gameState.isAiUnit(leftUnit)) {
+				GameState.playEffectAnimation(out, StaticConfFiles.f1_buff, left);
 				leftUnit.incrAttack();
 				leftUnit.incrHealth();
 				BasicCommands.setUnitAttack(out, leftUnit, leftUnit.getAttack());
@@ -36,6 +38,7 @@ public class SilverguardSquire extends Unit {
 		if (right != null && right.isOccupied()) {
 			Unit rightUnit = right.getUnit();
 			if (gameState.isAiUnit(rightUnit)) {
+				GameState.playEffectAnimation(out, StaticConfFiles.f1_buff, right);
 				rightUnit.incrAttack();
 				rightUnit.incrHealth();
 				BasicCommands.setUnitAttack(out, rightUnit, rightUnit.getAttack());

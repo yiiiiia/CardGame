@@ -5,7 +5,9 @@ import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.GameState;
 import structures.basic.AbilityType;
+import structures.basic.Tile;
 import structures.basic.Unit;
+import utils.StaticConfFiles;
 
 public class SilverguardKnight extends Unit {
 
@@ -21,6 +23,8 @@ public class SilverguardKnight extends Unit {
 	}
 
 	public void performZeal(ActorRef out, GameState gamestate) {
+		Tile tile = gamestate.getUnitTile(this);
+		GameState.playEffectAnimation(out, StaticConfFiles.f1_buff, tile);
 		setAttack(getAttack() + 2);
 		BasicCommands.setUnitAttack(out, this, getAttack());
 		BasicCommands.sleep(500);
