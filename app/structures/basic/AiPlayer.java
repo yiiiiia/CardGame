@@ -183,6 +183,7 @@ public class AiPlayer extends Player {
 			BasicCommands.addPlayer1Notification(out, "AI use card: " + card.getCardname(), 3);
 			card.castSpell(out, gameState, target);
 			removeHandCard(card);
+			break;
 		}
 	}
 
