@@ -43,7 +43,7 @@ public class HornOfTheForsakenCard extends Card {
 			throw new IllegalStateException("this card can only be used on user avatar" + this);
 		}
 		gameState.deductManaFromPlayer(out, manacost, GameState.USER_MODE);
-		tile.getUnit().setShieldBuff(3);
 		GameState.playEffectAnimation(out, StaticConfFiles.f1_buff, tile);
+		tile.getUnit().setShieldBuff(3);
 	}
 }

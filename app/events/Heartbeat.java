@@ -30,7 +30,7 @@ public class Heartbeat implements EventProcessor {
 		if (gameState.isGameOver()) {
 			foundGameOver = true;
 			if (gameState.getAiPlayer().getHealth() <= 0) {
-				BasicCommands.addPlayer1Notification(out, "Game is over, your are the winner!", oneHour);
+				BasicCommands.addPlayer1Notification(out, "Game is over, you are the winner!", oneHour);
 			} else {
 				BasicCommands.addPlayer1Notification(out, "Game is over, you are dead", oneHour);
 			}
