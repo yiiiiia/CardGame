@@ -9,6 +9,7 @@ import structures.basic.Card;
 import structures.basic.Player;
 import structures.basic.Tile;
 import structures.basic.Unit;
+import structures.basic.card.SundropElixirCard;
 import structures.basic.unit.AIAvatar;
 import structures.basic.unit.PlayerAvatar;
 import utils.BasicObjectBuilders;
@@ -106,10 +107,20 @@ public class Initalize implements EventProcessor {
 		}
 		// draw three cards for ai
 		Player ai = gameState.getAiPlayer();
-		for (int i = 0; i < 3; i++) {
-			int n = GameState.nextRandInt(ai.getDeckCards().size());
-			Card card = ai.getDeckCards().remove(n);
-			ai.putCardAtPos(card, i);
+		// for (int i = 0; i < 3; i++) {
+		// int n = GameState.nextRandInt(ai.getDeckCards().size());
+		// Card card = ai.getDeckCards().remove(n);
+		// ai.putCardAtPos(card, i);
+		// }
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < ai.getDeckCards().size(); ++j) {
+				Card card = ai.getDeckCards().get(j);
+				if (card.getCardname().equals(SundropElixirCard.CARD_NAME)) {
+					ai.putCardAtPos(card, i);
+					ai.getDeckCards().remove(j);
+					break;
+				}
+			}
 		}
 	}
 }

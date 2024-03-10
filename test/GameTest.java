@@ -164,4 +164,27 @@ public class GameTest {
 		Set<Tile> highlightedTiles = gameState.getHighlightedTiles();
 		assertTrue(highlightedTiles.contains(t2));
 	}
+
+	@Test
+	public void testUseBeamShock() {
+		Player aiPlayer = gameState.getAiPlayer();
+		Card sundrop = allCardsMap.get("Sundrop Elixir");
+		aiPlayer.putCardAtPos(sundrop, 4);
+
+		Tile userAvatarTile = gameState.getUnitTile(gameState.getUserAvatar());
+		Unit badOmen = allUnitsMap.get("BadOmen");
+		Tile t = gameState.getTileByPos(userAvatarTile.getTilex() + 1, userAvatarTile.getTiley() - 1);
+		gameState.getUserPlayer().putUnitOnTile(t, badOmen);
+
+		Unit aiAvatar = gameState.getAiAvatar();
+		aiAvatar.setHealth(aiAvatar.getHealth() - 5);
+		Tile destination = gameState.getTileByPos(userAvatarTile.getTilex() + 1, userAvatarTile.getTiley());
+		aiPlayer.removeUnit(aiAvatar);
+		aiPlayer.putUnitOnTile(destination, aiAvatar);
+
+		aiPlayer.setMana(10);
+		aiPlayer.playAI(null, gameState);
+		List<Card> cards = aiPlayer.getHandCards();
+		assertEquals(0, cards.size());
+	}
 }
