@@ -38,5 +38,6 @@ public class BeamShockCard extends Card {
 		GameState.playEffectAnimation(out, StaticConfFiles.f1_soulshatter, tile);
 		GameState.playUnitAnimation(out, unitOnTile, UnitAnimationType.hit);
 		unitOnTile.setStunned(true);
+		GameState.playUnitAnimation(out, unitOnTile, UnitAnimationType.idle);
 	}
 }
