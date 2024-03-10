@@ -22,7 +22,7 @@ public class NightsorrowAssassin extends Unit {
 		for (Unit enemy : gameState.getAllAIUnits()) {
 			if (GameState.unitsAdjacent(this, enemy) && enemy.getHealth() < enemy.getMaxHealth()
 					&& enemy != gameState.getAiAvatar()) {
-				GameState.playEffectAnimation(out, StaticConfFiles.f1_martyrdom, gameState.getUnitTile(enemy));
+				GameState.playEffectAnimation(out, StaticConfFiles.f1_inmolation, gameState.getUnitTile(enemy));
 				GameState.playUnitAnimation(out, enemy, UnitAnimationType.death);
 				gameState.removeUnit(out, enemy);
 			}

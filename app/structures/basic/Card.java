@@ -1,6 +1,7 @@
 package structures.basic;
 
 import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import akka.actor.ActorRef;
 import structures.GameState;
@@ -112,11 +113,12 @@ public class Card {
 		throw new UnsupportedOperationException("Unimplemented method!");
 	}
 
-	protected Class<? extends Unit> getSummonedCreatureClass() {
+	@JsonIgnore
+	public Class<? extends Unit> getSummonedCreatureClass() {
 		throw new UnsupportedOperationException("Unimplemented method!");
 	}
 
-	protected void highlightTilesAsCreatureCard(ActorRef out, GameState gameState, int gameMode) {
+	public void highlightTilesAsCreatureCard(ActorRef out, GameState gameState, int gameMode) {
 		for (Tile tile : gameState.getTilesForSummon(gameMode)) {
 			gameState.drawAndRecordHighlightedTile(out, tile, Tile.TILE_WHITE_MODE);
 		}

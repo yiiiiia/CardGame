@@ -109,7 +109,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(500);
+				sleep(750);
 			}
 			;
 		} catch (Exception e) {
@@ -137,7 +137,7 @@ public class BasicCommands {
 				altTell.tell(returnMessage);
 			else {
 				out.tell(returnMessage, out);
-				sleep(500);
+				sleep(750);
 			}
 			;
 		} catch (Exception e) {

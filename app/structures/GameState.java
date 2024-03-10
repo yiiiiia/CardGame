@@ -238,6 +238,10 @@ public class GameState {
 		highlightedTiles.clear();
 	}
 
+	public Set<Tile> getHighlightedTiles() {
+		return highlightedTiles;
+	}
+
 	public List<Tile> getGameTiles() {
 		List<Tile> tiles = new ArrayList<>();
 		if (gameTiles != null && gameTiles.length != 0) {
